@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BUSI 2305 — Business Statistics · Spring 2026</title>
+<meta name="description" content="BUSI 2305 Business Statistics — Austin Community College, Spring 2026. Section 009, CRN 15680. Professor Russell Holloway.">
+<link rel="stylesheet" href="../theme.css">
+</head>
+<body>
+
+<a href="#main-content" class="skip-to-content">Skip to main content</a>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="index.html" class="crest">Business Statistics <span class="num">BUSI · 2305</span></a>
+        <nav class="primary" aria-label="Primary">
+      <a href="index.html" class="active">Home</a>
+      <a href="lessons.html">Lessons</a>
+      <a href="data.html">Data</a>
+      <a href="contact.html">Contact</a>
+      <a href="about.html">About</a>
+      <a href="resources.html">Resources</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main-content">
+
+<section class="hero">
+  <div class="eyebrow">Spring 2026 · Austin Community College</div>
+  <h1>Business Statistics</h1>
+  <p class="lede">An accelerated 8-week online course in applied statistics for business decision-making. Lectures release weekly. Office hours by appointment via Zoom or in person.</p>
+</section>
+
+<div class="meta-strip">
+  <div class="meta-strip-inner">
+    <div class="meta-item"><div class="label">Course</div><div class="val">BUSI-2305-009</div></div>
+    <div class="meta-item"><div class="label">CRN</div><div class="val">15680</div></div>
+    <div class="meta-item"><div class="label">Format</div><div class="val">Online (LEC)</div></div>
+    <div class="meta-item"><div class="label">Dates</div><div class="val">Mar 23 – May 17</div></div>
+    <div class="meta-item"><div class="label">Credit Hours</div><div class="val">3</div></div>
+    <div class="meta-item"><div class="label">Instructor</div><div class="val">Russell Holloway</div></div>
+  </div>
+</div>
+
+<section class="page announcements-section" aria-labelledby="announcements-heading">
+  <div class="section-head">
+    <div class="num">Now playing</div>
+    <h2 id="announcements-heading">Announcements</h2>
+    <p class="sub">Newest at the top. Click any announcement to expand or collapse it.</p>
+  </div>
+
+  <div id="announcements-list" class="announcements-list" aria-live="polite">
+    <p class="announcements-loading">Loading announcements…</p>
+  </div>
+</section>
+
+<script>
+(function () {
+  var MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  function fmtDate(iso) {
+    var parts = (iso || "").split("-");
+    if (parts.length !== 3) return iso || "";
+    var y = parts[0], m = parseInt(parts[1], 10), d = parseInt(parts[2], 10);
+    if (isNaN(m) || isNaN(d)) return iso;
+    return MONTHS[m - 1] + " " + d + ", " + y;
+  }
+  function escapeHTML(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+  function renderBody(text) {
+    // preserve paragraph breaks, keep it clean
+    return escapeHTML(text).split(/\n\s*\n/).map(function (p) {
+      return "<p>" + p.replace(/\n/g, "<br>") + "</p>";
+    }).join("");
+  }
+  function sortByDateDesc(items) {
+    return items.slice().sort(function (a, b) {
+      return (b.date || "").localeCompare(a.date || "");
+    });
+  }
+
+  var mount = document.getElementById("announcements-list");
+  if (!mount) return;
+
+  fetch("announcements.json", { cache: "no-store" })
+    .then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    })
+    .then(function (items) {
+      if (!Array.isArray(items) || items.length === 0) {
+        mount.innerHTML = '<p class="announcements-empty">No announcements yet. Check back soon.</p>';
+        return;
+      }
+      items = sortByDateDesc(items);
+      var html = items.map(function (a, i) {
+        var open = i === 0 ? " open" : "";
+        return '' +
+          '<details class="announcement"' + open + '>' +
+            '<summary>' +
+              '<span class="announcement-date">' + escapeHTML(fmtDate(a.date)) + '</span>' +
+              '<span class="announcement-title">' + escapeHTML(a.title || "Announcement") + '</span>' +
+              '<span class="announcement-chevron" aria-hidden="true"></span>' +
+            '</summary>' +
+            '<div class="announcement-body">' + renderBody(a.body || "") + '</div>' +
+          '</details>';
+      }).join("");
+      mount.innerHTML = html;
+    })
+    .catch(function () {
+      mount.innerHTML = '<p class="announcements-empty">Announcements unavailable right now. Please refresh in a moment.</p>';
+    });
+})();
+</script>
+
+<section class="page">
+  <div class="section-head">
+    <div class="num">Start here</div>
+    <h2>Where do you want to go?</h2>
+    <p class="sub">The common paths into the course. Everything is also linked in the top navigation.</p>
+  </div>
+
+  <div class="path-grid">
+    <a href="about.html" class="path-card">
+      <div class="num">01</div>
+      <h3>About</h3>
+      <p>Course syllabus — description, grading, academic conduct, all ACC-required info — plus the 8-week schedule with exam dates.</p>
+      <div class="arrow">Read about the course</div>
+    </a>
+    <a href="lessons.html" class="path-card">
+      <div class="num">02</div>
+      <h3>Lessons</h3>
+      <p>Video lectures and Excel walkthroughs, organized by week. Watch any time.</p>
+      <div class="arrow">Open library</div>
+    </a>
+    <a href="data.html" class="path-card">
+      <div class="num">03</div>
+      <h3>Data</h3>
+      <p>Datasets for problem sets and projects — FRED, WSJ Markets, CIA World Factbook, and your free WSJ account through ACC.</p>
+      <div class="arrow">Browse datasets</div>
+    </a>
+    <a href="contact.html" class="path-card">
+      <div class="num">04</div>
+      <h3>Get help</h3>
+      <p>Email, phone, office hours by appointment. Tutoring and support services on the Resources page.</p>
+      <div class="arrow">Contact me</div>
+    </a>
+  </div>
+</section>
+
+<section class="page">
+  <div class="section-head">
+    <div class="num">Course overview</div>
+    <h2>What you'll learn</h2>
+  </div>
+
+  <div class="prose">
+    <p>Descriptive and inferential statistical techniques for business and economic decision-making. We'll cover the collection, description, analysis, and summarization of data; probability; discrete and continuous random variables; the binomial and normal distributions; sampling distributions; tests of hypotheses; estimation and confidence intervals; linear regression; and correlation analysis.</p>
+
+    <p>Statistical software — Excel or an equivalent — is used throughout the course to analyze real data.</p>
+
+    <p>The goal is practical: by the end, you should be able to read a business report, a market study, or a news chart and know whether the conclusion actually follows from the data.</p>
+
+    <p><em>BUSI 2305 is included in the Texas Business Field of Study. Formerly BUSG 2371.</em></p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="col">
+    <h5>BUSI 2305</h5>
+    <p class="institutional">Business Statistics is a 3-credit course offered by the Business Studies department at Austin Community College. For official course information, visit <a href="https://www.austincc.edu">austincc.edu</a>.</p>
+  </div>
+    <div class="col">
+    <h5>Course</h5>
+    <a href="index.html">Home</a>
+    <a href="lessons.html">Lessons</a>
+    <a href="data.html">Data</a>
+    <a href="contact.html">Contact</a>
+    <a href="about.html">About</a>
+    <a href="resources.html">Resources</a>
+  </div>
+  <div class="col">
+    <h5>Policies &amp; compliance</h5>
+    <a href="policies.html#accessibility">Accessibility</a>
+    <a href="policies.html#ferpa">FERPA</a>
+    <a href="policies.html#academic-integrity">Academic integrity</a>
+    <a href="policies.html#title-ix">Title IX</a>
+    <a href="policies.html">All policies</a>
+  </div>
+  <div class="col">
+    <h5>Institution</h5>
+    <a href="https://www.austincc.edu">Austin Community College</a>
+    <a href="https://www.austincc.edu/students">Student Resources</a>
+    <a href="https://www.austincc.edu/students/student-accessibility-services">Accessibility Services</a>
+  </div>
+</footer>
+
+</body>
+</html>
+

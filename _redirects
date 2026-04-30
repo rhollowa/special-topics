@@ -1,0 +1,4 @@
+# Redirect old busi-2305 subdomain to /2305/ on the new acc subdomain.
+# Path-preserving 301 redirect for student bookmarks.
+https://busi-2305.indiafoxtrotcharlie.com/*  https://acc.indiafoxtrotcharlie.com/2305/:splat  301!
+http://busi-2305.indiafoxtrotcharlie.com/*  https://acc.indiafoxtrotcharlie.com/2305/:splat  301!

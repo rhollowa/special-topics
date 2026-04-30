@@ -1,27 +1,20 @@
-# special-topics
+# acc-courses (special-topics)
 
-ACC Special Topics — **Managing AI in Business**
+Course sites for Russell Holloway, Adjunct Professor of Business Studies at Austin Community College.
 
-A new course in the Entrepreneurship AAS program at Austin Community College, with a Fall 2026 soft launch as an elective. Substitutes for BMGT 2388 Internship in the Entrepreneurship degree plan.
-
-**Live site:** https://special-topics.indiafoxtrotcharlie.com
-
-**Instructor of record:** Russell Holloway · russell.holloway@austincc.edu
+**Live site:** https://acc.indiafoxtrotcharlie.com
 
 ## Structure
 
-- `index.html` — home, with course objectives prominently displayed
-- `objectives.html` — full Bloom's-aligned objectives with Program Level Outcome mapping
-- `curriculum.html` — 16-week semester arc, four phases mapped to objectives
-- `about.html` — course rationale, target student, format, instructor
-- `contact.html` — instructor and department contacts
-- `theme.css` — all styling, with CSS variables at the top for easy reskin
+- `/` — landing page linking to all courses, shared `theme.css`
+- `/2305/` — BUSI 2305 Business Statistics
+- `/special-topics/` — Special Topics: Managing AI in Business (Fall 2026)
 
 ## Reskin
 
-To swap to ACC official branding (or any other theme), edit the `:root` block at the top of `theme.css`. Every color, font, and layout dimension is a CSS variable. No other edits needed.
+Edit the `:root` block at the top of `theme.css` — every color, font, and layout dimension is a CSS variable. Affects all course sites.
 
 ## Status
 
-- **Fall 2026** — soft launch as elective under BMGT 2388 (Special Topics) rubric
-- **C&P cleanup** — scheduled for Fall 2026 to formalize the course in the catalog
+- **BUSI 2305** — active for current semester
+- **Special Topics** — soft launch Fall 2026 as elective under BMGT 2388 rubric, substitutes for BMGT 2388 Internship in Entrepreneurship AAS

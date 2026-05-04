@@ -1,7 +1,12 @@
 [
   {
+    "date": "2026-05-04",
+    "title": "Exam 1 posted \u2014 due Friday 5/8 by 11:59 PM",
+    "body": "Exam 1 is up. Download \"Modeling Problems\" from the Resources page (or the Lessons page under Week 7).\n\nDue: Friday, May 8 at 11:59 PM.\n\nThree modeling problems in one workbook:\n1) Bollinger Bands \u2014 build a 20-day moving average \u00b11\u03c3 and \u00b12\u03c3 on Tesla daily prices, then chart it.\n2) Sector Allocation \u2014 work through the S&P 500 list and decide how to allocate 100 portfolio positions across the 11 GICS sectors based on cost, time, and rigor.\n3) Pro Forma \u2014 build a simplified P&G income statement for FY26 using the historical data and the scenario probabilities.\n\nEach problem has its own instructions tab with step-by-step guidance and the questions you need to answer.\n\nOpen notes, open everything. You can use any tool, any AI, any source. The goal is to produce a working model \u2014 show your work in the spreadsheet itself (formulas, not pasted values).\n\nIf anything in the workbook looks broken or unclear, post in the discussion or email me \u2014 don't guess."
+  },
+  {
     "date": "2026-04-23",
-    "title": "Welcome — start with probability",
-    "body": "Welcome, class. Take a look around the site and let me know if anything looks off or you have comments.\n\nGo ahead and start working through the probability lecture up on the Lessons page — that's Week 4, Chapter 5. I'll drop some supplemental exercises alongside it shortly.\n\nStay tuned."
+    "title": "Welcome \u2014 start with probability",
+    "body": "Welcome, class. Take a look around the site and let me know if anything looks off or you have comments.\n\nGo ahead and start working through the probability lecture up on the Lessons page \u2014 that's Week 4, Chapter 5. I'll drop some supplemental exercises alongside it shortly.\n\nStay tuned."
   }
 ]

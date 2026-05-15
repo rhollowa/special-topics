@@ -94,7 +94,6 @@
   <h1>Admin Access</h1>
   <input type="password" id="pwInput" placeholder="Password" autocomplete="current-password">
   <label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;margin-bottom:.9rem;cursor:pointer;">
-    <input type="checkbox" id="rememberDevice"> Remember this device
   </label>
   <button onclick="doLogin()">Enter</button>
   <div class="admin-error" id="loginErr">Incorrect password.</div>
@@ -189,7 +188,6 @@ let SESSION = null;
 let COURSE = null;
 let GB_DATA = null;
 
-const DEVICE_KEY = 'acc_device_token';
 
 // ── Boot: try IP auth first, then device token ───────────────────
 function showPanel(token){
@@ -200,58 +198,28 @@ function showPanel(token){
 }
 
 (function boot(){
-  // 1. Try IP-based auto-auth (no password needed if IP is whitelisted)
   fetch(API+'/acc/admin/ip-auth',{
     method:'POST',
     headers:{'Content-Type':'application/json','X-API-Key':API_KEY}
   }).then(r=>r.json()).then(d=>{
-    if(d.ok){ showPanel(d.token); return; }
-    // 2. Fall back to device token
-    const dt = localStorage.getItem(DEVICE_KEY);
-    if(!dt) return;
-    fetch(API+'/acc/admin/device-login',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','X-API-Key':API_KEY},
-      body:JSON.stringify({device_token:dt})
-    }).then(r=>r.json()).then(d2=>{
-      if(d2.ok){ showPanel(d2.token); }
-      else { localStorage.removeItem(DEVICE_KEY); }
-    }).catch(()=>{});
+    if(d.ok) showPanel(d.token);
   }).catch(()=>{});
 })();
 
 // ── Auth ──────────────────────────────────────────────────────────
 function doLogin(){
   const pw = document.getElementById('pwInput').value;
-  const remember = document.getElementById('rememberDevice').checked;
   fetch(API+'/acc/admin/api-login',{
     method:'POST',
     headers:{'Content-Type':'application/json','X-API-Key':API_KEY},
     body:JSON.stringify({password:pw})
   }).then(r=>r.json()).then(d=>{
-    if(d.ok){
-      SESSION=d.token;
-      document.getElementById('loginBox').style.display='none';
-      document.getElementById('adminPanel').style.display='block';
-      if(remember) registerDevice(d.token);
-      loadCourses();
-    } else {
-      document.getElementById('loginErr').style.display='block';
-    }
+    if(d.ok){ showPanel(d.token); }
+    else { document.getElementById('loginErr').style.display='block'; }
   }).catch(()=>{document.getElementById('loginErr').style.display='block';});
 }
 document.getElementById('pwInput').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
-function registerDevice(sessionToken){
-  const label = navigator.userAgent.substring(0,100);
-  fetch(API+'/acc/admin/device-register',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','X-API-Key':API_KEY},
-    body:JSON.stringify({session_token:sessionToken, label})
-  }).then(r=>r.json()).then(d=>{
-    if(d.ok) localStorage.setItem(DEVICE_KEY, d.device_token);
-  }).catch(()=>{});
-}
 
 function authHeaders(){
   return {'X-API-Key':API_KEY,'X-Admin-Token':SESSION,'Content-Type':'application/json'};
@@ -438,7 +406,7 @@ function submitUpload(){
   msg.textContent = 'Uploading…'; msg.className='msg';
   fetch(API+'/acc/admin/courses/upload', {
     method:'POST',
-    headers: {['X-Admin-Token']: localStorage.getItem('acc_device_token')||''},
+    headers: {'X-API-Key':API_KEY,'X-Admin-Token':SESSION},
     body: fd
   }).then(r=>r.json()).then(d=>{
     if(d.ok){ msg.textContent='Uploaded: '+d.filename; msg.className='msg ok'; }

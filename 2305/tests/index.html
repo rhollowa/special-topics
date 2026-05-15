@@ -132,7 +132,7 @@
   .sub-msg.ok  { background: #e8f4ee; color: var(--ok); border: 1px solid #b2d8c0; }
   .sub-msg.err { background: #fdf0ee; color: #a02020; border: 1px solid #f0c0b8; }
 
-  /* === COLLAPSIBLE SECTIONS — bare +/− glyph in the left margin === */
+  /* === COLLAPSIBLE SECTIONS — hover to expand, click to pin === */
   details.collapse { margin: 0; padding: 0; position: relative; }
   details.collapse > summary {
     list-style: none;
@@ -144,22 +144,18 @@
     transition: border-color 0.15s;
   }
   details.collapse > summary::-webkit-details-marker { display: none; }
-  details.collapse > summary::before {
-    content: '+';
+  /* Pin indicator: bullet in left margin when pinned */
+  details.collapse.pinned > summary::before {
+    content: '●';
     position: absolute;
-    left: -2.75rem;
+    left: -1.75rem;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 38px;
-    font-weight: 300;
+    font-size: 11px;
     line-height: 1;
-    color: var(--muted);
-    transition: color 0.15s;
-    font-family: var(--sans, sans-serif);
+    color: var(--accent);
     user-select: none;
   }
-  details.collapse[open] > summary::before { content: '−'; }
-  details.collapse > summary:hover::before { color: var(--accent); }
   details.collapse[open] > summary { border-bottom-color: var(--rule); }
   details.collapse > summary .section-head { margin: 0; }
   details.collapse > summary .section-head .num { margin-bottom: 4px; }
@@ -167,7 +163,7 @@
   details.collapse > summary .section-head .sub { margin: 4px 0 0; }
   details.collapse > .collapse-body { padding-top: 1.5rem; }
   @media (max-width: 720px) {
-    details.collapse > summary::before { left: -1.5rem; font-size: 30px; }
+    details.collapse.pinned > summary::before { left: -1rem; font-size: 10px; }
   }
 
 </style>
@@ -205,7 +201,7 @@
 </section>
 
 <section class="page">
-  <details class="collapse" open>
+  <details class="collapse pinned" open>
     <summary>
       <div class="section-head">
         <div class="num">Now active</div>
@@ -402,6 +398,39 @@
   }
 </script>
 
+
+<script>
+(function() {
+  var groups = document.querySelectorAll('details.collapse');
+  var hasHover = window.matchMedia('(hover: hover)').matches;
+
+  groups.forEach(function(g) {
+    var summary = g.querySelector('summary');
+    if (!summary) return;
+
+    if (hasHover) {
+      g.addEventListener('mouseenter', function() {
+        g.open = true;
+      });
+      g.addEventListener('mouseleave', function() {
+        if (!g.classList.contains('pinned')) g.open = false;
+      });
+    }
+
+    summary.addEventListener('click', function(e) {
+      e.preventDefault();
+      var nowPinned = !g.classList.contains('pinned');
+      g.classList.toggle('pinned');
+      if (nowPinned) {
+        g.open = true;
+      } else {
+        if (!hasHover) g.open = false;
+        else if (!g.matches(':hover')) g.open = false;
+      }
+    });
+  });
+})();
+</script>
 </body>
 </html>
 

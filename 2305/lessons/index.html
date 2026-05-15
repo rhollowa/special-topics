@@ -15,9 +15,9 @@
     list-style: none;
     cursor: default;
     position: relative;
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
     align-items: center;
-    gap: 0;
     min-height: 80px;
     padding: 0.75rem 0;
     margin: 0;
@@ -25,15 +25,13 @@
   }
   .week-group > summary::-webkit-details-marker { display: none; }
 
-  /* Col 1: week label — fixed width */
   .summary-label {
-    flex: 0 0 200px;
-    max-width: 200px;
     display: flex;
     flex-direction: column;
     gap: 3px;
     align-self: center;
     padding-right: 1rem;
+    min-width: 0;
   }
   .summary-label .wk {
     font-family: var(--mono);
@@ -54,14 +52,12 @@
     text-overflow: ellipsis;
   }
 
-  /* Col 2: video links — pushed right with left margin */
   .summary-videos {
-    flex: 0 0 240px;
-    margin-left: 80px;
     display: flex;
     flex-direction: column;
     gap: 6px;
     align-self: center;
+    min-width: 0;
   }
   .summary-card {
     display: flex;
@@ -70,6 +66,7 @@
     cursor: pointer;
     text-decoration: none;
     color: inherit;
+    min-width: 0;
   }
   .summary-thumb {
     width: 26px;
@@ -101,17 +98,17 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-width: 0;
   }
   .summary-card:hover .summary-card-ttl { color: var(--accent); }
 
-  /* Col 3: file links — pushed to far right */
   .summary-files {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    margin-left: auto;
     align-self: center;
-    flex-shrink: 0;
+    min-width: 0;
+    padding-left: 1rem;
   }
   .summary-files a {
     font-family: var(--serif);
@@ -124,18 +121,22 @@
     transition: color 0.15s;
     padding: 0.1rem 0;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
   }
   .summary-files a::before {
     content: "↓";
     color: var(--accent);
     font-weight: bold;
-    margin-right: 0.1rem;
+    flex-shrink: 0;
   }
   .summary-files a:hover { color: var(--accent); }
   .summary-files .file-ext {
     font-family: var(--mono);
     font-size: 11px;
     color: var(--muted);
+    flex-shrink: 0;
   }
 
   .lectures.view-grid .collapse-wrap { display: none; }

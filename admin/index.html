@@ -180,73 +180,21 @@
 <div class="ac-modal" id="acModal" onclick="acOverlayClick(event)">
   <div class="ac-modal-inner" id="acModalInner">
     <h3>Add Course</h3>
-
-    <!-- Form fields -->
-    <div class="ac-field-row">
-      <div class="ac-field">
-        <label>Course Number *</label>
-        <input type="text" id="acCourseNum" placeholder="BUSI 2305">
-      </div>
-      <div class="ac-field">
-        <label>Section / Course ID</label>
-        <input type="text" id="acSectionId" placeholder="85423">
-      </div>
+    <div id="acLoading" style="font-size:.85rem;color:#888;padding:.5rem 0;">Fetching your ACC schedule…</div>
+    <div id="acDropWrap" style="display:none;">
+      <select id="acSectionPicker" style="width:100%;padding:.55rem .7rem;font-size:.92rem;border:1px solid var(--border,#ccc);border-radius:4px;margin-bottom:1rem;">
+        <option value="">&#8212; select a section &#8212;</option>
+      </select>
+      <div id="acSectionDetail" style="font-size:.82rem;color:#666;min-height:1.5em;margin-bottom:.5rem;"></div>
     </div>
-    <div class="ac-field-row full">
-      <div class="ac-field">
-        <label>Title</label>
-        <input type="text" id="acTitle" placeholder="Business Statistics">
-      </div>
-    </div>
-    <div class="ac-field-row">
-      <div class="ac-field">
-        <label>Semester</label>
-        <input type="text" id="acSemester" placeholder="Fall 2026">
-      </div>
-      <div class="ac-field">
-        <label>Term</label>
-        <input type="text" id="acTerm" placeholder="8-Week, Spring B, Full Semester">
-      </div>
-    </div>
-    <div class="ac-field-row">
-      <div class="ac-field">
-        <label>Delivery</label>
-        <select id="acDelivery">
-          <option value="">— select —</option>
-          <option value="Online">Online</option>
-          <option value="In Person">In Person</option>
-          <option value="Hybrid">Hybrid</option>
-        </select>
-      </div>
-      <div class="ac-field">
-        <label>Days / Times</label>
-        <input type="text" id="acDaysTimes" placeholder="MWF 10:00-10:50 AM">
-      </div>
-    </div>
-    <div class="ac-field-row">
-      <div class="ac-field">
-        <label>Start Date</label>
-        <input type="date" id="acStartDate">
-      </div>
-      <div class="ac-field">
-        <label>End Date</label>
-        <input type="date" id="acEndDate">
-      </div>
-    </div>
-    <div class="ac-field-row full">
-      <div class="ac-field">
-        <label>Location / Room</label>
-        <input type="text" id="acLocation" placeholder="NRG 1234 or Online">
-      </div>
-    </div>
+    <div id="acNoSections" style="display:none;font-size:.85rem;color:#888;padding:.5rem 0;">No upcoming sections found on ACC schedule.</div>
     <div class="ac-actions">
       <button class="ct-btn" onclick="closeAddCourse()">Cancel</button>
-      <button class="ct-btn" style="background:#1a7a4a;color:#fff;border-color:#1a7a4a;" onclick="saveNewCourse()">Save Course</button>
+      <button class="ct-btn" id="acSaveBtn" style="display:none;background:#1a7a4a;color:#fff;border-color:#1a7a4a;" onclick="saveSelectedSection()">Add Course</button>
     </div>
     <div class="msg" id="acMsg" style="margin-top:.5rem;"></div>
   </div>
 </div>
-
 </main>
 
 <script>
@@ -556,34 +504,90 @@ function confirmAddCol(){
 
 function openEdit(course){ alert('Edit course coming soon.'); }
 
-// ── Add Course modal (manual fallback) ───────────────────────────
-function openAddCourse(){
-  ['acCourseNum','acSectionId','acTitle','acSemester','acTerm','acDaysTimes','acLocation'].forEach(id=>{ document.getElementById(id).value=''; });
-  document.getElementById('acDelivery').value='';
-  document.getElementById('acStartDate').value='';
-  document.getElementById('acEndDate').value='';
-  document.getElementById('acMsg').textContent='';
-  document.getElementById('acModal').classList.add('open');
-}
-function closeAddCourse(){ document.getElementById('acModal').classList.remove('open'); }
-function acOverlayClick(e){ if(e.target===document.getElementById('acModal')) closeAddCourse(); }
+// ── Add Course modal ────────────────────────────────────
+let ACC_AVAILABLE = [];
 
-function saveNewCourse(){
-  const course_num = document.getElementById('acCourseNum').value.trim();
-  if(!course_num){ document.getElementById('acMsg').textContent='Course number is required.'; document.getElementById('acMsg').className='msg err'; return; }
-  const payload = {
-    course_num, section_id: document.getElementById('acSectionId').value.trim(),
-    title: document.getElementById('acTitle').value.trim(), semester: document.getElementById('acSemester').value.trim(),
-    term: document.getElementById('acTerm').value.trim(), delivery: document.getElementById('acDelivery').value,
-    days_times: document.getElementById('acDaysTimes').value.trim(),
-    start_date: document.getElementById('acStartDate').value, end_date: document.getElementById('acEndDate').value,
-    location: document.getElementById('acLocation').value.trim(),
-  };
-  fetch(API+'/acc/admin/courses/create',{ method:'POST', headers:authHeaders(), body:JSON.stringify(payload) })
-    .then(r=>r.json()).then(d=>{
-      if(d.ok){ closeAddCourse(); loadCourses(); }
-      else { document.getElementById('acMsg').textContent=d.error||'Error saving.'; document.getElementById('acMsg').className='msg err'; }
-    }).catch(()=>{ document.getElementById('acMsg').textContent='Network error.'; document.getElementById('acMsg').className='msg err'; });
+function openAddCourse(){
+  document.getElementById('acModal').classList.add('open');
+  document.getElementById('acLoading').style.display='block';
+  document.getElementById('acDropWrap').style.display='none';
+  document.getElementById('acNoSections').style.display='none';
+  document.getElementById('acSaveBtn').style.display='none';
+  document.getElementById('acMsg').textContent='';
+  document.getElementById('acSectionDetail').textContent='';
+
+  fetch(API+'/acc/admin/courses/list',{headers:authHeaders()})
+    .then(r=>r.json())
+    .then(d=>{
+      const existing = new Set((d.courses||[]).map(c=>c.section_id).filter(Boolean));
+      fetchAllTermSections(existing);
+    })
+    .catch(()=>fetchAllTermSections(new Set()));
+}
+
+function fetchAllTermSections(existingIds){
+  const terms = [
+    {term:'226S000', yr:'2026'},
+    {term:'226U000', yr:'2026'},
+    {term:'226F000', yr:'2026'},
+  ];
+  Promise.allSettled(
+    terms.map(t =>
+      fetch(`${API}/acc/admin/schedule/fetch?term=${t.term}&yr=${t.yr}`,{headers:authHeaders()})
+        .then(r=>r.json())
+    )
+  ).then(results => {
+    ACC_AVAILABLE = [];
+    results.forEach(r => {
+      if(r.status==='fulfilled' && r.value.sections){
+        r.value.sections.forEach(s => {
+          if(!existingIds.has(s.synonym)) ACC_AVAILABLE.push(s);
+        });
+      }
+    });
+    document.getElementById('acLoading').style.display='none';
+    if(!ACC_AVAILABLE.length){ document.getElementById('acNoSections').style.display='block'; return; }
+    const sel = document.getElementById('acSectionPicker');
+    sel.innerHTML = '<option value="">— select a section —</option>';
+    ACC_AVAILABLE.forEach((s, i) => {
+      const label = `${s.course_num} — ${s.semester}${s.term ? ' · '+s.term : ''} — #${s.synonym}${s.delivery ? ' · '+s.delivery : ''}`;
+      sel.innerHTML += `<option value="${i}">${esc(label)}</option>`;
+    });
+    document.getElementById('acDropWrap').style.display='block';
+    document.getElementById('acSaveBtn').style.display='inline-block';
+    sel.onchange = () => updateSectionDetail(sel.value);
+  });
+}
+
+function updateSectionDetail(idx){
+  const detail = document.getElementById('acSectionDetail');
+  if(idx===''){detail.textContent='';return;}
+  const s = ACC_AVAILABLE[parseInt(idx)];
+  if(!s){detail.textContent='';return;}
+  const parts=[s.title,s.days_times,s.start_date&&s.end_date?s.start_date+' – '+s.end_date:'',s.location].filter(Boolean);
+  detail.textContent=parts.join('  ·  ');
+}
+
+function closeAddCourse(){document.getElementById('acModal').classList.remove('open');}
+function acOverlayClick(e){if(e.target===document.getElementById('acModal'))closeAddCourse();}
+
+function saveSelectedSection(){
+  const sel=document.getElementById('acSectionPicker');
+  if(!sel.value) return;
+  const s=ACC_AVAILABLE[parseInt(sel.value)];
+  if(!s) return;
+  fetch(API+'/acc/admin/courses/create',{
+    method:'POST',headers:authHeaders(),
+    body:JSON.stringify({
+      course_num:s.course_num,section_id:s.synonym,title:s.title,
+      semester:s.semester,term:s.term,delivery:s.delivery,
+      days_times:s.days_times,start_date:s.start_date,end_date:s.end_date,
+      location:s.location,
+    })
+  }).then(r=>r.json()).then(d=>{
+    if(d.ok){closeAddCourse();loadCourses();}
+    else{document.getElementById('acMsg').textContent=d.error||'Error';document.getElementById('acMsg').className='msg err';}
+  }).catch(()=>{document.getElementById('acMsg').textContent='Network error.';document.getElementById('acMsg').className='msg err';});
 }
 
 function parseACCSchedule(html, url){

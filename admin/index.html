@@ -191,23 +191,32 @@ let GB_DATA = null;
 
 const DEVICE_KEY = 'acc_device_token';
 
-// ── Boot: try device token first ──────────────────────────────────
-(function tryDeviceLogin(){
-  const dt = localStorage.getItem(DEVICE_KEY);
-  if(!dt) return;
-  fetch(API+'/acc/admin/device-login',{
+// ── Boot: try IP auth first, then device token ───────────────────
+function showPanel(token){
+  SESSION = token;
+  document.getElementById('loginBox').style.display='none';
+  document.getElementById('adminPanel').style.display='block';
+  loadCourses();
+}
+
+(function boot(){
+  // 1. Try IP-based auto-auth (no password needed if IP is whitelisted)
+  fetch(API+'/acc/admin/ip-auth',{
     method:'POST',
-    headers:{'Content-Type':'application/json','X-API-Key':API_KEY},
-    body:JSON.stringify({device_token:dt})
+    headers:{'Content-Type':'application/json','X-API-Key':API_KEY}
   }).then(r=>r.json()).then(d=>{
-    if(d.ok){
-      SESSION=d.token;
-      document.getElementById('loginBox').style.display='none';
-      document.getElementById('adminPanel').style.display='block';
-      loadCourses();
-    } else {
-      localStorage.removeItem(DEVICE_KEY);
-    }
+    if(d.ok){ showPanel(d.token); return; }
+    // 2. Fall back to device token
+    const dt = localStorage.getItem(DEVICE_KEY);
+    if(!dt) return;
+    fetch(API+'/acc/admin/device-login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-API-Key':API_KEY},
+      body:JSON.stringify({device_token:dt})
+    }).then(r=>r.json()).then(d2=>{
+      if(d2.ok){ showPanel(d2.token); }
+      else { localStorage.removeItem(DEVICE_KEY); }
+    }).catch(()=>{});
   }).catch(()=>{});
 })();
 

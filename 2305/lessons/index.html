@@ -27,9 +27,16 @@
   /* Week label */
   .summary-label {
     flex: 0 0 130px;
+    max-width: 130px;
     display: flex;
     flex-direction: column;
     gap: 4px;
+    align-self: center;
+  }
+  .summary-label .wk-title {
+    font-size: 15px;
+    line-height: 1.25;
+    white-space: normal;
   }
   /* Video links — vertical stack, no box */
   .summary-videos {

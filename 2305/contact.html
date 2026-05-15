@@ -5,6 +5,73 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Contact · BUSI 2305 — Spring 2026</title>
 <link rel="stylesheet" href="../theme.css">
+<style>
+  .contact-section {
+    margin-bottom: 48px;
+  }
+  .contact-section h2 {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .contact-section .sub {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+  .contact-btn {
+    display: inline-block;
+    padding: 11px 22px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+  .contact-btn:hover { background: #5c2412; }
+
+  .msg-form { max-width: 480px; }
+  .msg-form label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: 5px;
+  }
+  .msg-form input,
+  .msg-form textarea {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid var(--rule);
+    border-radius: 7px;
+    font-size: 15px;
+    color: var(--ink);
+    background: #fff;
+    font-family: var(--sans);
+    margin-bottom: 16px;
+    box-sizing: border-box;
+    transition: border-color 0.15s;
+  }
+  .msg-form input:focus,
+  .msg-form textarea:focus { outline: none; border-color: var(--accent); }
+  .msg-form textarea { resize: vertical; min-height: 100px; }
+  .msg-status {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: 7px;
+    font-size: 14px;
+    display: none;
+  }
+  .msg-status.ok  { background: #e8f4ee; color: var(--ok); border: 1px solid #b2d8c0; }
+  .msg-status.err { background: #fdf0ee; color: #a02020; border: 1px solid #f0c0b8; }
+</style>
 </head>
 <body>
 
@@ -13,7 +80,7 @@
 <header class="topbar">
   <div class="topbar-inner">
     <a href="index.html" class="crest">Business Statistics <span class="num">BUSI · 2305</span></a>
-        <nav class="primary" aria-label="Primary">
+    <nav class="primary" aria-label="Primary">
       <a href="index.html">Home</a>
       <a href="lessons.html">Lessons</a>
       <a href="tests.html">Tests</a>
@@ -31,51 +98,39 @@
 
 <section class="hero">
   <div class="eyebrow">Reach out anytime</div>
-  <h1>Contact &amp; office hours</h1>
-  <p class="lede">Office hours are by appointment — online or in person. Email me to schedule a time that works for you. For the fastest response, start your subject line with our section number.</p>
+  <h1>Contact</h1>
+  <p class="lede">Two ways to reach me — send a message or call directly.</p>
 </section>
 
 <section class="page">
 
-  <div class="contact-grid">
+  <!-- SECTION 1: MESSAGE -->
+  <div class="contact-section">
+    <h2>Message</h2>
+    <p class="sub">I'll receive your message as a text and reply within 24 hours on weekdays.</p>
+    <div class="msg-form">
+      <label for="msgName">Name</label>
+      <input type="text" id="msgName" placeholder="First Last" autocomplete="name" />
 
-    <div class="contact-card">
-      <div class="lbl">Email (preferred)</div>
-      <div class="val">
-        russell.holloway@austincc.edu
-        <span class="note"><a href="mailto:russell.holloway@austincc.edu?subject=15680%20%E2%80%94%20"><button style="margin-top:8px;padding:9px 18px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--sans);">Email the Professor</button></a></span>
-      </div>
+      <label for="msgAccId">ACC Student ID</label>
+      <input type="text" id="msgAccId" placeholder="e.g. 1234567" autocomplete="off" />
 
-      <div class="lbl">Phone</div>
-      <div class="val">
-        (214) 683-7762
-        <span class="note"><a href="tel:+12146837762"><button style="margin-top:8px;padding:9px 18px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--sans);">Call the Professor</button></a></span>
-      </div>
+      <label for="msgEmail">Email</label>
+      <input type="email" id="msgEmail" placeholder="you@student.austincc.edu" autocomplete="email" />
 
-      <div class="lbl">Office Hours</div>
-      <div class="val">
-        By appointment
-        <span class="note">Email to schedule a time — online via Zoom or in person. I'll work with your schedule.</span>
-      </div>
+      <label for="msgBody">Message</label>
+      <textarea id="msgBody" placeholder="Your question or what you'd like to schedule..."></textarea>
+
+      <button class="contact-btn" onclick="sendMessage()">Send Message</button>
+      <div class="msg-status" id="msgStatus"></div>
     </div>
-
   </div>
 
-  <div class="prose" style="margin-top: 64px;">
-    <h3>When to reach out</h3>
-    <p>There's no wrong time to ask for help. A few common scenarios:</p>
-    <ul>
-      <li><strong>Stuck on a homework problem?</strong> Send me the question with what you've tried so far. Often the fix is quick.</li>
-      <li><strong>Conceptual question that didn't click from the lecture?</strong> Totally normal. Email me or book a meeting — working through it together is usually faster than re-watching.</li>
-      <li><strong>Something going on in your life affecting coursework?</strong> Tell me early. Extensions, accommodations, and alternate pathways exist but they're much easier to arrange before a deadline than after.</li>
-      <li><strong>Exam prep help?</strong> I'll make time before every exam for anyone who wants to walk through practice problems.</li>
-    </ul>
-
-    <h3>What I won't do over email</h3>
-    <p>Per <a href="policies.html#ferpa">FERPA</a>, I can't discuss grades over email, phone, or with anyone other than you. If you want to discuss your grade, we'll do it in a scheduled meeting where I can confirm your identity.</p>
-
-    <h3>Need help with something outside the course?</h3>
-    <p>If you're dealing with something bigger — mental health, financial, accommodations, technology — the <a href="resources.html">Resources</a> page has direct links to ACC's support services. Don't hesitate.</p>
+  <!-- SECTION 2: CALL -->
+  <div class="contact-section">
+    <h2>Call</h2>
+    <p class="sub">For a quick question or to schedule a meeting.</p>
+    <a href="tel:+12146837762" class="contact-btn">Call the Professor</a>
   </div>
 
 </section>
@@ -87,7 +142,7 @@
     <h5>BUSI 2305</h5>
     <p class="institutional">Business Statistics is a 3-credit course offered by the Business Studies department at Austin Community College. For official course information, visit <a href="https://www.austincc.edu">austincc.edu</a>.</p>
   </div>
-    <div class="col">
+  <div class="col">
     <h5>Course</h5>
     <a href="index.html">Home</a>
     <a href="lessons.html">Lessons</a>
@@ -113,7 +168,52 @@
   </div>
 </footer>
 
+<script>
+async function sendMessage() {
+  const name    = document.getElementById('msgName').value.trim();
+  const accId   = document.getElementById('msgAccId').value.trim();
+  const email   = document.getElementById('msgEmail').value.trim();
+  const body    = document.getElementById('msgBody').value.trim();
+  const status  = document.getElementById('msgStatus');
+
+  if (!name || !accId || !email || !body) {
+    status.textContent = 'Please fill in all fields.';
+    status.className = 'msg-status err';
+    status.style.display = 'block';
+    return;
+  }
+
+  const btn = document.querySelector('.contact-btn');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+
+  try {
+    const res = await fetch('https://tourcast-docker.onrender.com/acc/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, acc_id: accId, email, message: body, course: 'BUSI-2305' })
+    });
+    if (res.ok) {
+      status.textContent = 'Message sent. I\'ll reply within 24 hours on weekdays.';
+      status.className = 'msg-status ok';
+      document.getElementById('msgName').value = '';
+      document.getElementById('msgAccId').value = '';
+      document.getElementById('msgEmail').value = '';
+      document.getElementById('msgBody').value = '';
+      btn.textContent = 'Send Message';
+      btn.disabled = false;
+    } else {
+      throw new Error('non-200');
+    }
+  } catch(e) {
+    status.textContent = 'Something went wrong. Email me directly at russell.holloway@austincc.edu.';
+    status.className = 'msg-status err';
+    btn.textContent = 'Send Message';
+    btn.disabled = false;
+  }
+  status.style.display = 'block';
+}
+</script>
+
 </body>
 </html>
-
-

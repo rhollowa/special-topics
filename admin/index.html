@@ -9,44 +9,36 @@
 body{font-family:system-ui,-apple-system,sans-serif;}
 .wrap{max-width:560px;margin:80px auto;padding:2rem;}
 h1{font-size:1.4rem;margin:0 0 1.5rem;}
-.drop{border:2px dashed var(--border,#ccc);border-radius:8px;padding:3rem 2rem;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+.drop{border:2px dashed var(--border,#ccc);border-radius:8px;padding:3rem 2rem;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;display:block;}
 .drop:hover,.drop.drag{border-color:#1a7a4a;background:#f5fbf7;}
 .drop p{margin:.5rem 0;color:#666;}
 .drop .file{font-weight:600;color:#1a7a4a;}
 .drop input{display:none;}
 .actions{margin-top:1.5rem;display:flex;gap:.75rem;justify-content:center;}
-button{padding:.55rem 1.2rem;font-size:.95rem;cursor:pointer;border-radius:4px;border:1px solid #ccc;background:#fff;}
-button.primary{background:#1a7a4a;color:#fff;border-color:#1a7a4a;}
-button:disabled{opacity:.4;cursor:not-allowed;}
+button.ct-btn{padding:.55rem 1.2rem;font-size:.95rem;cursor:pointer;border-radius:4px;border:1px solid #ccc;background:#fff;}
+button.ct-btn.primary{background:#1a7a4a;color:#fff;border-color:#1a7a4a;}
+button.ct-btn:disabled{opacity:.4;cursor:not-allowed;}
 .msg{margin-top:1rem;font-size:.9rem;min-height:1.2em;text-align:center;}
 .msg.ok{color:#1a7a4a;} .msg.err{color:#c00;}
-.login{max-width:380px;margin:120px auto;padding:2rem;}
-.login input{width:100%;padding:.6rem .8rem;font-size:1rem;border:1px solid #ccc;border-radius:4px;margin-bottom:1rem;box-sizing:border-box;}
-.login button{width:100%;padding:.6rem;}
-.login .err{color:#c00;font-size:.9rem;margin-top:.5rem;display:none;text-align:center;}
-.hidden{display:none;}
+.up-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;}
+.up-modal.open{display:flex;}
+.up-modal-inner{background:#fff;padding:2rem;border-radius:8px;max-width:380px;width:90%;}
+.up-modal-inner h3{margin:0 0 1rem;font-size:1.1rem;}
 </style>
 </head>
 <body>
 
 <header class="topbar">
   <div class="topbar-inner">
-    <a href="/" class="crest">Russell Holloway <span class="num">ACC · Admin</span></a>
+    <a href="/admin/" onclick="location.replace('/admin/');return false;" class="crest">Russell Holloway <span class="num">ACC · Admin</span></a>
   </div>
 </header>
 
-<main>
+<main id="main-content">
 
-<!-- LOGIN -->
-<div class="login" id="loginBox">
-  <h1>Admin Access</h1>
-  <input type="password" id="pwInput" placeholder="Password" autocomplete="current-password">
-  <button class="primary" onclick="doLogin()">Sign In</button>
-  <div class="err" id="loginErr">Incorrect password.</div>
-</div>
+<!-- LOGIN MODAL injected dynamically by openLogin() only on auth fail -->
 
-<!-- UPLOAD -->
-<div class="wrap hidden" id="uploadBox">
+<div class="wrap" id="adminPanel" style="display:none;">
   <h1>Upload</h1>
   <label class="drop" id="dropZone">
     <p id="dropText">Click or drop a file</p>
@@ -54,8 +46,7 @@ button:disabled{opacity:.4;cursor:not-allowed;}
     <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.pdf,.docx,.doc">
   </label>
   <div class="actions">
-    <button class="primary" id="uploadBtn" onclick="doUpload()" disabled>Upload</button>
-    <button onclick="doLogout()">Log out</button>
+    <button class="ct-btn primary" id="uploadBtn" onclick="doUpload()" disabled>Upload</button>
   </div>
   <div class="msg" id="msg"></div>
 </div>
@@ -66,64 +57,83 @@ button:disabled{opacity:.4;cursor:not-allowed;}
 const API = 'https://tourcast-docker.onrender.com';
 const API_KEY = 'c7852252558744ea5bef3c86136edbf31b5e3e556fd447454a4d37b06151b4e7';
 const CREDS = { credentials: 'include' };
+let AUTHED = false;
 
-function authHeaders() {
-  const t = sessionStorage.getItem('adminToken');
-  const h = { 'X-API-Key': API_KEY };
-  if (t) h['X-Admin-Token'] = t;
-  return h;
+function authFetch(url, opts={}){
+  const isForm = opts.body instanceof FormData;
+  const headers = Object.assign(
+    {'X-API-Key':API_KEY},
+    isForm ? {} : {'Content-Type':'application/json'},
+    opts.headers||{}
+  );
+  return fetch(API+url, Object.assign({}, CREDS, opts, {headers}));
 }
 
-function authFetch(path, opts={}) {
-  const headers = Object.assign({}, authHeaders(), opts.headers||{});
-  return fetch(API + path, Object.assign({}, CREDS, opts, { headers }));
+// ── Boot ──────────────────────────────────────────────────────────
+function showPanel(){
+  AUTHED = true;
+  document.getElementById('adminPanel').style.display='block';
 }
 
-// ── Auth ────────────────────────────────────────────────────────────
-async function checkAuth() {
-  try {
-    const r = await authFetch('/acc/admin/login');
-    if (r.ok) showUpload();
-  } catch(e) {}
-}
-
-async function doLogin() {
-  const pw = document.getElementById('pwInput').value;
-  const err = document.getElementById('loginErr');
-  err.style.display = 'none';
-  try {
-    const r = await fetch(API + '/acc/admin/password-auth', {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json', 'X-API-Key': API_KEY },
-      body: JSON.stringify({ password: pw })
-    });
-    const d = await r.json();
-    if (d.ok) {
-      if (d.token) sessionStorage.setItem('adminToken', d.token);
-      showUpload();
-    } else {
-      err.style.display = 'block';
-    }
-  } catch(e) {
-    err.textContent = 'Login failed: ' + e.message;
-    err.style.display = 'block';
+function openLogin(){
+  if(!document.getElementById('loginModal')){
+    const html = '<div class="up-modal open" id="loginModal" onclick="loginOverlayClick(event)">'
+      + '<div class="up-modal-inner">'
+      + '<h3>Admin Sign In</h3>'
+      + '<input type="password" id="loginPw" placeholder="Password" autofocus '
+      + 'style="width:100%;padding:.55rem .7rem;border:1px solid #ccc;border-radius:4px;font-size:.95rem;margin-bottom:.75rem;box-sizing:border-box;" '
+      + 'onkeydown="if(event.key===\'Enter\')submitLogin()">'
+      + '<label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;margin-bottom:1rem;cursor:pointer;">'
+      + '<input type="checkbox" id="loginRemember"> Remember this IP</label>'
+      + '<div class="msg err" id="loginMsg" style="display:none;margin-bottom:.5rem;"></div>'
+      + '<div style="display:flex;gap:.5rem;justify-content:flex-end;">'
+      + '<button class="ct-btn" onclick="closeLogin()">Cancel</button>'
+      + '<button class="ct-btn primary" onclick="submitLogin()">Sign In</button>'
+      + '</div></div></div>';
+    document.getElementById('main-content').insertAdjacentHTML('afterbegin', html);
+    setTimeout(()=>document.getElementById('loginPw').focus(),50);
   }
 }
 
-function doLogout() {
-  sessionStorage.removeItem('adminToken');
-  location.reload();
+function closeLogin(){
+  const m = document.getElementById('loginModal');
+  if(m) m.remove();
 }
 
-function showUpload() {
-  document.getElementById('loginBox').classList.add('hidden');
-  document.getElementById('uploadBox').classList.remove('hidden');
+function loginOverlayClick(e){
+  if(e.target.id==='loginModal') closeLogin();
 }
+
+function submitLogin(){
+  const pw = document.getElementById('loginPw').value;
+  const remember = document.getElementById('loginRemember').checked;
+  const msg = document.getElementById('loginMsg');
+  msg.style.display='none';
+  authFetch('/acc/admin/password-auth',{
+    method:'POST',
+    body:JSON.stringify({password:pw, remember:remember})
+  }).then(r=>r.json()).then(d=>{
+    if(d.ok){ closeLogin(); showPanel(); }
+    else {
+      msg.textContent='Incorrect password.';
+      msg.style.display='block';
+    }
+  }).catch(()=>{
+    msg.textContent='Login failed.';
+    msg.style.display='block';
+  });
+}
+
+(function boot(){
+  authFetch('/acc/admin/ip-auth',{method:'POST',body:JSON.stringify({})})
+    .then(r=>r.json()).then(d=>{
+      if(d.ok) showPanel();
+      else openLogin();
+    }).catch(()=>openLogin());
+})();
 
 // ── Upload ──────────────────────────────────────────────────────────
 let selectedFile = null;
-
 const zone   = document.getElementById('dropZone');
 const input  = document.getElementById('fileInput');
 const dropTx = document.getElementById('dropText');
@@ -150,7 +160,7 @@ function setFile(f) {
   btn.disabled = false;
 }
 
-async function doUpload() {
+function doUpload(){
   if (!selectedFile) return;
   const msg = document.getElementById('msg');
   msg.textContent = 'Uploading…';
@@ -160,34 +170,28 @@ async function doUpload() {
   const fd = new FormData();
   fd.append('file', selectedFile);
 
-  try {
-    const r = await authFetch('/acc/admin/upload', { method: 'POST', body: fd });
-    const d = await r.json();
-    if (d.ok) {
-      msg.textContent = 'Uploaded: ' + d.filename;
-      msg.className = 'msg ok';
-      selectedFile = null;
-      input.value = '';
-      fname.textContent = '';
-      dropTx.textContent = 'Click or drop a file';
-    } else {
-      msg.textContent = d.error || 'Upload failed.';
+  authFetch('/acc/admin/upload', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(d => {
+      if (d.ok) {
+        msg.textContent = 'Uploaded: ' + d.filename;
+        msg.className = 'msg ok';
+        selectedFile = null;
+        input.value = '';
+        fname.textContent = '';
+        dropTx.textContent = 'Click or drop a file';
+      } else {
+        msg.textContent = d.error || 'Upload failed.';
+        msg.className = 'msg err';
+        btn.disabled = false;
+      }
+    })
+    .catch(e => {
+      msg.textContent = 'Upload failed: ' + e.message;
       msg.className = 'msg err';
       btn.disabled = false;
-    }
-  } catch(e) {
-    msg.textContent = 'Upload failed: ' + e.message;
-    msg.className = 'msg err';
-    btn.disabled = false;
-  }
+    });
 }
-
-// Enter key submits login
-document.getElementById('pwInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') doLogin();
-});
-
-checkAuth();
 </script>
 
 </body>

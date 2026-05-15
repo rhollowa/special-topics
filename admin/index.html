@@ -1,475 +1,194 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin — ACC Course Sites</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin — Upload</title>
 <link rel="stylesheet" href="../theme.css">
 <style>
-.admin-login{max-width:400px;margin:80px auto;padding:2rem;}
-.admin-login h1{font-size:1.25rem;margin-bottom:1.5rem;}
-.admin-panel{display:none;max-width:960px;margin:40px auto;padding:2rem;}
-
-/* Course table */
-.course-table{margin-bottom:2rem;border:1px solid var(--border,#ddd);border-radius:6px;overflow:hidden;}
-.ct-head{display:grid;grid-template-columns:2fr 1fr 1fr;background:var(--surface,#f5f5f5);font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted,#888);padding:.5rem 1rem;gap:1rem;}
-.ct-row{display:grid;grid-template-columns:2fr 1fr 1fr;align-items:center;padding:.75rem 1rem;gap:1rem;border-top:1px solid var(--border,#eee);}
-.ct-name{font-size:.95rem;font-weight:700;color:var(--ink,#111);}
-.ct-sub{font-size:.78rem;color:var(--text-muted,#888);margin-top:.1rem;}
-.ct-btn{display:inline-block;padding:.3rem .9rem;font-size:.82rem;border:1px solid var(--border,#ccc);border-radius:4px;color:var(--ink,#111);text-decoration:none;background:#fff;cursor:pointer;}
-.ct-btn:hover{border-color:#1a7a4a;color:#1a7a4a;}
-.ct-btn.danger:hover{border-color:#c00;color:#c00;}
-.up-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1100;align-items:center;justify-content:center;}
-.up-modal.open{display:flex;}
-.up-modal-inner{background:#fff;border-radius:8px;padding:1.5rem;width:100%;max-width:420px;box-shadow:0 4px 24px rgba(0,0,0,.15);}
-.up-modal-inner h3{margin:0 0 .75rem;font-size:1rem;font-weight:700;}
-.up-drop{border:2px dashed #ccc;border-radius:8px;padding:1.5rem 1rem;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;margin:.75rem 0 1rem;position:relative;}
-.up-drop.drag-over{border-color:#1a7a4a;background:#f0faf4;}
-.up-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
-.up-drop-hint{font-size:.85rem;color:#888;}.up-drop-hint strong{color:#1a7a4a;}
-.up-file-name{font-size:.82rem;color:#1a7a4a;font-weight:600;margin-top:6px;display:none;}
-.ct-add-row{padding:.75rem 1rem;border-top:1px solid var(--border,#eee);}
-
-/* Modal overlay */
-.gb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;}
-.gb-overlay.open{display:flex;}
-.gb-modal{background:#fff;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.18);width:92vw;max-width:900px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;}
-.gb-modal-head{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.25rem;border-bottom:1px solid var(--border,#eee);flex-shrink:0;}
-.gb-modal-head h2{font-size:1rem;font-weight:700;margin:0;}
-.gb-modal-actions{display:flex;gap:.5rem;align-items:center;}
-.gb-modal-body{overflow:auto;flex:1;padding:1.25rem;}
-.gb-close{background:none;border:none;font-size:1.3rem;cursor:pointer;color:#888;line-height:1;padding:.1rem .4rem;}
-.gb-close:hover{color:#111;}
-
-/* Upload zone */
-.gb-upload-zone{border:2px dashed var(--border,#ccc);border-radius:8px;padding:2.5rem;text-align:center;cursor:pointer;transition:border-color .15s;}
-.gb-upload-zone:hover{border-color:#1a7a4a;}
-.gb-upload-zone p{margin:.5rem 0 0;font-size:.9rem;color:#888;}
-.gb-upload-zone input{display:none;}
-
-/* Editable grade grid */
-.gb-grid-wrap{overflow-x:auto;}
-.gb-grid{border-collapse:collapse;width:100%;font-size:.85rem;}
-.gb-grid th{background:var(--surface,#f5f5f5);padding:.4rem .6rem;border:1px solid var(--border,#ddd);white-space:nowrap;font-weight:600;position:sticky;top:0;}
-.gb-grid th.col-asg{cursor:pointer;position:relative;}
-.gb-grid th.col-asg:hover{background:#e8f5ee;}
-.gb-grid td{padding:0;border:1px solid var(--border,#eee);}
-.gb-grid td.fixed{padding:.35rem .6rem;color:#555;white-space:nowrap;}
-.gb-grid td input{width:100%;border:none;padding:.35rem .5rem;font-size:.85rem;background:transparent;text-align:center;}
-.gb-grid td input:focus{background:#fffde7;outline:none;}
-.gb-grid tr:hover td{background:#fafafa;}
-.gb-add-col{background:none;border:1px dashed var(--border,#ccc);border-radius:4px;padding:.25rem .7rem;font-size:.8rem;cursor:pointer;color:#888;margin-top:.75rem;}
-.gb-add-col:hover{border-color:#1a7a4a;color:#1a7a4a;}
-.gb-toolbar{display:flex;gap:.6rem;align-items:center;margin-bottom:.85rem;flex-wrap:wrap;}
-.msg{font-size:.85rem;margin-top:.4rem;}
-.msg.ok{color:green;} .msg.err{color:#c00;}
-
-/* Add col modal */
-.col-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1100;align-items:center;justify-content:center;}
-.col-modal.open{display:flex;}
-.col-modal-inner{background:#fff;border-radius:8px;padding:1.5rem;width:340px;box-shadow:0 4px 24px rgba(0,0,0,.15);}
-.col-modal-inner h3{margin:0 0 1rem;font-size:1rem;}
-.col-modal-inner label{display:block;font-size:.82rem;font-weight:600;margin-bottom:.25rem;}
-.col-modal-inner input{width:100%;padding:.5rem .65rem;border:1px solid var(--border,#ccc);border-radius:4px;font-size:.9rem;margin-bottom:.75rem;box-sizing:border-box;}
-.col-modal-row{display:flex;gap:.5rem;justify-content:flex-end;}
-
-/* Add course modal */
+body{font-family:system-ui,-apple-system,sans-serif;}
+.wrap{max-width:560px;margin:80px auto;padding:2rem;}
+h1{font-size:1.4rem;margin:0 0 1.5rem;}
+.drop{border:2px dashed var(--border,#ccc);border-radius:8px;padding:3rem 2rem;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+.drop:hover,.drop.drag{border-color:#1a7a4a;background:#f5fbf7;}
+.drop p{margin:.5rem 0;color:#666;}
+.drop .file{font-weight:600;color:#1a7a4a;}
+.drop input{display:none;}
+.actions{margin-top:1.5rem;display:flex;gap:.75rem;justify-content:center;}
+button{padding:.55rem 1.2rem;font-size:.95rem;cursor:pointer;border-radius:4px;border:1px solid #ccc;background:#fff;}
+button.primary{background:#1a7a4a;color:#fff;border-color:#1a7a4a;}
+button:disabled{opacity:.4;cursor:not-allowed;}
+.msg{margin-top:1rem;font-size:.9rem;min-height:1.2em;text-align:center;}
+.msg.ok{color:#1a7a4a;} .msg.err{color:#c00;}
+.login{max-width:380px;margin:120px auto;padding:2rem;}
+.login input{width:100%;padding:.6rem .8rem;font-size:1rem;border:1px solid #ccc;border-radius:4px;margin-bottom:1rem;box-sizing:border-box;}
+.login button{width:100%;padding:.6rem;}
+.login .err{color:#c00;font-size:.9rem;margin-top:.5rem;display:none;text-align:center;}
+.hidden{display:none;}
 </style>
 </head>
 <body>
 
 <header class="topbar">
   <div class="topbar-inner">
-    <a href="/admin/" onclick="location.replace('/admin/');return false;" class="crest">Russell Holloway <span class="num">ACC · Admin</span></a>
-    <nav class="primary" aria-label="Primary">
-      <a href="/">Courses</a>
-      <a href="/2305/" onclick="location.replace('/2305/');return false;">BUSI 2305</a>
-      <a href="/special-topics/" onclick="location.replace('/special-topics/');return false;">Special Topics</a>
-    </nav>
+    <a href="/" class="crest">Russell Holloway <span class="num">ACC · Admin</span></a>
   </div>
 </header>
 
-<main id="main-content">
+<main>
 
-<!-- LOGIN MODAL injected dynamically by openLogin() only on auth fail -->
-
-<!-- ADMIN PANEL -->
-<div class="admin-panel" id="adminPanel" style="display:none;">
-
-  <!-- COURSE TABLE -->
-  <div class="course-table" id="courseTable">
-    <div class="ct-head">
-      <div>Course <button class="ct-btn" onclick="openUpload(null,null)" style="margin-left:.5rem;padding:.2rem .55rem;font-size:1rem;line-height:1;color:#c0392b;border-color:#c0392b;" title="Add course / upload gradebook">+</button></div>
-      <div>Gradebook</div>
-      <div>Edit / Update</div>
-    </div>
-    <!-- Rows injected by loadCourses() -->
-    <div id="courseRows"></div>
-    <div class="ct-add-row">
-    </div>
-  </div>
-
-
-<!-- UPLOAD MODAL -->
-<div class="up-modal" id="upModal" onclick="upOverlayClick(event)">
-  <div class="up-modal-inner">
-    <h3 id="upTitle">Upload File</h3>
-    <div class="up-drop" id="upDrop">
-      <input type="file" id="upFileInput" accept=".xlsx,.xls,.csv">
-      <div class="up-drop-hint">📂 Drag &amp; drop or <strong>click to browse</strong></div>
-      <div class="up-file-name" id="upFileName"></div>
-    </div>
-    <div class="msg" id="upMsg" style="margin-bottom:.5rem;"></div>
-    <div style="display:flex;gap:.5rem;justify-content:flex-end;">
-      <button class="ct-btn" onclick="closeUpload()">Cancel</button>
-      <button class="ct-btn" style="background:#1a7a4a;color:#fff;border-color:#1a7a4a;" onclick="submitUpload()">Upload</button>
-    </div>
-  </div>
+<!-- LOGIN -->
+<div class="login" id="loginBox">
+  <h1>Admin Access</h1>
+  <input type="password" id="pwInput" placeholder="Password" autocomplete="current-password">
+  <button class="primary" onclick="doLogin()">Sign In</button>
+  <div class="err" id="loginErr">Incorrect password.</div>
 </div>
 
-</div><!-- /admin-panel -->
-
-<!-- GRADEBOOK MODAL -->
-<div class="gb-overlay" id="gbOverlay" onclick="overlayClick(event)">
-  <div class="gb-modal">
-    <div class="gb-modal-head">
-      <h2 id="gbModalTitle">Gradebook</h2>
-      <div class="gb-modal-actions">
-        <button class="ct-btn" onclick="triggerUpload()">Upload BB Export</button>
-        <button class="ct-btn" onclick="exportGradebook()">Export to BB</button>
-        <button class="gb-close" onclick="closeGradebook()">×</button>
-      </div>
-    </div>
-    <div class="gb-modal-body">
-      <div class="msg" id="gbMsg"></div>
-      <!-- Upload zone (shown when empty) -->
-      <div class="gb-upload-zone" id="gbUploadZone" onclick="document.getElementById('gbFileInput').click()">
-        <svg width="32" height="32" fill="none" stroke="#aaa" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 16V8m0 0-3 3m3-3 3 3"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-        <p>Click to upload a Blackboard gradebook export (.csv or .xlsx)</p>
-        <input type="file" id="gbFileInput" accept=".csv,.xlsx,.xls" onchange="handleUpload(this.files[0])">
-      </div>
-      <!-- Grid (shown when students exist) -->
-      <div id="gbGridWrap" style="display:none;">
-        <div class="gb-toolbar">
-          <button class="gb-add-col" onclick="openAddCol()">+ Add assignment / quiz / participation</button>
-        </div>
-        <div class="gb-grid-wrap">
-          <table class="gb-grid" id="gbGridTable"></table>
-        </div>
-      </div>
-    </div>
+<!-- UPLOAD -->
+<div class="wrap hidden" id="uploadBox">
+  <h1>Upload</h1>
+  <label class="drop" id="dropZone">
+    <p id="dropText">Click or drop a file</p>
+    <p class="file" id="fileName"></p>
+    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.pdf,.docx,.doc">
+  </label>
+  <div class="actions">
+    <button class="primary" id="uploadBtn" onclick="doUpload()" disabled>Upload</button>
+    <button onclick="doLogout()">Log out</button>
   </div>
+  <div class="msg" id="msg"></div>
 </div>
 
-<!-- ADD COLUMN MODAL -->
-<div class="col-modal" id="colModal">
-  <div class="col-modal-inner">
-    <h3>Add Grade Column</h3>
-    <label>Column name</label>
-    <input type="text" id="colName" placeholder="e.g. Quiz 3, Participation, Exam 1">
-    <label>Max points</label>
-    <input type="number" id="colPts" value="100" min="0">
-    <div class="col-modal-row">
-      <button class="ct-btn" onclick="closeAddCol()">Cancel</button>
-      <button class="ct-btn" style="background:#1a7a4a;color:#fff;border-color:#1a7a4a;" onclick="confirmAddCol()">Add</button>
-    </div>
-  </div>
-</div>
-
-<!-- ADD COURSE MODAL -->
 </main>
 
 <script>
 const API = 'https://tourcast-docker.onrender.com';
 const API_KEY = 'c7852252558744ea5bef3c86136edbf31b5e3e556fd447454a4d37b06151b4e7';
 const CREDS = { credentials: 'include' };
-let AUTHED = false;
-let COURSE = null;
-let GB_DATA = null;
 
-function authFetch(url, opts={}){
-  const isForm = opts.body instanceof FormData;
-  const headers = Object.assign(
-    {'X-API-Key':API_KEY},
-    isForm ? {} : {'Content-Type':'application/json'},
-    opts.headers||{}
-  );
-  return fetch(API+url, Object.assign({}, CREDS, opts, {headers}));
+function authHeaders() {
+  const t = sessionStorage.getItem('adminToken');
+  const h = { 'X-API-Key': API_KEY };
+  if (t) h['X-Admin-Token'] = t;
+  return h;
 }
 
-// ── Boot ──────────────────────────────────────────────────────────
-function showPanel(){
-  AUTHED = true;
-  document.getElementById('adminPanel').style.display='block';
-  loadCourses();
+function authFetch(path, opts={}) {
+  const headers = Object.assign({}, authHeaders(), opts.headers||{});
+  return fetch(API + path, Object.assign({}, CREDS, opts, { headers }));
 }
 
-function openLogin(){
-  if(document.getElementById('loginModal')){
-    const html = '<div class="up-modal open" id="loginModal" onclick="loginOverlayClick(event)">'
-      + '<div class="up-modal-inner">'
-      + '<h3>Admin Sign In</h3>'
-      + '<input type="password" id="loginPw" placeholder="Password" autofocus '
-      + 'style="width:100%;padding:.55rem .7rem;border:1px solid #ccc;border-radius:4px;font-size:.95rem;margin-bottom:.75rem;box-sizing:border-box;" '
-      + 'onkeydown="if(event.key===\'Enter\')submitLogin()">'
-      + '<label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;margin-bottom:1rem;cursor:pointer;">'
-      + '<input type="checkbox" id="loginRemember"> Remember this IP</label>'
-      + '<div class="msg err" id="loginMsg" style="display:none;margin-bottom:.5rem;"></div>'
-      + '<div style="display:flex;gap:.5rem;justify-content:flex-end;">'
-      + '<button class="ct-btn" onclick="closeLogin()">Cancel</button>'
-      + '<button class="ct-btn" style="background:#1a7a4a;color:#fff;border-color:#1a7a4a;" onclick="submitLogin()">Sign In</button>'
-      + '</div></div></div>';
-    document.getElementById('main-content').insertAdjacentHTML('afterbegin', html);
-    setTimeout(()=>document.getElementById('loginPw').focus(),50);
+// ── Auth ────────────────────────────────────────────────────────────
+async function checkAuth() {
+  try {
+    const r = await authFetch('/acc/admin/login');
+    if (r.ok) showUpload();
+  } catch(e) {}
+}
+
+async function doLogin() {
+  const pw = document.getElementById('pwInput').value;
+  const err = document.getElementById('loginErr');
+  err.style.display = 'none';
+  try {
+    const r = await fetch(API + '/acc/admin/password-auth', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': API_KEY },
+      body: JSON.stringify({ password: pw })
+    });
+    const d = await r.json();
+    if (d.ok) {
+      if (d.token) sessionStorage.setItem('adminToken', d.token);
+      showUpload();
+    } else {
+      err.style.display = 'block';
+    }
+  } catch(e) {
+    err.textContent = 'Login failed: ' + e.message;
+    err.style.display = 'block';
   }
 }
 
-function closeLogin(){
-  const m = document.getElementById('loginModal');
-  if(m) m.remove();
+function doLogout() {
+  sessionStorage.removeItem('adminToken');
+  location.reload();
 }
 
-function loginOverlayClick(e){
-  if(e.target.id==='loginModal') closeLogin();
+function showUpload() {
+  document.getElementById('loginBox').classList.add('hidden');
+  document.getElementById('uploadBox').classList.remove('hidden');
 }
 
-function submitLogin(){
-  const pw = document.getElementById('loginPw').value;
-  const remember = document.getElementById('loginRemember').checked;
-  const msg = document.getElementById('loginMsg');
-  msg.style.display='none';
-  authFetch('/acc/admin/password-auth',{
-    method:'POST',
-    body:JSON.stringify({password:pw, remember:remember})
-  }).then(r=>r.json()).then(d=>{
-    if(d.ok) showPanel();
-    else closeLogin();
-  }).catch(()=>closeLogin());
+// ── Upload ──────────────────────────────────────────────────────────
+let selectedFile = null;
+
+const zone   = document.getElementById('dropZone');
+const input  = document.getElementById('fileInput');
+const dropTx = document.getElementById('dropText');
+const fname  = document.getElementById('fileName');
+const btn    = document.getElementById('uploadBtn');
+
+input.addEventListener('change', e => setFile(e.target.files[0]));
+
+['dragenter','dragover'].forEach(ev => zone.addEventListener(ev, e => {
+  e.preventDefault(); zone.classList.add('drag');
+}));
+['dragleave','drop'].forEach(ev => zone.addEventListener(ev, e => {
+  e.preventDefault(); zone.classList.remove('drag');
+}));
+zone.addEventListener('drop', e => {
+  if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+});
+
+function setFile(f) {
+  if (!f) return;
+  selectedFile = f;
+  fname.textContent = f.name;
+  dropTx.textContent = 'Click or drop to change';
+  btn.disabled = false;
 }
 
-(function boot(){
-  authFetch('/acc/admin/ip-auth',{method:'POST',body:JSON.stringify({})})
-    .then(r=>r.json()).then(d=>{
-      if(d.ok) showPanel();
-      else openLogin();
-    }).catch(()=>openLogin());
-})();
+async function doUpload() {
+  if (!selectedFile) return;
+  const msg = document.getElementById('msg');
+  msg.textContent = 'Uploading…';
+  msg.className = 'msg';
+  btn.disabled = true;
 
-// ── Course list ───────────────────────────────────────────────────
-
-function renderCourseTable(dbCourses){
-  const wrap = document.getElementById('courseRows');
-  const rows = [];
-
-  dbCourses.forEach(c => {
-    const key = c.course_num.replace(/\s+/g,'-');
-    const sub = [c.semester, c.term, c.delivery].filter(Boolean).join(' · ');
-    rows.push(`<div class="ct-row">
-      <div>
-        <div class="ct-name">${esc(c.course_num)}${c.section_id?' <span style="font-weight:400;font-size:.78rem;color:#888;">#'+esc(c.section_id)+'</span>':''}</div>
-        <div class="ct-sub">${esc(c.title||'')}${sub?' · '+esc(sub):''}</div>
-      </div>
-      <div><button class="ct-btn" onclick="openGradebook('${esc(key)}')">Gradebook</button></div>
-      <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;">
-        <button class="ct-btn" onclick="openEdit('${esc(key)}')">Edit Course</button>
-        <button class="ct-btn danger" onclick="deleteCourse(${c.id})">Remove</button>
-        <button class="ct-btn" title="Upload file" onclick="openUpload('${esc(key)}',${c.id})" style="padding:.3rem .6rem;font-size:1rem;line-height:1;">+</button>
-      </div>
-    </div>`);
-  });
-
-  wrap.innerHTML = rows.join('') || '<div style="padding:.75rem 1rem;font-size:.85rem;color:#888;">No courses found.</div>';
-}
-
-function deleteCourse(id){
-  if(!confirm('Remove this course from the admin panel?')) return;
-  authFetch('/acc/admin/courses/'+id+'/delete',{method:'POST'})
-    .then(r=>r.json()).then(d=>{ if(d.ok) loadCourses(); });
-}
-
-// ── Gradebook modal ───────────────────────────────────────────────
-function openGradebook(course){
-  COURSE = course;
-  document.getElementById('gbModalTitle').textContent = 'Gradebook — '+course;
-  document.getElementById('gbMsg').textContent='';
-  document.getElementById('gbOverlay').classList.add('open');
-  fetchGradebook();
-}
-
-function closeGradebook(){
-  document.getElementById('gbOverlay').classList.remove('open');
-}
-
-function overlayClick(e){
-  if(e.target===document.getElementById('gbOverlay')) closeGradebook();
-}
-
-function fetchGradebook(){
-  authFetch('/acc/admin/gradebook/json?course='+encodeURIComponent(COURSE),{})
-    .then(r=>r.json())
-    .then(d=>{
-      GB_DATA = d;
-      if(!d.rows||!d.rows.length){
-        document.getElementById('gbUploadZone').style.display='block';
-        document.getElementById('gbGridWrap').style.display='none';
-      } else {
-        document.getElementById('gbUploadZone').style.display='none';
-        document.getElementById('gbGridWrap').style.display='block';
-        renderGrid(d);
-      }
-    }).catch(()=>{});
-}
-
-function renderGrid(d){
-  const cols = d.grade_cols || [];
-  const asgMap = {};
-  (d.assignments||[]).forEach(a=>{ asgMap[a.assignment_id]=a; });
-  let thead = '<thead><tr><th>Last Name</th><th>First Name</th><th>Student ID</th>';
-  cols.forEach(col=>{
-    const pts = asgMap[col] ? ' <span style="font-weight:400;opacity:.6;">/'+asgMap[col].max_points+'</span>' : '';
-    thead += `<th class="col-asg" title="${col}">${esc(col)}${pts}</th>`;
-  });
-  thead += '</tr></thead>';
-  let tbody = '<tbody>';
-  d.rows.forEach(r=>{
-    tbody += `<tr>
-      <td class="fixed">${esc(r.last_name)}</td>
-      <td class="fixed">${esc(r.first_name)}</td>
-      <td class="fixed">${esc(r.acc_id)}</td>`;
-    cols.forEach(col=>{
-      const val = (r.grades&&r.grades[col]!=null) ? r.grades[col] : '';
-      tbody += `<td><input type="number" value="${esc(String(val))}" min="0"
-        onblur="saveGrade('${esc(r.acc_id)}','${esc(col)}',this.value)"
-        onkeydown="if(event.key==='Enter')this.blur()"></td>`;
-    });
-    tbody += '</tr>';
-  });
-  tbody += '</tbody>';
-  document.getElementById('gbGridTable').innerHTML = thead + tbody;
-}
-
-function saveGrade(acc_id, assignment_id, score){
-  authFetch('/acc/admin/gradebook/grade',{
-    method:'POST',
-    body:JSON.stringify({course:COURSE, acc_id, assignment_id, score: score===''?null:parseFloat(score)})
-  }).catch(()=>{});
-}
-
-// ── Upload ────────────────────────────────────────────────────────
-function triggerUpload(){ document.getElementById('gbFileInput').click(); }
-
-function handleUpload(file){
-  if(!file) return;
-  const msg=document.getElementById('gbMsg');
-  msg.textContent='Uploading…';msg.className='msg';
-  const fd=new FormData();fd.append('file',file);fd.append('course',COURSE);
-  authFetch('/acc/admin/gradebook/upload',{
-    method:'POST', body:fd
-  }).then(r=>r.json()).then(d=>{
-    if(d.ok){ msg.textContent=`Imported — ${d.inserted} new, ${d.updated} updated.`; msg.className='msg ok'; fetchGradebook(); }
-    else { msg.textContent=d.error||'Error'; msg.className='msg err'; }
-  }).catch(()=>{msg.textContent='Upload failed';msg.className='msg err';});
-}
-
-function exportGradebook(){
-  if(!COURSE) return;
-  window.open(API+'/acc/admin/gradebook/export?course='+encodeURIComponent(COURSE));
-}
-
-// ── Add column ────────────────────────────────────────────────────
-function openAddCol(){
-  document.getElementById('colName').value='';
-  document.getElementById('colPts').value='100';
-  document.getElementById('colModal').classList.add('open');
-  setTimeout(()=>document.getElementById('colName').focus(),50);
-}
-function closeAddCol(){ document.getElementById('colModal').classList.remove('open'); }
-
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeGradebook();closeAddCol();} });
-
-function confirmAddCol(){
-  const name = document.getElementById('colName').value.trim();
-  const pts  = parseFloat(document.getElementById('colPts').value)||100;
-  if(!name) return;
-  closeAddCol();
-  const id = name.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
   const fd = new FormData();
-  fd.append('course',COURSE); fd.append('assignment_id',id); fd.append('name',name); fd.append('max_points',pts);
-  authFetch('/acc/admin/assignments/create',{
-    method:'POST', body:fd
-  }).then(()=>{
-    if(GB_DATA){
-      if(!GB_DATA.grade_cols) GB_DATA.grade_cols=[];
-      if(!GB_DATA.grade_cols.includes(id)){ GB_DATA.grade_cols.push(id); if(!GB_DATA.assignments) GB_DATA.assignments=[]; GB_DATA.assignments.push({assignment_id:id,name,max_points:pts}); }
-      document.getElementById('gbUploadZone').style.display='none';
-      document.getElementById('gbGridWrap').style.display='block';
-      renderGrid(GB_DATA);
+  fd.append('file', selectedFile);
+
+  try {
+    const r = await authFetch('/acc/admin/upload', { method: 'POST', body: fd });
+    const d = await r.json();
+    if (d.ok) {
+      msg.textContent = 'Uploaded: ' + d.filename;
+      msg.className = 'msg ok';
+      selectedFile = null;
+      input.value = '';
+      fname.textContent = '';
+      dropTx.textContent = 'Click or drop a file';
+    } else {
+      msg.textContent = d.error || 'Upload failed.';
+      msg.className = 'msg err';
+      btn.disabled = false;
     }
-  }).catch(()=>{});
+  } catch(e) {
+    msg.textContent = 'Upload failed: ' + e.message;
+    msg.className = 'msg err';
+    btn.disabled = false;
+  }
 }
 
-function openEdit(course){ alert('Edit course coming soon.'); }
+// Enter key submits login
+document.getElementById('pwInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
 
-
-// ── Upload modal ──────────────────────────────────────────────────
-let UP_COURSE_KEY = null, UP_COURSE_ID = null;
-
-function openUpload(key, id){
-  UP_COURSE_KEY = key;
-  UP_COURSE_ID  = id;
-  document.getElementById('upTitle').textContent = key ? 'Upload File — ' + key.replace(/-/g,' ') : 'Add Course — Upload BB Gradebook';
-  document.getElementById('upMsg').textContent = '';
-  document.getElementById('upFileInput').value = '';
-  const fn = document.getElementById('upFileName'); fn.textContent=''; fn.style.display='none';
-  document.getElementById('upModal').classList.add('open');
-}
-function closeUpload(){ document.getElementById('upModal').classList.remove('open'); }
-function upOverlayClick(e){ if(e.target===document.getElementById('upModal')) closeUpload(); }
-(function(){
-  var drop = document.getElementById('upDrop');
-  drop.addEventListener('dragover',  function(e){ e.preventDefault(); this.classList.add('drag-over'); });
-  drop.addEventListener('dragleave', function(){ this.classList.remove('drag-over'); });
-  drop.addEventListener('drop', function(e){
-    e.preventDefault(); this.classList.remove('drag-over');
-    var f = e.dataTransfer.files[0];
-    if(f){ var dt=new DataTransfer(); dt.items.add(f); document.getElementById('upFileInput').files=dt.files;
-      var fn=document.getElementById('upFileName'); fn.textContent=f.name; fn.style.display='block'; }
-  });
-  document.getElementById('upFileInput').addEventListener('change', function(){
-    var fn=document.getElementById('upFileName');
-    if(this.files[0]){ fn.textContent=this.files[0].name; fn.style.display='block'; }
-    else { fn.textContent=''; fn.style.display='none'; }
-  });
-})();
-
-function submitUpload(){
-  const file = document.getElementById('upFileInput').files[0];
-  const msg  = document.getElementById('upMsg');
-  if(!file){ msg.textContent='Please select a file.'; msg.className='msg err'; return; }
-  const fd = new FormData();
-  fd.append('file', file);
-  fd.append('course_id', UP_COURSE_ID);
-  fd.append('course_key', UP_COURSE_KEY);
-  msg.textContent = 'Uploading…'; msg.className='msg';
-  authFetch('/acc/admin/courses/upload', {
-    method:'POST',
-    body: fd
-  }).then(r=>r.json()).then(d=>{
-    if(d.ok){ msg.textContent='Uploaded: '+d.filename; msg.className='msg ok'; }
-    else { msg.textContent = d.error||'Upload failed.'; msg.className='msg err'; }
-  }).catch(()=>{ msg.textContent='Network error.'; msg.className='msg err'; });
-}
-
-
-function esc(s){
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+checkAuth();
 </script>
 
 </body>
 </html>
-
-
-
-
-

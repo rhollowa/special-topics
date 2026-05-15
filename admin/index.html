@@ -83,11 +83,11 @@
 
 <header class="topbar">
   <div class="topbar-inner">
-    <a href="/" class="crest">Russell Holloway <span class="num">ACC · Admin</span></a>
+    <a href="/admin/" onclick="location.replace('/admin/');return false;" class="crest">Russell Holloway <span class="num">ACC · Admin</span></a>
     <nav class="primary" aria-label="Primary">
       <a href="/">Courses</a>
-      <a href="/2305/">BUSI 2305</a>
-      <a href="/special-topics/">Special Topics</a>
+      <a href="/2305/" onclick="location.replace('/2305/');return false;">BUSI 2305</a>
+      <a href="/special-topics/" onclick="location.replace('/special-topics/');return false;">Special Topics</a>
     </nav>
   </div>
 </header>
@@ -95,7 +95,7 @@
 <main id="main-content">
 
 <!-- LOGIN -->
-<div class="admin-login" id="loginBox">
+<div class="admin-login" id="loginBox" style="display:none;">
   <h1>Admin Access</h1>
   <input type="password" id="pwInput" placeholder="Password" autocomplete="current-password">
   <label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;margin-bottom:.9rem;cursor:pointer;">
@@ -212,7 +212,8 @@ function showPanel(token){
     headers:{'Content-Type':'application/json','X-API-Key':API_KEY}
   }).then(r=>r.json()).then(d=>{
     if(d.ok) showPanel(d.token);
-  }).catch(()=>{});
+    else document.getElementById('loginBox').style.display='';
+  }).catch(()=>{ document.getElementById('loginBox').style.display=''; });
 })();
 
 // ── Auth ──────────────────────────────────────────────────────────

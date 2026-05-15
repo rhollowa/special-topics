@@ -22,6 +22,10 @@
 .ct-btn{display:inline-block;padding:.3rem .9rem;font-size:.82rem;border:1px solid var(--border,#ccc);border-radius:4px;color:var(--ink,#111);text-decoration:none;background:#fff;cursor:pointer;}
 .ct-btn:hover{border-color:#1a7a4a;color:#1a7a4a;}
 .ct-btn.danger:hover{border-color:#c00;color:#c00;}
+.up-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1100;align-items:center;justify-content:center;}
+.up-modal.open{display:flex;}
+.up-modal-inner{background:#fff;border-radius:8px;padding:1.5rem;width:100%;max-width:420px;box-shadow:0 4px 24px rgba(0,0,0,.15);}
+.up-modal-inner h3{margin:0 0 .75rem;font-size:1rem;font-weight:700;}
 .ct-add-row{padding:.75rem 1rem;border-top:1px solid var(--border,#eee);}
 
 /* Modal overlay */
@@ -111,6 +115,20 @@
     <div class="ct-add-row">
     </div>
   </div>
+
+
+<!-- UPLOAD MODAL -->
+<div class="up-modal" id="upModal" onclick="upOverlayClick(event)">
+  <div class="up-modal-inner">
+    <h3 id="upTitle">Upload File</h3>
+    <input type="file" id="upFileInput" accept=".xlsx,.xls,.csv" style="margin:.75rem 0 1rem;display:block;font-size:.88rem;">
+    <div class="msg" id="upMsg" style="margin-bottom:.5rem;"></div>
+    <div style="display:flex;gap:.5rem;justify-content:flex-end;">
+      <button class="ct-btn" onclick="closeUpload()">Cancel</button>
+      <button class="ct-btn" style="background:#1a7a4a;color:#fff;border-color:#1a7a4a;" onclick="submitUpload()">Upload</button>
+    </div>
+  </div>
+</div>
 
 </div><!-- /admin-panel -->
 
@@ -245,9 +263,10 @@ function renderCourseTable(dbCourses){
         <div class="ct-sub">${esc(c.title||'')}${sub?' · '+esc(sub):''}</div>
       </div>
       <div><button class="ct-btn" onclick="openGradebook('${esc(key)}')">Gradebook</button></div>
-      <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;">
         <button class="ct-btn" onclick="openEdit('${esc(key)}')">Edit Course</button>
         <button class="ct-btn danger" onclick="deleteCourse(${c.id})">Remove</button>
+        <button class="ct-btn" title="Upload file" onclick="openUpload('${esc(key)}',${c.id})" style="padding:.3rem .6rem;font-size:1rem;line-height:1;">+</button>
       </div>
     </div>`);
   });
@@ -383,6 +402,40 @@ function confirmAddCol(){
 }
 
 function openEdit(course){ alert('Edit course coming soon.'); }
+
+
+// ── Upload modal ──────────────────────────────────────────────────
+let UP_COURSE_KEY = null, UP_COURSE_ID = null;
+
+function openUpload(key, id){
+  UP_COURSE_KEY = key;
+  UP_COURSE_ID  = id;
+  document.getElementById('upTitle').textContent = 'Upload File — ' + key.replace(/-/g,' ');
+  document.getElementById('upMsg').textContent = '';
+  document.getElementById('upFileInput').value = '';
+  document.getElementById('upModal').classList.add('open');
+}
+function closeUpload(){ document.getElementById('upModal').classList.remove('open'); }
+function upOverlayClick(e){ if(e.target===document.getElementById('upModal')) closeUpload(); }
+
+function submitUpload(){
+  const file = document.getElementById('upFileInput').files[0];
+  const msg  = document.getElementById('upMsg');
+  if(!file){ msg.textContent='Please select a file.'; msg.className='msg err'; return; }
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('course_id', UP_COURSE_ID);
+  fd.append('course_key', UP_COURSE_KEY);
+  msg.textContent = 'Uploading…'; msg.className='msg';
+  fetch(API+'/acc/admin/courses/upload', {
+    method:'POST',
+    headers: {['X-Admin-Token']: localStorage.getItem('acc_device_token')||''},
+    body: fd
+  }).then(r=>r.json()).then(d=>{
+    if(d.ok){ msg.textContent='Uploaded: '+d.filename; msg.className='msg ok'; }
+    else { msg.textContent = d.error||'Upload failed.'; msg.className='msg err'; }
+  }).catch(()=>{ msg.textContent='Network error.'; msg.className='msg err'; });
+}
 
 
 function esc(s){

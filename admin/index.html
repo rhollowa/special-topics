@@ -181,16 +181,6 @@
   <div class="ac-modal-inner" id="acModalInner">
     <h3>Add Course</h3>
 
-    <!-- ACC fetch bar -->
-    <div>
-      <p style="font-size:.82rem;color:#666;margin:0 0 .5rem;">Paste your ACC schedule URL to auto-fill fields.</p>
-      <div class="ac-fetch-bar">
-        <input type="text" id="acFetchUrl" placeholder="https://www6.austincc.edu/schedule/index.php?op=browse&...">
-        <button class="ct-btn" onclick="fetchFromACC()">Fetch</button>
-      </div>
-      <div class="ac-fetch-status" id="acFetchStatus"></div>
-    </div>
-
     <!-- Form fields -->
     <div class="ac-field-row">
       <div class="ac-field">
@@ -325,30 +315,116 @@ function authHeaders(){
   return {'X-API-Key':API_KEY,'X-Admin-Token':SESSION,'Content-Type':'application/json'};
 }
 
+// ── Term code helpers ────────────────────────────────────────────
+function currentTerms(){
+  // Generate current + next 2 ACC term codes based on today's date
+  const now = new Date();
+  const yr4 = now.getFullYear();
+  const mo  = now.getMonth() + 1; // 1-12
+
+  // ACC semester boundaries: Spring=Jan-May, Summer=Jun-Jul, Fall=Aug-Dec
+  function termCode(year, season){ // season: S/U/F
+    const yy2 = String(year).slice(2); // "26"
+    return `2${yy2}${season}000`;
+  }
+  function currentSeason(y, m){
+    if(m<=5)  return {season:'S', yr:y};
+    if(m<=7)  return {season:'U', yr:y};
+    return           {season:'F', yr:y};
+  }
+  function nextSeason(y, s){
+    if(s==='S') return {season:'U', yr:y};
+    if(s==='U') return {season:'F', yr:y};
+    return             {season:'S', yr:y+1};
+  }
+
+  const c  = currentSeason(yr4, mo);
+  const n1 = nextSeason(c.yr, c.season);
+  const n2 = nextSeason(n1.yr, n1.season);
+  return [c, n1, n2].map(t => ({
+    term: termCode(t.yr, t.season),
+    yr:   String(t.yr),
+    label: {S:'Spring',U:'Summer',F:'Fall'}[t.season] + ' ' + t.yr,
+  }));
+}
+
 // ── Course list ───────────────────────────────────────────────────
+// Fetches ACC schedule for current + next 2 terms via server-side proxy,
+// parses sections, auto-populates the course table.
+// Also loads any manually-saved DB courses as fallback/supplement.
+
+let ACC_SECTIONS = []; // parsed from ACC live fetch
+
 function loadCourses(){
+  // Fetch DB courses (manually saved)
   fetch(API+'/acc/admin/courses/list',{headers:authHeaders()})
     .then(r=>r.json())
-    .then(d=>{
-      const wrap = document.getElementById('courseRows');
-      if(!d.courses || !d.courses.length){ wrap.innerHTML=''; return; }
-      wrap.innerHTML = d.courses.map(c => {
-        const sub = [c.semester, c.term, c.delivery].filter(Boolean).join(' · ');
-        // course_num as the gradebook key (matches existing BUSI-2305 pattern)
-        const key = c.course_num.replace(/\s+/g,'-');
-        return `<div class="ct-row">
-          <div>
-            <div class="ct-name">${esc(c.course_num)}${c.section_id ? ' <span style="font-weight:400;font-size:.8rem;color:#888;">#'+esc(c.section_id)+'</span>' : ''}</div>
-            <div class="ct-sub">${esc(c.title || '')}${sub ? ' · '+esc(sub) : ''}</div>
-          </div>
-          <div><button class="ct-btn" onclick="openGradebook('${esc(key)}')">Gradebook</button></div>
-          <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
-            <button class="ct-btn" onclick="openEdit('${esc(key)}')">Edit Course</button>
-            <button class="ct-btn danger" onclick="deleteCourse(${c.id})">Remove</button>
-          </div>
-        </div>`;
-      }).join('');
-    }).catch(()=>{});
+    .then(d=>{ renderCourseTable(d.courses||[], ACC_SECTIONS); })
+    .catch(()=>{});
+
+  // Fetch ACC schedule for current + next 2 terms in parallel
+  const terms = currentTerms();
+  Promise.allSettled(
+    terms.map(t =>
+      fetch(`${API}/acc/admin/schedule/fetch?term=${t.term}&yr=${t.yr}`, {headers:authHeaders()})
+        .then(r=>r.text())
+        .then(html => parseACCSchedule(html, `?term=${t.term}&yr=${t.yr}`))
+        .then(parsed => parsed ? {...parsed, _term:t} : null)
+    )
+  ).then(results => {
+    ACC_SECTIONS = results
+      .filter(r => r.status==='fulfilled' && r.value && r.value.course_num)
+      .map(r => r.value);
+
+    // Re-render with live ACC data
+    fetch(API+'/acc/admin/courses/list',{headers:authHeaders()})
+      .then(r=>r.json())
+      .then(d=>{ renderCourseTable(d.courses||[], ACC_SECTIONS); })
+      .catch(()=>{ renderCourseTable([], ACC_SECTIONS); });
+  });
+}
+
+function renderCourseTable(dbCourses, accSections){
+  const wrap = document.getElementById('courseRows');
+  const rows = [];
+
+  // ACC live sections — shown with a "live" badge
+  accSections.forEach(s => {
+    const sub = [s.semester, s.term, s.delivery].filter(Boolean).join(' · ');
+    const key = (s.course_num||'').replace(/\s+/g,'-');
+    rows.push(`<div class="ct-row">
+      <div>
+        <div class="ct-name">${esc(s.course_num||'')}
+          ${s.section_id ? '<span style="font-weight:400;font-size:.78rem;color:#888;"> #'+esc(s.section_id)+'</span>' : ''}
+          <span style="font-size:.7rem;background:#e8f5ee;color:#1a7a4a;border-radius:3px;padding:.1rem .35rem;margin-left:.4rem;">ACC Live</span>
+        </div>
+        <div class="ct-sub">${esc(s.title||'')}${sub?' · '+esc(sub):''}</div>
+      </div>
+      <div><button class="ct-btn" onclick="openGradebook('${esc(key)}')">Gradebook</button></div>
+      <div><button class="ct-btn" onclick="openEdit('${esc(key)}')">Edit Course</button></div>
+    </div>`);
+  });
+
+  // DB courses not already shown by ACC
+  const accNums = new Set(accSections.map(s=>(s.course_num||'').replace(/\s+/g,'-')));
+  dbCourses.forEach(c => {
+    const key = c.course_num.replace(/\s+/g,'-');
+    if(accNums.has(key)) return; // already shown above
+    const sub = [c.semester, c.term, c.delivery].filter(Boolean).join(' · ');
+    rows.push(`<div class="ct-row">
+      <div>
+        <div class="ct-name">${esc(c.course_num)}${c.section_id?' <span style="font-weight:400;font-size:.78rem;color:#888;">#'+esc(c.section_id)+'</span>':''}</div>
+        <div class="ct-sub">${esc(c.title||'')}${sub?' · '+esc(sub):''}</div>
+      </div>
+      <div><button class="ct-btn" onclick="openGradebook('${esc(key)}')">Gradebook</button></div>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+        <button class="ct-btn" onclick="openEdit('${esc(key)}')">Edit Course</button>
+        <button class="ct-btn danger" onclick="deleteCourse(${c.id})">Remove</button>
+      </div>
+    </div>`);
+  });
+
+  wrap.innerHTML = rows.join('') || '<div style="padding:.75rem 1rem;font-size:.85rem;color:#888;">No courses found.</div>';
 }
 
 function deleteCourse(id){
@@ -394,14 +470,12 @@ function renderGrid(d){
   const cols = d.grade_cols || [];
   const asgMap = {};
   (d.assignments||[]).forEach(a=>{ asgMap[a.assignment_id]=a; });
-
   let thead = '<thead><tr><th>Last Name</th><th>First Name</th><th>Student ID</th>';
   cols.forEach(col=>{
     const pts = asgMap[col] ? ' <span style="font-weight:400;opacity:.6;">/'+asgMap[col].max_points+'</span>' : '';
     thead += `<th class="col-asg" title="${col}">${esc(col)}${pts}</th>`;
   });
   thead += '</tr></thead>';
-
   let tbody = '<tbody>';
   d.rows.forEach(r=>{
     tbody += `<tr>
@@ -417,22 +491,18 @@ function renderGrid(d){
     tbody += '</tr>';
   });
   tbody += '</tbody>';
-
   document.getElementById('gbGridTable').innerHTML = thead + tbody;
 }
 
 function saveGrade(acc_id, assignment_id, score){
   fetch(API+'/acc/admin/gradebook/grade',{
-    method:'POST',
-    headers:authHeaders(),
+    method:'POST', headers:authHeaders(),
     body:JSON.stringify({course:COURSE, acc_id, assignment_id, score: score===''?null:parseFloat(score)})
   }).catch(()=>{});
 }
 
 // ── Upload ────────────────────────────────────────────────────────
-function triggerUpload(){
-  document.getElementById('gbFileInput').click();
-}
+function triggerUpload(){ document.getElementById('gbFileInput').click(); }
 
 function handleUpload(file){
   if(!file) return;
@@ -440,17 +510,10 @@ function handleUpload(file){
   msg.textContent='Uploading…';msg.className='msg';
   const fd=new FormData();fd.append('file',file);fd.append('course',COURSE);
   fetch(API+'/acc/admin/gradebook/upload',{
-    method:'POST',
-    headers:{'X-API-Key':API_KEY,'X-Admin-Token':SESSION},
-    body:fd
+    method:'POST', headers:{'X-API-Key':API_KEY,'X-Admin-Token':SESSION}, body:fd
   }).then(r=>r.json()).then(d=>{
-    if(d.ok){
-      msg.textContent=`Imported — ${d.inserted} new, ${d.updated} updated.`;
-      msg.className='msg ok';
-      fetchGradebook();
-    } else {
-      msg.textContent=d.error||'Error';msg.className='msg err';
-    }
+    if(d.ok){ msg.textContent=`Imported — ${d.inserted} new, ${d.updated} updated.`; msg.className='msg ok'; fetchGradebook(); }
+    else { msg.textContent=d.error||'Error'; msg.className='msg err'; }
   }).catch(()=>{msg.textContent='Upload failed';msg.className='msg err';});
 }
 
@@ -466,39 +529,24 @@ function openAddCol(){
   document.getElementById('colModal').classList.add('open');
   setTimeout(()=>document.getElementById('colName').focus(),50);
 }
+function closeAddCol(){ document.getElementById('colModal').classList.remove('open'); }
 
-function closeAddCol(){
-  document.getElementById('colModal').classList.remove('open');
-}
-
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeGradebook();closeAddCol();closeAddCourse();}
-});
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeGradebook();closeAddCol();} });
 
 function confirmAddCol(){
   const name = document.getElementById('colName').value.trim();
   const pts  = parseFloat(document.getElementById('colPts').value)||100;
   if(!name) return;
   closeAddCol();
-
   const id = name.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
   const fd = new FormData();
-  fd.append('course', COURSE);
-  fd.append('assignment_id', id);
-  fd.append('name', name);
-  fd.append('max_points', pts);
+  fd.append('course',COURSE); fd.append('assignment_id',id); fd.append('name',name); fd.append('max_points',pts);
   fetch(API+'/acc/admin/assignments/create',{
-    method:'POST',
-    headers:{'X-API-Key':API_KEY,'X-Admin-Token':SESSION},
-    body:fd
+    method:'POST', headers:{'X-API-Key':API_KEY,'X-Admin-Token':SESSION}, body:fd
   }).then(()=>{
     if(GB_DATA){
       if(!GB_DATA.grade_cols) GB_DATA.grade_cols=[];
-      if(!GB_DATA.grade_cols.includes(id)){
-        GB_DATA.grade_cols.push(id);
-        if(!GB_DATA.assignments) GB_DATA.assignments=[];
-        GB_DATA.assignments.push({assignment_id:id,name,max_points:pts});
-      }
+      if(!GB_DATA.grade_cols.includes(id)){ GB_DATA.grade_cols.push(id); if(!GB_DATA.assignments) GB_DATA.assignments=[]; GB_DATA.assignments.push({assignment_id:id,name,max_points:pts}); }
       document.getElementById('gbUploadZone').style.display='none';
       document.getElementById('gbGridWrap').style.display='block';
       renderGrid(GB_DATA);
@@ -506,64 +554,36 @@ function confirmAddCol(){
   }).catch(()=>{});
 }
 
-// ── Edit course (placeholder) ─────────────────────────────────────
-function openEdit(course){
-  alert('Edit course coming soon.');
-}
+function openEdit(course){ alert('Edit course coming soon.'); }
 
-// ── Add Course modal ──────────────────────────────────────────────
+// ── Add Course modal (manual fallback) ───────────────────────────
 function openAddCourse(){
-  // Clear form
-  ['acCourseNum','acSectionId','acTitle','acSemester','acTerm','acDaysTimes','acLocation','acFetchUrl'].forEach(id=>{
-    document.getElementById(id).value='';
-  });
+  ['acCourseNum','acSectionId','acTitle','acSemester','acTerm','acDaysTimes','acLocation'].forEach(id=>{ document.getElementById(id).value=''; });
   document.getElementById('acDelivery').value='';
   document.getElementById('acStartDate').value='';
   document.getElementById('acEndDate').value='';
-  document.getElementById('acFetchStatus').textContent='';
-  document.getElementById('acFetchStatus').className='ac-fetch-status';
   document.getElementById('acMsg').textContent='';
-  document.getElementById('acMsg').className='msg';
   document.getElementById('acModal').classList.add('open');
 }
+function closeAddCourse(){ document.getElementById('acModal').classList.remove('open'); }
+function acOverlayClick(e){ if(e.target===document.getElementById('acModal')) closeAddCourse(); }
 
-function closeAddCourse(){
-  document.getElementById('acModal').classList.remove('open');
-}
-
-function acOverlayClick(e){
-  if(e.target===document.getElementById('acModal')) closeAddCourse();
-}
-
-// Client-side fetch of ACC schedule page (browser bypasses robots.txt)
-function fetchFromACC(){
-  const url = document.getElementById('acFetchUrl').value.trim();
-  const status = document.getElementById('acFetchStatus');
-  if(!url){ status.textContent='Paste a URL first.'; status.className='ac-fetch-status err'; return; }
-  status.textContent='Fetching…'; status.className='ac-fetch-status';
-
-  fetch(url)
-    .then(r=>r.text())
-    .then(html=>{
-      const parsed = parseACCSchedule(html, url);
-      if(!parsed){ status.textContent='Could not parse schedule page — fill fields manually.'; status.className='ac-fetch-status err'; return; }
-      // Fill whatever we found
-      if(parsed.course_num)  document.getElementById('acCourseNum').value  = parsed.course_num;
-      if(parsed.section_id)  document.getElementById('acSectionId').value  = parsed.section_id;
-      if(parsed.title)       document.getElementById('acTitle').value       = parsed.title;
-      if(parsed.semester)    document.getElementById('acSemester').value    = parsed.semester;
-      if(parsed.term)        document.getElementById('acTerm').value        = parsed.term;
-      if(parsed.delivery)    document.getElementById('acDelivery').value    = parsed.delivery;
-      if(parsed.days_times)  document.getElementById('acDaysTimes').value   = parsed.days_times;
-      if(parsed.start_date)  document.getElementById('acStartDate').value   = parsed.start_date;
-      if(parsed.end_date)    document.getElementById('acEndDate').value     = parsed.end_date;
-      if(parsed.location)    document.getElementById('acLocation').value    = parsed.location;
-      status.textContent='Filled from ACC — review and save.'; status.className='ac-fetch-status ok';
-    })
-    .catch(err=>{
-      status.textContent='Fetch failed (CORS or network). Fill fields manually.';
-      status.className='ac-fetch-status err';
-    });
+function saveNewCourse(){
+  const course_num = document.getElementById('acCourseNum').value.trim();
+  if(!course_num){ document.getElementById('acMsg').textContent='Course number is required.'; document.getElementById('acMsg').className='msg err'; return; }
+  const payload = {
+    course_num, section_id: document.getElementById('acSectionId').value.trim(),
+    title: document.getElementById('acTitle').value.trim(), semester: document.getElementById('acSemester').value.trim(),
+    term: document.getElementById('acTerm').value.trim(), delivery: document.getElementById('acDelivery').value,
+    days_times: document.getElementById('acDaysTimes').value.trim(),
+    start_date: document.getElementById('acStartDate').value, end_date: document.getElementById('acEndDate').value,
+    location: document.getElementById('acLocation').value.trim(),
+  };
+  fetch(API+'/acc/admin/courses/create',{ method:'POST', headers:authHeaders(), body:JSON.stringify(payload) })
+    .then(r=>r.json()).then(d=>{
+      if(d.ok){ closeAddCourse(); loadCourses(); }
+      else { document.getElementById('acMsg').textContent=d.error||'Error saving.'; document.getElementById('acMsg').className='msg err'; }
+    }).catch(()=>{ document.getElementById('acMsg').textContent='Network error.'; document.getElementById('acMsg').className='msg err'; });
 }
 
 function parseACCSchedule(html, url){

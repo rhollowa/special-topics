@@ -2,3 +2,12 @@
 # Path-preserving 301 redirect for student bookmarks.
 https://busi-2305.indiafoxtrotcharlie.com/*  https://acc.indiafoxtrotcharlie.com/2305/:splat  301!
 http://busi-2305.indiafoxtrotcharlie.com/*  https://acc.indiafoxtrotcharlie.com/2305/:splat  301!
+
+# Clean URLs — /2305/tests resolves to /2305/tests.html (no .html in address bar)
+/2305/tests       /2305/tests.html      200
+/2305/lessons     /2305/lessons.html    200
+/2305/data        /2305/data.html       200
+/2305/contact     /2305/contact.html    200
+/2305/about       /2305/about.html      200
+/2305/resources   /2305/resources.html  200
+/2305/policies    /2305/policies.html   200

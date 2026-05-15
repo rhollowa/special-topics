@@ -6,7 +6,7 @@
 <title>Lessons · BUSI 2305 — Spring 2026</title>
 <link rel="stylesheet" href="../../theme.css">
 <style>
-  /* Collapsible week sections — bare +/− glyph in the left margin */
+  /* Hover-to-expand week sections; click pins */
   .week-group { position: relative; }
   .week-group > summary {
     list-style: none;
@@ -17,24 +17,20 @@
     margin: 0;
   }
   .week-group > summary::-webkit-details-marker { display: none; }
-  .week-group > summary::before {
-    content: '+';
+  /* Pin indicator: bullet that appears when pinned */
+  .week-group.pinned > summary::before {
+    content: '●';
     position: absolute;
-    left: -2.75rem;
+    left: -1.75rem;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 34px;
-    font-weight: 300;
+    font-size: 11px;
     line-height: 1;
-    color: var(--muted);
-    transition: color 0.15s;
-    font-family: var(--sans, sans-serif);
+    color: var(--accent);
     user-select: none;
   }
-  .week-group[open] > summary::before { content: '−'; }
-  .week-group > summary:hover::before { color: var(--accent); }
   @media (max-width: 720px) {
-    .week-group > summary::before { left: -1.5rem; font-size: 28px; }
+    .week-group.pinned > summary::before { left: -1rem; font-size: 10px; }
   }
 </style>
 </head>
@@ -87,7 +83,7 @@
 
 
     <!-- WEEK 1 -->
-    <details class="week-group" open>
+    <details class="week-group">
       <summary class="week-header">
         <span class="wk">Week 1</span>
         <span class="wk-title">Introduction & Greeks</span>
@@ -110,7 +106,7 @@
     </details>
 
     <!-- WEEK 2 -->
-    <details class="week-group" open>
+    <details class="week-group">
       <summary class="week-header">
         <span class="wk">Week 2</span>
         <span class="wk-title">What is Statistics</span>
@@ -133,7 +129,7 @@
     </details>
 
     <!-- WEEK 3 -->
-    <details class="week-group" open>
+    <details class="week-group">
       <summary class="week-header">
         <span class="wk">Week 3</span>
         <span class="wk-title">Describing Data & Data Visualization</span>
@@ -163,7 +159,7 @@
     </details>
 
     <!-- WEEK 4 -->
-    <details class="week-group" open>
+    <details class="week-group">
       <summary class="week-header">
         <span class="wk">Week 4</span>
         <span class="wk-title">Averages</span>
@@ -187,7 +183,7 @@
     </details>
 
     <!-- WEEK 5 -->
-    <details class="week-group" open>
+    <details class="week-group">
       <summary class="week-header">
         <span class="wk">Week 5</span>
         <span class="wk-title">Dispersion</span>
@@ -210,7 +206,7 @@
     </details>
 
     <!-- WEEK 6 -->
-    <details class="week-group" open>
+    <details class="week-group">
       <summary class="week-header">
         <span class="wk">Week 6</span>
         <span class="wk-title">Probability</span>
@@ -233,7 +229,7 @@
     </details>
 
     <!-- WEEK 7 -->
-    <details class="week-group" open>
+    <details class="week-group">
       <summary class="week-header">
         <span class="wk">Week 7</span>
         <span class="wk-title">Confidence Intervals</span>
@@ -263,7 +259,7 @@
     </details>
 
     <!-- WEEK 8 -->
-    <details class="week-group" open>
+    <details class="week-group">
       <summary class="week-header">
         <span class="wk">Week 8</span>
         <span class="wk-title">Correlation & Regression</span>
@@ -435,6 +431,42 @@
 </footer>
 
 <script src="../lessons.js"></script>
+
+<script>
+(function() {
+  var groups = document.querySelectorAll('details.week-group');
+  // Touch detection: if any touchstart fires before mouseenter, switch to tap-mode globally
+  var hasHover = window.matchMedia('(hover: hover)').matches;
+
+  groups.forEach(function(g) {
+    var summary = g.querySelector('summary');
+    if (!summary) return;
+
+    if (hasHover) {
+      g.addEventListener('mouseenter', function() {
+        g.open = true;
+      });
+      g.addEventListener('mouseleave', function() {
+        if (!g.classList.contains('pinned')) g.open = false;
+      });
+    }
+
+    summary.addEventListener('click', function(e) {
+      e.preventDefault();
+      // Toggle pinned state
+      var nowPinned = !g.classList.contains('pinned');
+      g.classList.toggle('pinned');
+      if (nowPinned) {
+        g.open = true;
+      } else {
+        // Unpinning: collapse unless hovered (mouseenter will re-open if so)
+        if (!hasHover) g.open = false;
+        else if (!g.matches(':hover')) g.open = false;
+      }
+    });
+  });
+})();
+</script>
 </body>
 </html>
 

@@ -21,6 +21,8 @@
 .ct-sub{font-size:.78rem;color:var(--text-muted,#888);margin-top:.1rem;}
 .ct-btn{display:inline-block;padding:.3rem .9rem;font-size:.82rem;border:1px solid var(--border,#ccc);border-radius:4px;color:var(--ink,#111);text-decoration:none;background:#fff;cursor:pointer;}
 .ct-btn:hover{border-color:#1a7a4a;color:#1a7a4a;}
+.ct-btn.danger:hover{border-color:#c00;color:#c00;}
+.ct-add-row{padding:.75rem 1rem;border-top:1px solid var(--border,#eee);}
 
 /* Modal overlay */
 .gb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;}
@@ -64,6 +66,22 @@
 .col-modal-inner label{display:block;font-size:.82rem;font-weight:600;margin-bottom:.25rem;}
 .col-modal-inner input{width:100%;padding:.5rem .65rem;border:1px solid var(--border,#ccc);border-radius:4px;font-size:.9rem;margin-bottom:.75rem;box-sizing:border-box;}
 .col-modal-row{display:flex;gap:.5rem;justify-content:flex-end;}
+
+/* Add course modal */
+.ac-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1100;align-items:flex-start;justify-content:center;overflow-y:auto;padding:2rem 1rem;}
+.ac-modal.open{display:flex;}
+.ac-modal-inner{background:#fff;border-radius:10px;padding:1.75rem;width:100%;max-width:560px;box-shadow:0 8px 40px rgba(0,0,0,.2);margin:auto;}
+.ac-modal-inner h3{margin:0 0 1.25rem;font-size:1.05rem;font-weight:700;}
+.ac-field-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem;}
+.ac-field-row.full{grid-template-columns:1fr;}
+.ac-field label{display:block;font-size:.78rem;font-weight:600;margin-bottom:.2rem;color:var(--text-muted,#666);}
+.ac-field input,.ac-field select{width:100%;padding:.5rem .65rem;border:1px solid var(--border,#ccc);border-radius:4px;font-size:.88rem;box-sizing:border-box;}
+.ac-fetch-bar{display:flex;gap:.5rem;margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border,#eee);}
+.ac-fetch-bar input{flex:1;padding:.5rem .65rem;border:1px solid var(--border,#ccc);border-radius:4px;font-size:.82rem;}
+.ac-fetch-status{font-size:.8rem;margin-top:.35rem;min-height:1.1em;}
+.ac-fetch-status.ok{color:#1a7a4a;}
+.ac-fetch-status.err{color:#c00;}
+.ac-actions{display:flex;gap:.5rem;justify-content:flex-end;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border,#eee);}
 </style>
 </head>
 <body>
@@ -96,23 +114,16 @@
 <div class="admin-panel" id="adminPanel">
 
   <!-- COURSE TABLE -->
-  <div class="course-table">
+  <div class="course-table" id="courseTable">
     <div class="ct-head">
       <div>Course</div>
       <div>Gradebook</div>
       <div>Edit / Update</div>
     </div>
-    <div class="ct-row">
-      <div>
-        <div class="ct-name">BUSI 2305</div>
-        <div class="ct-sub">Business Statistics · Spring 2026</div>
-      </div>
-      <div>
-        <button class="ct-btn" onclick="openGradebook('BUSI-2305')">Gradebook</button>
-      </div>
-      <div>
-        <button class="ct-btn" onclick="openEdit('BUSI-2305')">Edit Course</button>
-      </div>
+    <!-- Rows injected by loadCourses() -->
+    <div id="courseRows"></div>
+    <div class="ct-add-row">
+      <button class="ct-btn" onclick="openAddCourse()">+ Add Course</button>
     </div>
   </div>
 
@@ -165,6 +176,87 @@
   </div>
 </div>
 
+<!-- ADD COURSE MODAL -->
+<div class="ac-modal" id="acModal" onclick="acOverlayClick(event)">
+  <div class="ac-modal-inner" id="acModalInner">
+    <h3>Add Course</h3>
+
+    <!-- ACC fetch bar -->
+    <div>
+      <p style="font-size:.82rem;color:#666;margin:0 0 .5rem;">Paste your ACC schedule URL to auto-fill fields.</p>
+      <div class="ac-fetch-bar">
+        <input type="text" id="acFetchUrl" placeholder="https://www6.austincc.edu/schedule/index.php?op=browse&...">
+        <button class="ct-btn" onclick="fetchFromACC()">Fetch</button>
+      </div>
+      <div class="ac-fetch-status" id="acFetchStatus"></div>
+    </div>
+
+    <!-- Form fields -->
+    <div class="ac-field-row">
+      <div class="ac-field">
+        <label>Course Number *</label>
+        <input type="text" id="acCourseNum" placeholder="BUSI 2305">
+      </div>
+      <div class="ac-field">
+        <label>Section / Course ID</label>
+        <input type="text" id="acSectionId" placeholder="85423">
+      </div>
+    </div>
+    <div class="ac-field-row full">
+      <div class="ac-field">
+        <label>Title</label>
+        <input type="text" id="acTitle" placeholder="Business Statistics">
+      </div>
+    </div>
+    <div class="ac-field-row">
+      <div class="ac-field">
+        <label>Semester</label>
+        <input type="text" id="acSemester" placeholder="Fall 2026">
+      </div>
+      <div class="ac-field">
+        <label>Term</label>
+        <input type="text" id="acTerm" placeholder="8-Week, Spring B, Full Semester">
+      </div>
+    </div>
+    <div class="ac-field-row">
+      <div class="ac-field">
+        <label>Delivery</label>
+        <select id="acDelivery">
+          <option value="">— select —</option>
+          <option value="Online">Online</option>
+          <option value="In Person">In Person</option>
+          <option value="Hybrid">Hybrid</option>
+        </select>
+      </div>
+      <div class="ac-field">
+        <label>Days / Times</label>
+        <input type="text" id="acDaysTimes" placeholder="MWF 10:00-10:50 AM">
+      </div>
+    </div>
+    <div class="ac-field-row">
+      <div class="ac-field">
+        <label>Start Date</label>
+        <input type="date" id="acStartDate">
+      </div>
+      <div class="ac-field">
+        <label>End Date</label>
+        <input type="date" id="acEndDate">
+      </div>
+    </div>
+    <div class="ac-field-row full">
+      <div class="ac-field">
+        <label>Location / Room</label>
+        <input type="text" id="acLocation" placeholder="NRG 1234 or Online">
+      </div>
+    </div>
+    <div class="ac-actions">
+      <button class="ct-btn" onclick="closeAddCourse()">Cancel</button>
+      <button class="ct-btn" style="background:#1a7a4a;color:#fff;border-color:#1a7a4a;" onclick="saveNewCourse()">Save Course</button>
+    </div>
+    <div class="msg" id="acMsg" style="margin-top:.5rem;"></div>
+  </div>
+</div>
+
 </main>
 
 <script>
@@ -189,8 +281,9 @@ const DEVICE_KEY = 'acc_device_token';
       SESSION=d.token;
       document.getElementById('loginBox').style.display='none';
       document.getElementById('adminPanel').style.display='block';
+      loadCourses();
     } else {
-      localStorage.removeItem(DEVICE_KEY); // token revoked/invalid — clear it
+      localStorage.removeItem(DEVICE_KEY);
     }
   }).catch(()=>{});
 })();
@@ -209,6 +302,7 @@ function doLogin(){
       document.getElementById('loginBox').style.display='none';
       document.getElementById('adminPanel').style.display='block';
       if(remember) registerDevice(d.token);
+      loadCourses();
     } else {
       document.getElementById('loginErr').style.display='block';
     }
@@ -227,16 +321,40 @@ function registerDevice(sessionToken){
   }).catch(()=>{});
 }
 
-function doLogout(){
-  SESSION=null;
-  localStorage.removeItem(DEVICE_KEY);
-  document.getElementById('loginBox').style.display='block';
-  document.getElementById('adminPanel').style.display='none';
-  document.getElementById('pwInput').value='';
-}
-
 function authHeaders(){
   return {'X-API-Key':API_KEY,'X-Admin-Token':SESSION,'Content-Type':'application/json'};
+}
+
+// ── Course list ───────────────────────────────────────────────────
+function loadCourses(){
+  fetch(API+'/acc/admin/courses/list',{headers:authHeaders()})
+    .then(r=>r.json())
+    .then(d=>{
+      const wrap = document.getElementById('courseRows');
+      if(!d.courses || !d.courses.length){ wrap.innerHTML=''; return; }
+      wrap.innerHTML = d.courses.map(c => {
+        const sub = [c.semester, c.term, c.delivery].filter(Boolean).join(' · ');
+        // course_num as the gradebook key (matches existing BUSI-2305 pattern)
+        const key = c.course_num.replace(/\s+/g,'-');
+        return `<div class="ct-row">
+          <div>
+            <div class="ct-name">${esc(c.course_num)}${c.section_id ? ' <span style="font-weight:400;font-size:.8rem;color:#888;">#'+esc(c.section_id)+'</span>' : ''}</div>
+            <div class="ct-sub">${esc(c.title || '')}${sub ? ' · '+esc(sub) : ''}</div>
+          </div>
+          <div><button class="ct-btn" onclick="openGradebook('${esc(key)}')">Gradebook</button></div>
+          <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+            <button class="ct-btn" onclick="openEdit('${esc(key)}')">Edit Course</button>
+            <button class="ct-btn danger" onclick="deleteCourse(${c.id})">Remove</button>
+          </div>
+        </div>`;
+      }).join('');
+    }).catch(()=>{});
+}
+
+function deleteCourse(id){
+  if(!confirm('Remove this course from the admin panel?')) return;
+  fetch(API+'/acc/admin/courses/'+id+'/delete',{method:'POST',headers:authHeaders()})
+    .then(r=>r.json()).then(d=>{ if(d.ok) loadCourses(); });
 }
 
 // ── Gradebook modal ───────────────────────────────────────────────
@@ -354,7 +472,7 @@ function closeAddCol(){
 }
 
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeGradebook();closeAddCol();}
+  if(e.key==='Escape'){closeGradebook();closeAddCol();closeAddCourse();}
 });
 
 function confirmAddCol(){
@@ -363,7 +481,6 @@ function confirmAddCol(){
   if(!name) return;
   closeAddCol();
 
-  // Create assignment in DB (gives it a column slot + max_points for export)
   const id = name.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
   const fd = new FormData();
   fd.append('course', COURSE);
@@ -375,7 +492,6 @@ function confirmAddCol(){
     headers:{'X-API-Key':API_KEY,'X-Admin-Token':SESSION},
     body:fd
   }).then(()=>{
-    // Add column to local grid immediately without full reload
     if(GB_DATA){
       if(!GB_DATA.grade_cols) GB_DATA.grade_cols=[];
       if(!GB_DATA.grade_cols.includes(id)){
@@ -393,6 +509,185 @@ function confirmAddCol(){
 // ── Edit course (placeholder) ─────────────────────────────────────
 function openEdit(course){
   alert('Edit course coming soon.');
+}
+
+// ── Add Course modal ──────────────────────────────────────────────
+function openAddCourse(){
+  // Clear form
+  ['acCourseNum','acSectionId','acTitle','acSemester','acTerm','acDaysTimes','acLocation','acFetchUrl'].forEach(id=>{
+    document.getElementById(id).value='';
+  });
+  document.getElementById('acDelivery').value='';
+  document.getElementById('acStartDate').value='';
+  document.getElementById('acEndDate').value='';
+  document.getElementById('acFetchStatus').textContent='';
+  document.getElementById('acFetchStatus').className='ac-fetch-status';
+  document.getElementById('acMsg').textContent='';
+  document.getElementById('acMsg').className='msg';
+  document.getElementById('acModal').classList.add('open');
+}
+
+function closeAddCourse(){
+  document.getElementById('acModal').classList.remove('open');
+}
+
+function acOverlayClick(e){
+  if(e.target===document.getElementById('acModal')) closeAddCourse();
+}
+
+// Client-side fetch of ACC schedule page (browser bypasses robots.txt)
+function fetchFromACC(){
+  const url = document.getElementById('acFetchUrl').value.trim();
+  const status = document.getElementById('acFetchStatus');
+  if(!url){ status.textContent='Paste a URL first.'; status.className='ac-fetch-status err'; return; }
+  status.textContent='Fetching…'; status.className='ac-fetch-status';
+
+  fetch(url)
+    .then(r=>r.text())
+    .then(html=>{
+      const parsed = parseACCSchedule(html, url);
+      if(!parsed){ status.textContent='Could not parse schedule page — fill fields manually.'; status.className='ac-fetch-status err'; return; }
+      // Fill whatever we found
+      if(parsed.course_num)  document.getElementById('acCourseNum').value  = parsed.course_num;
+      if(parsed.section_id)  document.getElementById('acSectionId').value  = parsed.section_id;
+      if(parsed.title)       document.getElementById('acTitle').value       = parsed.title;
+      if(parsed.semester)    document.getElementById('acSemester').value    = parsed.semester;
+      if(parsed.term)        document.getElementById('acTerm').value        = parsed.term;
+      if(parsed.delivery)    document.getElementById('acDelivery').value    = parsed.delivery;
+      if(parsed.days_times)  document.getElementById('acDaysTimes').value   = parsed.days_times;
+      if(parsed.start_date)  document.getElementById('acStartDate').value   = parsed.start_date;
+      if(parsed.end_date)    document.getElementById('acEndDate').value     = parsed.end_date;
+      if(parsed.location)    document.getElementById('acLocation').value    = parsed.location;
+      status.textContent='Filled from ACC — review and save.'; status.className='ac-fetch-status ok';
+    })
+    .catch(err=>{
+      status.textContent='Fetch failed (CORS or network). Fill fields manually.';
+      status.className='ac-fetch-status err';
+    });
+}
+
+function parseACCSchedule(html, url){
+  // Parse URL params for quick wins
+  const params = new URLSearchParams(url.split('?')[1]||'');
+  const termCode = params.get('term') || '';        // e.g. 226U000 or 226F000
+  const yr = params.get('yr') || '';
+
+  // Decode term code → semester label
+  // ACC term format: YYT where YY=last 2 of year, T=S(spring)/U(summer)/F(fall)
+  // e.g. 226U000 = 2026 Summer, 226F000 = 2026 Fall, 226S000 = 2026 Spring
+  let semester = '';
+  if(termCode && yr){
+    const tChar = termCode[3] || '';  // char at index 3 is season
+    const seasonMap = {S:'Spring', U:'Summer', F:'Fall'};
+    const season = seasonMap[tChar] || '';
+    if(season) semester = `${season} ${yr}`;
+  }
+
+  // Parse HTML with DOMParser
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+
+  // Try to find section rows — ACC schedule uses tables
+  const result = {semester};
+
+  // Look for course/section data in table cells
+  const allText = doc.body ? doc.body.innerText : html.replace(/<[^>]+>/g,' ');
+  const lines = allText.split('\n').map(l=>l.trim()).filter(Boolean);
+
+  // Course number pattern: BUSI 2305, ACCT 1303, etc.
+  for(const line of lines){
+    const m = line.match(/\b([A-Z]{2,5})\s+(\d{4}[A-Z]?)\b/);
+    if(m){ result.course_num = m[1]+' '+m[2]; break; }
+  }
+
+  // Section ID: 5-6 digit number
+  for(const line of lines){
+    const m = line.match(/\b(\d{5,6})\b/);
+    if(m){ result.section_id = m[1]; break; }
+  }
+
+  // Course title: line after course number, often caps or title case
+  if(result.course_num){
+    const cnIdx = lines.findIndex(l=>l.includes(result.course_num));
+    if(cnIdx>=0 && cnIdx+1<lines.length) result.title = lines[cnIdx+1];
+  }
+
+  // Delivery: look for Online/Web-based/In Person/Hybrid keywords
+  for(const line of lines){
+    if(/online|web.based|internet/i.test(line)){ result.delivery='Online'; break; }
+    if(/hybrid/i.test(line)){ result.delivery='Hybrid'; break; }
+    if(/in.person|face.to.face|on.campus/i.test(line)){ result.delivery='In Person'; break; }
+  }
+
+  // Days/Times: patterns like MWF 10:00-10:50 AM, TTh 1:00-2:15 PM
+  for(const line of lines){
+    const m = line.match(/\b([MTWRF]{1,5}(Th|Su)?)\s+\d{1,2}:\d{2}[^,\n]*/i);
+    if(m){ result.days_times = m[0].trim(); break; }
+  }
+
+  // Dates: MM/DD/YYYY or YYYY-MM-DD
+  const dateMatches = allText.match(/\b(\d{1,2}\/\d{1,2}\/\d{4})\b/g);
+  if(dateMatches && dateMatches.length>=2){
+    result.start_date = toISODate(dateMatches[0]);
+    result.end_date   = toISODate(dateMatches[dateMatches.length-1]);
+  }
+
+  // Term type: 8-Week, 16-Week, Spring B, Summer I, etc.
+  for(const line of lines){
+    const m = line.match(/\b(\d{1,2}.Week|Spring [AB]|Fall [AB]|Summer [I]+|Weekend|Mini)\b/i);
+    if(m){ result.term = m[0]; break; }
+  }
+
+  // Location: room patterns like NRG 1234, HLC 2010
+  for(const line of lines){
+    const m = line.match(/\b([A-Z]{2,4})\s+(\d{3,4}[A-Z]?)\b/);
+    if(m && m[1]!=='BUSI'&&m[1]!=='ACCT'&&m[1]!=='MATH'&&m[1]!=='MGMT'){
+      result.location = m[0]; break;
+    }
+  }
+
+  return result;
+}
+
+function toISODate(mdY){
+  // MM/DD/YYYY → YYYY-MM-DD
+  const p = mdY.split('/');
+  if(p.length!==3) return '';
+  return `${p[2]}-${p[0].padStart(2,'0')}-${p[1].padStart(2,'0')}`;
+}
+
+function saveNewCourse(){
+  const course_num = document.getElementById('acCourseNum').value.trim();
+  if(!course_num){ document.getElementById('acMsg').textContent='Course number is required.'; document.getElementById('acMsg').className='msg err'; return; }
+
+  const payload = {
+    course_num,
+    section_id: document.getElementById('acSectionId').value.trim(),
+    title:      document.getElementById('acTitle').value.trim(),
+    semester:   document.getElementById('acSemester').value.trim(),
+    term:       document.getElementById('acTerm').value.trim(),
+    delivery:   document.getElementById('acDelivery').value,
+    days_times: document.getElementById('acDaysTimes').value.trim(),
+    start_date: document.getElementById('acStartDate').value,
+    end_date:   document.getElementById('acEndDate').value,
+    location:   document.getElementById('acLocation').value.trim(),
+  };
+
+  fetch(API+'/acc/admin/courses/create',{
+    method:'POST',
+    headers:authHeaders(),
+    body:JSON.stringify(payload)
+  }).then(r=>r.json()).then(d=>{
+    if(d.ok){
+      closeAddCourse();
+      loadCourses();
+    } else {
+      document.getElementById('acMsg').textContent = d.error || 'Error saving course.';
+      document.getElementById('acMsg').className='msg err';
+    }
+  }).catch(()=>{
+    document.getElementById('acMsg').textContent='Network error.';
+    document.getElementById('acMsg').className='msg err';
+  });
 }
 
 function esc(s){

@@ -177,6 +177,11 @@
       <a href="files/Modeling_problems.xlsx" download>Modeling_problems.xlsx</a> &mdash; Excel workbook, 6 tabs (3 instructions + 3 models).
     </p>
 
+    <!-- Submit button — fires modal for Exam 1 -->
+    <button class="submit-btn" onclick="openModal('Exam 1 &mdash; Modeling Problems', 'exam1')">
+      &#8593; Submit Assignment
+    </button>
+
     <h3>Rules</h3>
     <ul>
       <li><strong>Open everything.</strong> You can use any tool, any AI, any source. The goal is to produce a working model.</li>
@@ -190,11 +195,6 @@
       <li><a href="https://youtu.be/UFpjaLHvIJw" target="_blank" rel="noopener">Sector Allocation</a></li>
       <li><a href="https://youtu.be/mNGh-s5ZCLM" target="_blank" rel="noopener">Pro Forma</a></li>
     </ul>
-
-    <!-- Submit button — fires modal for Exam 1 -->
-    <button class="submit-btn" onclick="openModal('Exam 1 — Modeling Problems', 'exam1')">
-      &#8593; Submit Assignment
-    </button>
   </div>
 
 </section>
@@ -228,8 +228,7 @@
     <label>File</label>
     <div class="sub-drop" id="subDrop">
       <input type="file" id="subFile" accept=".xlsx,.xls,.csv,.pdf,.zip" />
-      <div class="sub-drop-icon">📎</div>
-      <div class="sub-drop-hint">Drag &amp; drop or <strong>click to browse</strong></div>
+<div class="sub-drop-hint">Drag &amp; drop or <strong>click to browse</strong></div>
       <div class="sub-file-name" id="subFileName"></div>
     </div>
 

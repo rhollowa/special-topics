@@ -132,30 +132,53 @@
   .sub-msg.ok  { background: #e8f4ee; color: var(--ok); border: 1px solid #b2d8c0; }
   .sub-msg.err { background: #fdf0ee; color: #a02020; border: 1px solid #f0c0b8; }
 
-  /* === COLLAPSIBLE SECTIONS === */
+  /* === COLLAPSIBLE SECTIONS — plus/minus on LEFT === */
   details.collapse { margin: 0; padding: 0; }
   details.collapse > summary {
     list-style: none;
     cursor: pointer;
-    padding: 1.5rem 0 1rem;
+    padding: 1.25rem 0 1rem;
     border-bottom: 1px solid var(--rule-soft);
     display: flex;
-    align-items: baseline;
-    gap: 1rem;
+    align-items: center;
+    gap: 1.25rem;
     position: relative;
     transition: border-color 0.15s;
   }
   details.collapse > summary::-webkit-details-marker { display: none; }
-  details.collapse > summary::after {
-    content: '▾';
-    margin-left: auto;
-    font-size: 14px;
-    color: var(--muted);
-    transition: transform 0.2s;
-    transform: rotate(-90deg);
+  details.collapse > summary::before {
+    content: '+';
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: 400;
+    line-height: 1;
+    color: var(--accent);
+    background: var(--paper-warm);
+    border: 1.5px solid var(--rule);
+    border-radius: 10px;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    font-family: var(--mono, monospace);
   }
-  details.collapse[open] > summary::after { transform: rotate(0deg); }
-  details.collapse > summary:hover::after { color: var(--accent); }
+  details.collapse[open] > summary::before {
+    content: '−';
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  details.collapse > summary:hover::before {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  details.collapse[open] > summary:hover::before {
+    background: #5c2412;
+    border-color: #5c2412;
+    color: #fff;
+  }
   details.collapse[open] > summary { border-bottom-color: var(--rule); }
   details.collapse > summary .section-head {
     margin: 0;

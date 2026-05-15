@@ -85,6 +85,9 @@
 <div class="admin-login" id="loginBox">
   <h1>Admin Access</h1>
   <input type="password" id="pwInput" placeholder="Password" autocomplete="current-password">
+  <label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;margin-bottom:.9rem;cursor:pointer;">
+    <input type="checkbox" id="rememberDevice"> Remember this device
+  </label>
   <button onclick="doLogin()">Enter</button>
   <div class="admin-error" id="loginErr">Incorrect password.</div>
 </div>
@@ -169,11 +172,33 @@ const API = 'https://tourcast-docker.onrender.com';
 const API_KEY = 'c7852252558744ea5bef3c86136edbf31b5e3e556fd447454a4d37b06151b4e7';
 let SESSION = null;
 let COURSE = null;
-let GB_DATA = null; // {rows, grade_cols, assignments}
+let GB_DATA = null;
+
+const DEVICE_KEY = 'acc_device_token';
+
+// ── Boot: try device token first ──────────────────────────────────
+(function tryDeviceLogin(){
+  const dt = localStorage.getItem(DEVICE_KEY);
+  if(!dt) return;
+  fetch(API+'/acc/admin/device-login',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','X-API-Key':API_KEY},
+    body:JSON.stringify({device_token:dt})
+  }).then(r=>r.json()).then(d=>{
+    if(d.ok){
+      SESSION=d.token;
+      document.getElementById('loginBox').style.display='none';
+      document.getElementById('adminPanel').style.display='block';
+    } else {
+      localStorage.removeItem(DEVICE_KEY); // token revoked/invalid — clear it
+    }
+  }).catch(()=>{});
+})();
 
 // ── Auth ──────────────────────────────────────────────────────────
 function doLogin(){
   const pw = document.getElementById('pwInput').value;
+  const remember = document.getElementById('rememberDevice').checked;
   fetch(API+'/acc/admin/api-login',{
     method:'POST',
     headers:{'Content-Type':'application/json','X-API-Key':API_KEY},
@@ -183,6 +208,7 @@ function doLogin(){
       SESSION=d.token;
       document.getElementById('loginBox').style.display='none';
       document.getElementById('adminPanel').style.display='block';
+      if(remember) registerDevice(d.token);
     } else {
       document.getElementById('loginErr').style.display='block';
     }
@@ -190,8 +216,20 @@ function doLogin(){
 }
 document.getElementById('pwInput').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
+function registerDevice(sessionToken){
+  const label = navigator.userAgent.substring(0,100);
+  fetch(API+'/acc/admin/device-register',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','X-API-Key':API_KEY},
+    body:JSON.stringify({session_token:sessionToken, label})
+  }).then(r=>r.json()).then(d=>{
+    if(d.ok) localStorage.setItem(DEVICE_KEY, d.device_token);
+  }).catch(()=>{});
+}
+
 function doLogout(){
   SESSION=null;
+  localStorage.removeItem(DEVICE_KEY);
   document.getElementById('loginBox').style.display='block';
   document.getElementById('adminPanel').style.display='none';
   document.getElementById('pwInput').value='';

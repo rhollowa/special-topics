@@ -515,16 +515,23 @@
 <!-- admin-crest-hook -->
 <script>
 (function(){
-  var clicks=0,t=null;
+  var clicks=0,t=null,pending=null;
   var el=document.querySelector('.crest');
   if(!el) return;
   el.addEventListener('click',function(e){
+    e.preventDefault();
     clicks++;
-    if(clicks===1) t=setTimeout(function(){clicks=0;},600);
+    clearTimeout(t);
+    clearTimeout(pending);
     if(clicks>=3){
-      clearTimeout(t);clicks=0;
-      e.preventDefault();
+      clicks=0;
       window.location.href='../admin/';
+    } else {
+      t=setTimeout(function(){
+        var dest=el.getAttribute('href');
+        clicks=0;
+        if(dest) window.location.href=dest;
+      },400);
     }
   });
 })();

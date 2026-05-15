@@ -165,8 +165,15 @@
   details.collapse > summary .section-head .sub { margin: 4px 0 0; }
   details.collapse .collapse-wrap {
     overflow: hidden;
-    transition: height 0.3s ease;
+    transition: height 0.6s ease;
     height: 0;
+  }
+  details.collapse .collapse-inner {
+    transition: transform 0.6s ease;
+    transform: translateY(-100%);
+  }
+  details.collapse[open] .collapse-inner {
+    transform: translateY(0);
   }
   details.collapse .collapse-inner > .collapse-body { padding-top: 0.5rem; }
   @media (max-width: 720px) {
@@ -407,7 +414,7 @@
 (function() {
   var GROUPS = 'details.week-group, details.collapse';
   var COLLAPSE_DELAY_MS = 500;
-  var ANIM_MS = 300;
+  var ANIM_MS = 600;
 
   function openGroup(g) {
     var wrap = g.querySelector(':scope > .collapse-wrap');

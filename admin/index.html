@@ -8,9 +8,6 @@
 <style>
 .admin-login{max-width:400px;margin:80px auto;padding:2rem;}
 .admin-login h1{font-size:1.25rem;margin-bottom:1.5rem;}
-.admin-login input[type=password]{width:100%;padding:.6rem .8rem;font-size:1rem;border:1px solid var(--border,#ccc);border-radius:4px;margin-bottom:1rem;box-sizing:border-box;}
-.admin-login button{padding:.6rem 1.4rem;font-size:.95rem;cursor:pointer;}
-.admin-error{color:#c00;font-size:.9rem;margin-top:.5rem;display:none;}
 .admin-panel{display:none;max-width:960px;margin:40px auto;padding:2rem;}
 
 /* Course table */
@@ -94,14 +91,10 @@
 
 <main id="main-content">
 
-<!-- LOGIN -->
+<!-- DENIED -->
 <div class="admin-login" id="loginBox" style="display:none;">
-  <h1>Admin Access</h1>
-  <input type="password" id="pwInput" placeholder="Password" autocomplete="current-password">
-  <label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;margin-bottom:.9rem;cursor:pointer;">
-  </label>
-  <button onclick="doLogin()">Enter</button>
-  <div class="admin-error" id="loginErr">Incorrect password.</div>
+  <h1>Access Denied</h1>
+  <p>This IP is not authorized.</p>
 </div>
 
 <!-- ADMIN PANEL -->
@@ -223,16 +216,6 @@ function showPanel(){
       else document.getElementById('loginBox').style.display='';
     }).catch(()=>{ document.getElementById('loginBox').style.display=''; });
 })();
-
-function doLogin(){
-  const pw = document.getElementById('pwInput').value;
-  authFetch('/acc/admin/api-login',{method:'POST',body:JSON.stringify({password:pw})})
-    .then(r=>r.json()).then(d=>{
-      if(d.ok) showPanel();
-      else document.getElementById('loginErr').style.display='block';
-    }).catch(()=>{document.getElementById('loginErr').style.display='block';});
-}
-document.getElementById('pwInput').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
 // ── Course list ───────────────────────────────────────────────────
 

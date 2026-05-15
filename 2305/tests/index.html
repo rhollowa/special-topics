@@ -199,7 +199,9 @@
       </div>
     </summary><div class="collapse-wrap"><div class="collapse-inner"><div class="collapse-body prose">
       <h3>Download</h3>
-      <p><em>Coming soon — check back shortly.</em></p>
+      <p>
+        <a href="../files/Modeling_final.xlsx" download>Modeling_final.xlsx</a>
+      </p>
 
       <!-- Submit button — fires modal for Final Exam -->
       <button class="submit-btn" onclick="openModal('Final Exam', 'final')">
@@ -385,7 +387,30 @@
   }
 </script>
 
-<!-- admin-crest-hook --><script src="/admin-crest.js" defer></script>
+<!-- admin-crest-hook -->
+<script>
+(function(){
+  var clicks=0,t=null,pending=null;
+  var el=document.querySelector('.crest');
+  if(!el) return;
+  el.addEventListener('click',function(e){
+    e.preventDefault();
+    clicks++;
+    clearTimeout(t);
+    clearTimeout(pending);
+    if(clicks>=3){
+      clicks=0;
+      window.location.href='../admin/';
+    } else {
+      t=setTimeout(function(){
+        var dest=el.getAttribute('href');
+        clicks=0;
+        if(dest) window.location.href=dest;
+      },400);
+    }
+  });
+})();
+</script>
 </body>
 </html>
 

@@ -567,86 +567,97 @@ function fetchFromACC(){
 }
 
 function parseACCSchedule(html, url){
-  // Parse URL params for quick wins
-  const params = new URLSearchParams(url.split('?')[1]||'');
-  const termCode = params.get('term') || '';        // e.g. 226U000 or 226F000
+  // Parse URL params
+  const params = new URLSearchParams((url.split('?')[1])||'');
+  const termCode = params.get('term') || '';
   const yr = params.get('yr') || '';
 
-  // Decode term code → semester label
-  // ACC term format: YYT where YY=last 2 of year, T=S(spring)/U(summer)/F(fall)
-  // e.g. 226U000 = 2026 Summer, 226F000 = 2026 Fall, 226S000 = 2026 Spring
+  // Semester from page header: "Credit Summer 2026", "Credit Fall 2026", etc.
   let semester = '';
-  if(termCode && yr){
-    const tChar = termCode[3] || '';  // char at index 3 is season
-    const seasonMap = {S:'Spring', U:'Summer', F:'Fall'};
-    const season = seasonMap[tChar] || '';
-    if(season) semester = `${season} ${yr}`;
-  }
+  const semMatch = html.match(/Course Schedule by Instructor\s*-\s*\(([^)]+)\)/i);
+  if(semMatch) semester = semMatch[1].trim();  // e.g. "Credit Summer 2026"
+  // Simplify: strip "Credit "
+  semester = semester.replace(/^Credit\s+/i,'').trim();
 
-  // Parse HTML with DOMParser
+  // DOMParser for structured extraction
   const doc = new DOMParser().parseFromString(html, 'text/html');
 
-  // Try to find section rows — ACC schedule uses tables
   const result = {semester};
 
-  // Look for course/section data in table cells
-  const allText = doc.body ? doc.body.innerText : html.replace(/<[^>]+>/g,' ');
-  const lines = allText.split('\n').map(l=>l.trim()).filter(Boolean);
-
-  // Course number pattern: BUSI 2305, ACCT 1303, etc.
-  for(const line of lines){
-    const m = line.match(/\b([A-Z]{2,5})\s+(\d{4}[A-Z]?)\b/);
-    if(m){ result.course_num = m[1]+' '+m[2]; break; }
+  // Course number + title from h4 link: "BUSI 2305 Business Statistics"
+  const h4 = doc.querySelector('h4 a');
+  if(h4){
+    const txt = h4.textContent.trim();
+    // e.g. "BUSI 2305 Business Statistics"
+    const m = txt.match(/^([A-Z]{2,5}\s+\d{4}[A-Z]?)\s+(.+)$/);
+    if(m){ result.course_num = m[1]; result.title = m[2]; }
+    else { result.course_num = txt; }
   }
 
-  // Section ID: 5-6 digit number
-  for(const line of lines){
-    const m = line.match(/\b(\d{5,6})\b/);
-    if(m){ result.section_id = m[1]; break; }
+  // Term type from <p class='teach_term'>: "10 Week Session: June 1 - August 9"
+  const termP = doc.querySelector("p.teach_term");
+  if(termP){
+    const txt = termP.textContent.trim();
+    // Extract term label before colon
+    const termM = txt.match(/^([^:]+):\s*(.+)$/);
+    if(termM){
+      result.term = termM[1].trim();  // "10 Week Session"
+      // Extract dates from "June 1 - August 9" + year from semester
+      const dateRange = termM[2].trim();
+      const drM = dateRange.match(/(\w+ \d+)\s*-\s*(\w+ \d+)/);
+      if(drM && yr){
+        result.start_date = parseMonthDay(drM[1], yr);
+        result.end_date   = parseMonthDay(drM[2], yr);
+      }
+    }
   }
 
-  // Course title: line after course number, often caps or title case
-  if(result.course_num){
-    const cnIdx = lines.findIndex(l=>l.includes(result.course_num));
-    if(cnIdx>=0 && cnIdx+1<lines.length) result.title = lines[cnIdx+1];
+  // Section table: synonym number + section type + campus + room + dates
+  // Table row with section data — look for the synonym (5-6 digit number)
+  const tds = Array.from(doc.querySelectorAll('table.section_line_odd td, table.section_line_even td'))
+    .map(td=>td.textContent.trim());
+
+  // Synonym number: 5-6 digit standalone cell
+  for(const td of tds){
+    if(/^\d{5,6}$/.test(td)){ result.section_id = td; break; }
   }
 
-  // Delivery: look for Online/Web-based/In Person/Hybrid keywords
-  for(const line of lines){
-    if(/online|web.based|internet/i.test(line)){ result.delivery='Online'; break; }
-    if(/hybrid/i.test(line)){ result.delivery='Hybrid'; break; }
-    if(/in.person|face.to.face|on.campus/i.test(line)){ result.delivery='In Person'; break; }
-  }
+  // Delivery: look for ONL, DIL, HYB in table cells or body text
+  const bodyText = doc.body ? doc.body.textContent : '';
+  if(/\bONL\b|online/i.test(bodyText)) result.delivery = 'Online';
+  else if(/\bHYB\b|hybrid/i.test(bodyText)) result.delivery = 'Hybrid';
+  else result.delivery = 'In Person';
 
-  // Days/Times: patterns like MWF 10:00-10:50 AM, TTh 1:00-2:15 PM
-  for(const line of lines){
-    const m = line.match(/\b([MTWRF]{1,5}(Th|Su)?)\s+\d{1,2}:\d{2}[^,\n]*/i);
+  // Days/Times: look for day patterns in table cells
+  for(const td of tds){
+    const m = td.match(/\b(Mon|Tue|Wed|Thu|Fri|Sat|Sun|M|T|W|Th|F|MWF|TTh|MW)[^,\n]*/i);
     if(m){ result.days_times = m[0].trim(); break; }
   }
+  // Online courses typically have no meeting times
+  if(!result.days_times && result.delivery==='Online') result.days_times = '';
 
-  // Dates: MM/DD/YYYY or YYYY-MM-DD
-  const dateMatches = allText.match(/\b(\d{1,2}\/\d{1,2}\/\d{4})\b/g);
-  if(dateMatches && dateMatches.length>=2){
-    result.start_date = toISODate(dateMatches[0]);
-    result.end_date   = toISODate(dateMatches[dateMatches.length-1]);
-  }
-
-  // Term type: 8-Week, 16-Week, Spring B, Summer I, etc.
-  for(const line of lines){
-    const m = line.match(/\b(\d{1,2}.Week|Spring [AB]|Fall [AB]|Summer [I]+|Weekend|Mini)\b/i);
-    if(m){ result.term = m[0]; break; }
-  }
-
-  // Location: room patterns like NRG 1234, HLC 2010
-  for(const line of lines){
-    const m = line.match(/\b([A-Z]{2,4})\s+(\d{3,4}[A-Z]?)\b/);
-    if(m && m[1]!=='BUSI'&&m[1]!=='ACCT'&&m[1]!=='MATH'&&m[1]!=='MGMT'){
-      result.location = m[0]; break;
+  // Location: campus code from table (ONL, NRG, HLC, etc.)
+  for(const td of tds){
+    if(/^(ONL|NRG|HLC|RGC|SAC|CYP|EVC|PIN|RVS|SCC|SVC|HWY|RGS|HBC|ANS)\b/.test(td)){
+      result.location = td; break;
     }
   }
 
   return result;
 }
+
+function parseMonthDay(str, yr){
+  // "June 1" → "2026-06-01"
+  const months = {January:'01',February:'02',March:'03',April:'04',May:'05',June:'06',
+    July:'07',August:'08',September:'09',October:'10',November:'11',December:'12',
+    Jan:'01',Feb:'02',Mar:'03',Apr:'04',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+  const m = str.trim().match(/^(\w+)\s+(\d+)$/);
+  if(!m) return '';
+  const mon = months[m[1]];
+  if(!mon) return '';
+  return `${yr}-${mon}-${m[2].padStart(2,'0')}`;
+}
+
 
 function toISODate(mdY){
   // MM/DD/YYYY → YYYY-MM-DD

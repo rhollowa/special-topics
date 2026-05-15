@@ -1,10 +1,137 @@
 <!DOCTYPE html>
+<!-- ============================================================
+     FILE: 2305/tests.html
+     REPO: rhollowa/special-topics (branch: main)
+     DEPLOYS TO: acc.indiafoxtrotcharlie.com/2305/tests.html
+     SUBMIT API: https://tourcast-docker.onrender.com/acc/submit
+     ----
+     2026-05-14  Pappy  Added per-exam submit modal (ACC ID + drag/drop)
+     2026-05-14  Pappy  Fixed crest href: index.html (removed stale #anchor)
+     ============================================================ -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tests · BUSI 2305 — Spring 2026</title>
 <link rel="stylesheet" href="../theme.css">
+<style>
+  /* === SUBMIT BUTTON === */
+  .submit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 24px;
+    padding: 10px 20px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .submit-btn:hover { background: #5c2412; }
+
+  /* === MODAL OVERLAY === */
+  .sub-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .sub-overlay.open { display: flex; }
+
+  .sub-modal {
+    background: var(--paper);
+    border-radius: 12px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+    width: 100%;
+    max-width: 460px;
+    padding: 2rem;
+    position: relative;
+  }
+  .sub-close {
+    position: absolute;
+    top: 12px; right: 16px;
+    background: none; border: none;
+    font-size: 22px; color: var(--muted);
+    cursor: pointer; line-height: 1;
+  }
+  .sub-close:hover { color: var(--ink); }
+
+  .sub-modal h2 {
+    font-family: var(--serif);
+    font-size: 20px; font-weight: 700;
+    color: var(--ink); margin-bottom: 3px;
+  }
+  .sub-exam-tag {
+    font-family: var(--mono); font-size: 12px;
+    color: var(--muted); letter-spacing: 0.07em;
+    margin-bottom: 1.5rem;
+  }
+  .sub-modal label {
+    display: block; font-size: 13px;
+    font-weight: 600; color: var(--ink-soft);
+    margin-bottom: 5px;
+  }
+  .sub-modal input[type=text] {
+    width: 100%; padding: 9px 12px;
+    border: 1.5px solid var(--rule);
+    border-radius: 7px; font-size: 15px;
+    color: var(--ink); background: #fff;
+    margin-bottom: 1.25rem;
+    font-family: var(--sans);
+    transition: border-color 0.15s;
+  }
+  .sub-modal input[type=text]:focus { outline: none; border-color: var(--accent); }
+
+  .sub-drop {
+    border: 2px dashed var(--rule);
+    border-radius: 10px;
+    padding: 1.75rem 1rem;
+    text-align: center; cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    margin-bottom: 1.25rem;
+    position: relative;
+  }
+  .sub-drop.drag-over { border-color: var(--accent); background: var(--accent-soft); }
+  .sub-drop input[type=file] {
+    position: absolute; inset: 0;
+    opacity: 0; cursor: pointer;
+    width: 100%; height: 100%;
+  }
+  .sub-drop-icon { font-size: 1.8rem; margin-bottom: 6px; }
+  .sub-drop-hint { font-size: 14px; color: var(--muted); }
+  .sub-drop-hint strong { color: var(--accent); }
+  .sub-file-name {
+    font-size: 13px; color: var(--ok);
+    font-weight: 600; margin-top: 6px; display: none;
+  }
+
+  .sub-go {
+    width: 100%; padding: 11px;
+    background: var(--accent); color: #fff;
+    border: none; border-radius: 7px;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer; font-family: var(--sans);
+    transition: background 0.15s;
+  }
+  .sub-go:hover { background: #5c2412; }
+  .sub-go:disabled { background: #c0a89e; cursor: not-allowed; }
+
+  .sub-msg {
+    margin-top: 12px; padding: 10px 14px;
+    border-radius: 7px; font-size: 14px; display: none;
+  }
+  .sub-msg.ok  { background: #e8f4ee; color: var(--ok); border: 1px solid #b2d8c0; }
+  .sub-msg.err { background: #fdf0ee; color: #a02020; border: 1px solid #f0c0b8; }
+</style>
 </head>
 <body>
 
@@ -12,8 +139,9 @@
 
 <header class="topbar">
   <div class="topbar-inner">
+    <!-- crest: href points to index.html only (no #anchor) -->
     <a href="index.html" class="crest">Business Statistics <span class="num">BUSI · 2305</span></a>
-        <nav class="primary" aria-label="Primary">
+    <nav class="primary" aria-label="Primary">
       <a href="index.html">Home</a>
       <a href="lessons.html">Lessons</a>
       <a href="tests.html" class="active">Tests</a>
@@ -32,7 +160,7 @@
 <section class="hero">
   <div class="eyebrow">Exams &amp; assignments</div>
   <h1>Tests</h1>
-  <p class="lede">Active and upcoming exams below. Each one links to its workbook download and lists the due date. Email your completed workbook to me before the deadline.</p>
+  <p class="lede">Active and upcoming exams below. Each one links to its workbook download and lists the due date. Submit your completed workbook using the button below each exam.</p>
 </section>
 
 <section class="page">
@@ -53,7 +181,6 @@
     <ul>
       <li><strong>Open everything.</strong> You can use any tool, any AI, any source. The goal is to produce a working model.</li>
       <li><strong>Show your work in the spreadsheet.</strong> Use formulas and cell references &mdash; not pasted values. I&apos;m grading the model, not just the answers.</li>
-      <li><strong>Submit by email.</strong> Save your filled-in workbook and email it to <a href="mailto:russell.holloway@austincc.edu?subject=15680%20%E2%80%94%20Exam%201%20submission">russell.holloway@austincc.edu</a> before the deadline. Subject line: <code>15680 — Exam 1 submission</code>.</li>
       <li><strong>If anything looks broken</strong> &mdash; an instruction that doesn&apos;t match the model, a cell that won&apos;t calculate, an unclear question &mdash; email me or post in the discussion. Don&apos;t guess.</li>
     </ul>
 
@@ -63,6 +190,11 @@
       <li><a href="https://youtu.be/UFpjaLHvIJw" target="_blank" rel="noopener">Sector Allocation</a></li>
       <li><a href="https://youtu.be/mNGh-s5ZCLM" target="_blank" rel="noopener">Pro Forma</a></li>
     </ul>
+
+    <!-- Submit button — fires modal for Exam 1 -->
+    <button class="submit-btn" onclick="openModal('Exam 1 — Modeling Problems', 'exam1')">
+      &#8593; Submit Assignment
+    </button>
   </div>
 
 </section>
@@ -79,12 +211,39 @@
 
 </main>
 
+<!-- ============================================================
+     SUBMIT MODAL
+     POST to: https://tourcast-docker.onrender.com/acc/submit
+     Fields:  acc_id, course, exam_label, file
+     ============================================================ -->
+<div class="sub-overlay" id="subOverlay" role="dialog" aria-modal="true" aria-labelledby="subTitle">
+  <div class="sub-modal">
+    <button class="sub-close" onclick="closeModal()" aria-label="Close">&times;</button>
+    <h2 id="subTitle">Submit Assignment</h2>
+    <div class="sub-exam-tag" id="subExamTag"></div>
+
+    <label for="subAccId">ACC Student ID</label>
+    <input type="text" id="subAccId" placeholder="e.g. 1234567" autocomplete="off" />
+
+    <label>File</label>
+    <div class="sub-drop" id="subDrop">
+      <input type="file" id="subFile" accept=".xlsx,.xls,.csv,.pdf,.zip" />
+      <div class="sub-drop-icon">📎</div>
+      <div class="sub-drop-hint">Drag &amp; drop or <strong>click to browse</strong></div>
+      <div class="sub-file-name" id="subFileName"></div>
+    </div>
+
+    <button class="sub-go" id="subGo" onclick="submitAssignment()">Submit</button>
+    <div class="sub-msg" id="subMsg"></div>
+  </div>
+</div>
+
 <footer>
   <div class="col">
     <h5>BUSI 2305</h5>
     <p class="institutional">Business Statistics is a 3-credit course offered by the Business Studies department at Austin Community College. For official course information, visit <a href="https://www.austincc.edu">austincc.edu</a>.</p>
   </div>
-    <div class="col">
+  <div class="col">
     <h5>Course</h5>
     <a href="index.html">Home</a>
     <a href="lessons.html">Lessons</a>
@@ -109,6 +268,97 @@
     <a href="https://www.austincc.edu/students/student-accessibility-services">Accessibility Services</a>
   </div>
 </footer>
+
+<script>
+  var _examLabel = '', _examKey = '';
+
+  function openModal(label, key) {
+    _examLabel = label;
+    _examKey   = key;
+    document.getElementById('subExamTag').textContent = label;
+    document.getElementById('subAccId').value = '';
+    document.getElementById('subFile').value = '';
+    document.getElementById('subFileName').style.display = 'none';
+    document.getElementById('subFileName').textContent = '';
+    document.getElementById('subMsg').style.display = 'none';
+    document.getElementById('subMsg').className = 'sub-msg';
+    document.getElementById('subGo').disabled = false;
+    document.getElementById('subGo').textContent = 'Submit';
+    document.getElementById('subOverlay').classList.add('open');
+    setTimeout(function(){ document.getElementById('subAccId').focus(); }, 50);
+  }
+
+  function closeModal() {
+    document.getElementById('subOverlay').classList.remove('open');
+  }
+
+  document.getElementById('subOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  document.getElementById('subFile').addEventListener('change', function() {
+    var fn = document.getElementById('subFileName');
+    if (this.files[0]) { fn.textContent = this.files[0].name; fn.style.display = 'block'; }
+  });
+
+  var drop = document.getElementById('subDrop');
+  drop.addEventListener('dragover',  function(e){ e.preventDefault(); this.classList.add('drag-over'); });
+  drop.addEventListener('dragleave', function()  { this.classList.remove('drag-over'); });
+  drop.addEventListener('drop', function(e) {
+    e.preventDefault(); this.classList.remove('drag-over');
+    var f = e.dataTransfer.files[0];
+    if (f) {
+      var dt = new DataTransfer(); dt.items.add(f);
+      document.getElementById('subFile').files = dt.files;
+      var fn = document.getElementById('subFileName');
+      fn.textContent = f.name; fn.style.display = 'block';
+    }
+  });
+
+  async function submitAssignment() {
+    var accId = document.getElementById('subAccId').value.trim();
+    var file  = document.getElementById('subFile').files[0];
+    var btn   = document.getElementById('subGo');
+
+    if (!accId) { showMsg('Please enter your ACC Student ID.', 'err'); return; }
+    if (!file)  { showMsg('Please select a file to upload.',   'err'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Submitting\u2026';
+
+    var fd = new FormData();
+    fd.append('acc_id',     accId);
+    fd.append('course',     'BUSI-2305');
+    fd.append('exam_label', _examLabel);
+    fd.append('file',       file);
+
+    try {
+      var res  = await fetch('https://tourcast-docker.onrender.com/acc/submit', { method: 'POST', body: fd });
+      var data = await res.json();
+      if (res.ok && !data.error) {
+        showMsg('Submitted \u2014 you\'re all set.', 'ok');
+        btn.textContent = 'Submitted \u2713';
+      } else {
+        showMsg(data.error || 'Something went wrong. Try again.', 'err');
+        btn.disabled = false; btn.textContent = 'Submit';
+      }
+    } catch(e) {
+      showMsg('Network error. Check your connection and try again.', 'err');
+      btn.disabled = false; btn.textContent = 'Submit';
+    }
+  }
+
+  function showMsg(text, type) {
+    var el = document.getElementById('subMsg');
+    el.textContent = text;
+    el.className = 'sub-msg ' + type;
+    el.style.display = 'block';
+  }
+</script>
 
 </body>
 </html>

@@ -24,6 +24,17 @@ button.ct-btn:disabled{opacity:.4;cursor:not-allowed;}
 .up-modal.open{display:flex;}
 .up-modal-inner{background:#fff;padding:2rem;border-radius:8px;max-width:380px;width:90%;}
 .up-modal-inner h3{margin:0 0 1rem;font-size:1.1rem;}
+.picker{margin-top:2.5rem;padding-top:2rem;border-top:1px solid #eee;}
+.picker h2{font-size:1.1rem;margin:0 0 .75rem;}
+.picker select{width:100%;padding:.55rem .7rem;border:1px solid #ccc;border-radius:4px;font-size:.9rem;background:#fff;}
+.picker .pick-actions{margin-top:1rem;display:flex;gap:.5rem;justify-content:flex-end;}
+.act-modal-inner{background:#fff;padding:2rem;border-radius:8px;max-width:440px;width:90%;}
+.act-modal-inner h3{margin:0 0 .5rem;font-size:1.1rem;}
+.act-modal-inner .fname{font-size:.85rem;color:#666;margin-bottom:1.25rem;word-break:break-all;}
+.act-modal-inner .act-buttons{display:flex;flex-direction:column;gap:.5rem;}
+.act-modal-inner .act-buttons button{padding:.7rem 1rem;text-align:left;}
+.act-modal-inner .close-row{margin-top:1rem;display:flex;justify-content:flex-end;}
+pre.receipt{background:#f5f5f5;padding:.75rem;border-radius:4px;font-size:.8rem;max-height:240px;overflow:auto;margin-top:1rem;}
 </style>
 </head>
 <body>
@@ -49,6 +60,19 @@ button.ct-btn:disabled{opacity:.4;cursor:not-allowed;}
     <button class="ct-btn primary" id="uploadBtn" onclick="doUpload()" disabled>Upload</button>
   </div>
   <div class="msg" id="msg"></div>
+
+  <!-- File picker — select an already-uploaded file and decide what to do with it -->
+  <div class="picker">
+    <h2>Process an uploaded file</h2>
+    <select id="filePicker">
+      <option value="">— Select a file —</option>
+    </select>
+    <div class="pick-actions">
+      <button class="ct-btn" onclick="refreshFileList()">Refresh</button>
+      <button class="ct-btn primary" id="openActBtn" onclick="openActionDialog()" disabled>Open</button>
+    </div>
+    <div class="msg" id="pickMsg"></div>
+  </div>
 </div>
 
 </main>
@@ -73,6 +97,7 @@ function authFetch(url, opts={}){
 function showPanel(){
   AUTHED = true;
   document.getElementById('adminPanel').style.display='block';
+  refreshFileList();
 }
 
 function openLogin(){
@@ -180,6 +205,7 @@ function doUpload(){
         input.value = '';
         fname.textContent = '';
         dropTx.textContent = 'Click or drop a file';
+        refreshFileList();
       } else {
         msg.textContent = d.error || 'Upload failed.';
         msg.className = 'msg err';
@@ -190,6 +216,117 @@ function doUpload(){
       msg.textContent = 'Upload failed: ' + e.message;
       msg.className = 'msg err';
       btn.disabled = false;
+    });
+}
+
+// ── File picker ──────────────────────────────────────────────────────
+// Lists files already in R2 under admin-uploads/. User picks one, then a
+// dialog opens with three buttons. Only "Create new class" is wired up;
+// the other two are deliberately dead buttons (stubs).
+
+function refreshFileList(){
+  const sel = document.getElementById('filePicker');
+  const openBtn = document.getElementById('openActBtn');
+  const pickMsg = document.getElementById('pickMsg');
+  pickMsg.textContent = '';
+  pickMsg.className = 'msg';
+  openBtn.disabled = true;
+
+  authFetch('/acc/admin/uploads', { method: 'GET' })
+    .then(r => r.json())
+    .then(d => {
+      sel.innerHTML = '<option value="">— Select a file —</option>';
+      if (!d.ok) {
+        pickMsg.textContent = d.error || 'List failed.';
+        pickMsg.className = 'msg err';
+        return;
+      }
+      // Sort newest first.
+      const files = (d.files || []).slice().sort((a,b) =>
+        (b.uploaded_at || '').localeCompare(a.uploaded_at || '')
+      );
+      files.forEach(f => {
+        const o = document.createElement('option');
+        o.value = f.key;
+        o.textContent = f.filename;
+        sel.appendChild(o);
+      });
+    })
+    .catch(e => {
+      pickMsg.textContent = 'List failed: ' + e.message;
+      pickMsg.className = 'msg err';
+    });
+}
+
+document.getElementById('filePicker').addEventListener('change', e => {
+  document.getElementById('openActBtn').disabled = !e.target.value;
+});
+
+function openActionDialog(){
+  const sel = document.getElementById('filePicker');
+  const key = sel.value;
+  if (!key) return;
+  const filename = sel.options[sel.selectedIndex].text;
+
+  // Build action modal on the fly.
+  const existing = document.getElementById('actModal');
+  if (existing) existing.remove();
+
+  const html =
+    '<div class="up-modal open" id="actModal" onclick="actOverlayClick(event)">'
+    + '<div class="act-modal-inner">'
+    + '<h3>What do you want to do with this file?</h3>'
+    + '<div class="fname">' + filename.replace(/</g,'&lt;') + '</div>'
+    + '<div class="act-buttons">'
+    + '<button class="ct-btn primary" onclick="actCreateClass()">Create new class</button>'
+    // Stub — deliberately does nothing. No onclick handler.
+    + '<button class="ct-btn">Update grades</button>'
+    // Stub — deliberately does nothing.
+    + '<button class="ct-btn">Post to site</button>'
+    + '</div>'
+    + '<div class="msg" id="actMsg"></div>'
+    + '<div class="close-row"><button class="ct-btn" onclick="closeActModal()">Close</button></div>'
+    + '</div></div>';
+
+  document.getElementById('main-content').insertAdjacentHTML('beforeend', html);
+  document.getElementById('actModal').dataset.key = key;
+}
+
+function actOverlayClick(e){
+  if (e.target.id === 'actModal') closeActModal();
+}
+
+function closeActModal(){
+  const m = document.getElementById('actModal');
+  if (m) m.remove();
+}
+
+function actCreateClass(){
+  const modal = document.getElementById('actModal');
+  const key = modal.dataset.key;
+  const actMsg = document.getElementById('actMsg');
+  actMsg.textContent = 'Processing…';
+  actMsg.className = 'msg';
+
+  authFetch('/acc/admin/process/create-class', {
+    method: 'POST',
+    body: JSON.stringify({ key: key })
+  })
+    .then(r => r.json())
+    .then(d => {
+      if (d.ok) {
+        actMsg.className = 'msg ok';
+        actMsg.innerHTML =
+          'Created class — section ' + d.section_id + ' (' + d.row_count + ' rows)'
+          + '<pre class="receipt">' + JSON.stringify(d, null, 2) + '</pre>';
+      } else {
+        actMsg.className = 'msg err';
+        actMsg.textContent = d.error || 'Processor failed.';
+      }
+    })
+    .catch(e => {
+      actMsg.className = 'msg err';
+      actMsg.textContent = 'Request failed: ' + e.message;
     });
 }
 </script>

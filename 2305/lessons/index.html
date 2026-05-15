@@ -59,6 +59,37 @@
     padding-bottom: 0 !important;
     border-bottom: none !important;
   }
+
+  /* Side-by-side: videos left, files right, flush to video height */
+  .week-group .collapse-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 2rem;
+    padding: 1rem 0 1.25rem;
+  }
+  .week-group .video-grid {
+    flex: 0 0 auto;
+  }
+  .week-group .week-files {
+    flex: 0 0 auto;
+    align-self: flex-start;
+    margin-top: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    border-left: none;
+    border-radius: 0;
+  }
+  .week-group .files-label {
+    display: none;
+  }
+  .week-group .files-list {
+    gap: 0.4rem;
+  }
+  .week-group .files-list a {
+    font-size: 0.88rem;
+    padding: 0.1rem 0;
+  }
 </style>
 </head>
 <body>
@@ -556,5 +587,6 @@
 </script>
 </body>
 </html>
+
 
 

@@ -6,90 +6,138 @@
 <title>Lessons · BUSI 2305 — Spring 2026</title>
 <link rel="stylesheet" href="../../theme.css">
 <style>
-  /* Hover-to-expand week sections; click-to-pin; full-rectangle hover zone */
   .week-group {
     position: relative;
     margin-bottom: 0 !important;
     border-bottom: 1px solid var(--rule-soft);
   }
+  /* Summary row: taller, flex, holds everything inline */
   .week-group > summary {
     list-style: none;
-    cursor: pointer;
+    cursor: default;
     position: relative;
     display: flex;
     align-items: center;
-    gap: 16px;
-    min-height: 96px;
-    padding: 1.25rem 0;
+    gap: 24px;
+    min-height: 120px;
+    padding: 1rem 0;
     margin: 0;
     border-bottom: none;
   }
   .week-group > summary::-webkit-details-marker { display: none; }
-  .week-group > summary > .week-header { display: contents; }
-  .week-group.pinned > summary::before {
-    content: '●';
-    position: absolute;
-    left: -1.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 11px;
-    line-height: 1;
+  /* Week label block */
+  .summary-label {
+    flex: 0 0 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  /* Mini video cards inline in the summary */
+  .summary-videos {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .summary-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--paper-warm);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    text-decoration: none;
+    color: inherit;
+    max-width: 220px;
+  }
+  .summary-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+  .summary-thumb {
+    width: 56px;
+    height: 36px;
+    border-radius: 3px;
+    background: linear-gradient(135deg, #2d2d2d 0%, #4a3525 100%);
+    flex-shrink: 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .summary-thumb::after {
+    content: "▶";
+    color: rgba(255,255,255,0.8);
+    font-size: 12px;
+  }
+  .summary-thumb.type-excel {
+    background: linear-gradient(135deg, #2d4a2d 0%, #1f3d1f 100%);
+  }
+  .summary-card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .summary-card-tag {
+    font-family: var(--mono);
+    font-size: 9px;
     color: var(--accent);
-    user-select: none;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
   }
-  @media (max-width: 720px) {
-    .week-group.pinned > summary::before { left: -1rem; font-size: 10px; }
-    .week-group > summary { min-height: 72px; }
+  .summary-card-tag.excel { color: var(--ok); }
+  .summary-card-ttl {
+    font-family: var(--serif);
+    font-size: 13px;
+    color: var(--ink);
+    font-weight: 500;
+    line-height: 1.3;
   }
-  .week-group .collapse-wrap {
-    overflow: hidden;
-    transition: height 0.6s ease;
-    height: 0;
+  /* File links inline */
+  .summary-files {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-left: auto;
+    flex-shrink: 0;
   }
-  .week-group .collapse-inner {
-    transition: transform 0.6s ease;
-    transform: translateY(-100%);
+  .summary-files a {
+    font-family: var(--serif);
+    font-size: 0.88rem;
+    color: var(--ink);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    transition: color 0.15s;
+    padding: 0.1rem 0;
   }
-  .week-group[open] .collapse-inner {
-    transform: translateY(0);
+  .summary-files a::before {
+    content: "↓";
+    color: var(--accent);
+    font-weight: bold;
+    margin-right: 0.1rem;
   }
-  /* Override theme.css week-header that adds its own bottom border/margin */
+  .summary-files a:hover { color: var(--accent); }
+  .summary-files .file-ext {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  /* Hide the expand content in grid view — not needed anymore */
+  .lectures.view-grid .collapse-wrap { display: none; }
+  /* Override theme.css week-header border/margin */
   .lectures.view-grid .week-header {
     margin-bottom: 0 !important;
     padding-bottom: 0 !important;
     border-bottom: none !important;
   }
-
-  /* Side-by-side: videos left, files right, flush to video height */
-  .week-group .collapse-inner {
-    display: flex;
-    align-items: flex-start;
-    gap: 2rem;
-    padding: 1rem 0 1.25rem;
-  }
-  .week-group .video-grid {
-    flex: 0 0 auto;
-  }
-  .week-group .week-files {
-    flex: 0 0 auto;
-    align-self: flex-start;
-    margin-top: 0;
-    padding: 0;
-    background: none;
-    border: none;
-    border-left: none;
-    border-radius: 0;
-  }
-  .week-group .files-label {
-    display: none;
-  }
-  .week-group .files-list {
-    gap: 0.4rem;
-  }
-  .week-group .files-list a {
-    font-size: 0.88rem;
-    padding: 0.1rem 0;
-  }
+  /* List view: hide summaries, show table */
+  .lectures.view-list .week-group > summary { display: none; }
+  .lectures.view-list .collapse-wrap { display: none; }
 </style>
 </head>
 <body>
@@ -143,8 +191,22 @@
     <!-- WEEK 1 -->
     <details class="week-group">
       <summary class="week-header">
-        <span class="wk">Week 1</span>
-        <span class="wk-title">Introduction & Greeks</span>
+        <div class="summary-label">
+          <span class="wk">Week 1</span>
+          <span class="wk-title">Introduction &amp; Greeks</span>
+        </div>
+        <div class="summary-videos">
+        <div class="summary-card" data-video-id="ySBcVB80Q8Q" data-video-title="Week 1 — The Greek Alphabet">
+          <div class="summary-thumb "></div>
+          <div class="summary-card-meta">
+            <div class="summary-card-tag ">Lecture</div>
+            <div class="summary-card-ttl">The Greek Alphabet</div>
+          </div>
+        </div>
+        </div>
+        <div class="summary-files">
+        <a href="../files/The_Greeks.pptx" download>The Greeks <span class="file-ext">.pptx</span></a>
+        </div>
       </summary><div class="collapse-wrap"><div class="collapse-inner">
       <div class="video-grid">
         <div class="video-card" data-video-id="ySBcVB80Q8Q" data-video-title="Week 1 — The Greek Alphabet">
@@ -166,8 +228,22 @@
     <!-- WEEK 2 -->
     <details class="week-group">
       <summary class="week-header">
-        <span class="wk">Week 2</span>
-        <span class="wk-title">What is Statistics</span>
+        <div class="summary-label">
+          <span class="wk">Week 2</span>
+          <span class="wk-title">What is Statistics</span>
+        </div>
+        <div class="summary-videos">
+        <div class="summary-card" data-video-id="8z_uGLX4NeA" data-video-title="Week 2 — What is Statistics?">
+          <div class="summary-thumb "></div>
+          <div class="summary-card-meta">
+            <div class="summary-card-tag ">Lecture</div>
+            <div class="summary-card-ttl">What is Statistics?</div>
+          </div>
+        </div>
+        </div>
+        <div class="summary-files">
+        <a href="../files/What_is_Statistics.pptx" download>What is Statistics <span class="file-ext">.pptx</span></a>
+        </div>
       </summary><div class="collapse-wrap"><div class="collapse-inner">
       <div class="video-grid">
         <div class="video-card" data-video-id="8z_uGLX4NeA" data-video-title="Week 2 — What is Statistics?">
@@ -189,8 +265,29 @@
     <!-- WEEK 3 -->
     <details class="week-group">
       <summary class="week-header">
-        <span class="wk">Week 3</span>
-        <span class="wk-title">Describing Data & Data Visualization</span>
+        <div class="summary-label">
+          <span class="wk">Week 3</span>
+          <span class="wk-title">Describing Data &amp; Data Visualization</span>
+        </div>
+        <div class="summary-videos">
+        <div class="summary-card" data-video-id="9UGlp0oCqO4" data-video-title="Week 3 — Data Visualization">
+          <div class="summary-thumb "></div>
+          <div class="summary-card-meta">
+            <div class="summary-card-tag ">Lecture</div>
+            <div class="summary-card-ttl">Data Visualization</div>
+          </div>
+        </div>
+        <div class="summary-card" data-video-id="kqcmqul6FsY" data-video-title="Week 3 — Data Visualization Examples">
+          <div class="summary-thumb type-excel"></div>
+          <div class="summary-card-meta">
+            <div class="summary-card-tag excel">Excel Walkthrough</div>
+            <div class="summary-card-ttl">Data Visualization Examples</div>
+          </div>
+        </div>
+        </div>
+        <div class="summary-files">
+        <a href="../files/Data_Visualization_excel_primer.pptx" download>Data Visualization (Excel Primer) <span class="file-ext">.pptx</span></a>
+        </div>
       </summary><div class="collapse-wrap"><div class="collapse-inner">
       <div class="video-grid">
         <div class="video-card" data-video-id="9UGlp0oCqO4" data-video-title="Week 3 — Data Visualization">
@@ -219,8 +316,23 @@
     <!-- WEEK 4 -->
     <details class="week-group">
       <summary class="week-header">
-        <span class="wk">Week 4</span>
-        <span class="wk-title">Averages</span>
+        <div class="summary-label">
+          <span class="wk">Week 4</span>
+          <span class="wk-title">Averages</span>
+        </div>
+        <div class="summary-videos">
+        <div class="summary-card" data-video-id="tXbwX-eK_i4" data-video-title="Week 4 — Averages">
+          <div class="summary-thumb "></div>
+          <div class="summary-card-meta">
+            <div class="summary-card-tag ">Lecture</div>
+            <div class="summary-card-ttl">Averages</div>
+          </div>
+        </div>
+        </div>
+        <div class="summary-files">
+        <a href="../files/Averages.pptx" download>Averages <span class="file-ext">.pptx</span></a>
+        <a href="../files/Weighted_average_exercises.xlsx" download>Weighted Average Exercises <span class="file-ext">.xlsx</span></a>
+        </div>
       </summary><div class="collapse-wrap"><div class="collapse-inner">
       <div class="video-grid">
         <div class="video-card" data-video-id="tXbwX-eK_i4" data-video-title="Week 4 — Averages">
@@ -243,8 +355,22 @@
     <!-- WEEK 5 -->
     <details class="week-group">
       <summary class="week-header">
-        <span class="wk">Week 5</span>
-        <span class="wk-title">Dispersion</span>
+        <div class="summary-label">
+          <span class="wk">Week 5</span>
+          <span class="wk-title">Dispersion</span>
+        </div>
+        <div class="summary-videos">
+        <div class="summary-card" data-video-id="Ufgoh3BgROc" data-video-title="Week 5 — Dispersion">
+          <div class="summary-thumb "></div>
+          <div class="summary-card-meta">
+            <div class="summary-card-tag ">Lecture</div>
+            <div class="summary-card-ttl">Dispersion</div>
+          </div>
+        </div>
+        </div>
+        <div class="summary-files">
+        <a href="../files/Dispersion.pptx" download>Dispersion <span class="file-ext">.pptx</span></a>
+        </div>
       </summary><div class="collapse-wrap"><div class="collapse-inner">
       <div class="video-grid">
         <div class="video-card" data-video-id="Ufgoh3BgROc" data-video-title="Week 5 — Dispersion">
@@ -266,8 +392,22 @@
     <!-- WEEK 6 -->
     <details class="week-group">
       <summary class="week-header">
-        <span class="wk">Week 6</span>
-        <span class="wk-title">Probability</span>
+        <div class="summary-label">
+          <span class="wk">Week 6</span>
+          <span class="wk-title">Probability</span>
+        </div>
+        <div class="summary-videos">
+        <div class="summary-card" data-video-id="yTUm4vsDlkw" data-video-title="Week 6 — A Survey of Probability Concepts">
+          <div class="summary-thumb "></div>
+          <div class="summary-card-meta">
+            <div class="summary-card-tag ">Lecture</div>
+            <div class="summary-card-ttl">A Survey of Probability Concepts</div>
+          </div>
+        </div>
+        </div>
+        <div class="summary-files">
+        <a href="../files/Probability_and_Combinatorics.pptx" download>Probability and Combinatorics <span class="file-ext">.pptx</span></a>
+        </div>
       </summary><div class="collapse-wrap"><div class="collapse-inner">
       <div class="video-grid">
         <div class="video-card" data-video-id="yTUm4vsDlkw" data-video-title="Week 6 — A Survey of Probability Concepts">
@@ -289,8 +429,29 @@
     <!-- WEEK 7 -->
     <details class="week-group">
       <summary class="week-header">
-        <span class="wk">Week 7</span>
-        <span class="wk-title">Confidence Intervals</span>
+        <div class="summary-label">
+          <span class="wk">Week 7</span>
+          <span class="wk-title">Confidence Intervals</span>
+        </div>
+        <div class="summary-videos">
+        <div class="summary-card" data-video-id="5GN_CF3ZA84" data-video-title="Week 7 — Confidence Intervals (Pt 1)">
+          <div class="summary-thumb "></div>
+          <div class="summary-card-meta">
+            <div class="summary-card-tag ">Lecture</div>
+            <div class="summary-card-ttl">Confidence Intervals (Pt 1)</div>
+          </div>
+        </div>
+        <div class="summary-card" data-video-id="nIAhwqnw9NM" data-video-title="Week 7 — Confidence Intervals (Pt 2)">
+          <div class="summary-thumb "></div>
+          <div class="summary-card-meta">
+            <div class="summary-card-tag ">Lecture</div>
+            <div class="summary-card-ttl">Confidence Intervals (Pt 2)</div>
+          </div>
+        </div>
+        </div>
+        <div class="summary-files">
+        <a href="../files/Confidence_Intervals.pptx" download>Confidence Intervals <span class="file-ext">.pptx</span></a>
+        </div>
       </summary><div class="collapse-wrap"><div class="collapse-inner">
       <div class="video-grid">
         <div class="video-card" data-video-id="5GN_CF3ZA84" data-video-title="Week 7 — Confidence Intervals (Pt 1)">
@@ -319,8 +480,37 @@
     <!-- WEEK 8 -->
     <details class="week-group">
       <summary class="week-header">
-        <span class="wk">Week 8</span>
-        <span class="wk-title">Correlation & Regression</span>
+        <div class="summary-label">
+          <span class="wk">Week 8</span>
+          <span class="wk-title">Correlation &amp; Regression</span>
+        </div>
+        <div class="summary-videos">
+        <div class="summary-card" data-video-id="hgaBelAOGak" data-video-title="Week 8 — Regression">
+          <div class="summary-thumb "></div>
+          <div class="summary-card-meta">
+            <div class="summary-card-tag ">Lecture</div>
+            <div class="summary-card-ttl">Regression</div>
+          </div>
+        </div>
+        <div class="summary-card" data-video-id="2iZ8SKqarIg" data-video-title="Week 8 — Regression Examples">
+          <div class="summary-thumb "></div>
+          <div class="summary-card-meta">
+            <div class="summary-card-tag ">Lecture</div>
+            <div class="summary-card-ttl">Regression Examples</div>
+          </div>
+        </div>
+        <div class="summary-card" data-video-id="RjcuE6xOI5Q" data-video-title="Week 8 — Adding Analysis Toolkit">
+          <div class="summary-thumb "></div>
+          <div class="summary-card-meta">
+            <div class="summary-card-tag ">Lecture</div>
+            <div class="summary-card-ttl">Adding Analysis Toolkit</div>
+          </div>
+        </div>
+        </div>
+        <div class="summary-files">
+        <a href="../files/Regression.pptx" download>Regression <span class="file-ext">.pptx</span></a>
+        <a href="../files/Regression_examples.xlsx" download>Regression Examples <span class="file-ext">.xlsx</span></a>
+        </div>
       </summary><div class="collapse-wrap"><div class="collapse-inner">
       <div class="video-grid">
         <div class="video-card" data-video-id="hgaBelAOGak" data-video-title="Week 8 — Regression">

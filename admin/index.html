@@ -195,14 +195,13 @@ const API = 'https://tourcast-docker.onrender.com';
 const API_KEY = 'c7852252558744ea5bef3c86136edbf31b5e3e556fd447454a4d37b06151b4e7';
 const CREDS = { credentials: 'include' };
 let AUTHED = false;
-let SESSION = null;
 let COURSE = null;
 let GB_DATA = null;
 
 function authFetch(url, opts={}){
   const isForm = opts.body instanceof FormData;
   const headers = Object.assign(
-    {'X-API-Key':API_KEY,'X-Admin-Token':SESSION},
+    {'X-API-Key':API_KEY},
     isForm ? {} : {'Content-Type':'application/json'},
     opts.headers||{}
   );
@@ -210,8 +209,8 @@ function authFetch(url, opts={}){
 }
 
 // ── Boot ──────────────────────────────────────────────────────────
-function showPanel(token){
-  AUTHED = true; SESSION = token;
+function showPanel(){
+  AUTHED = true;
   document.getElementById('loginBox').style.display='none';
   document.getElementById('adminPanel').style.display='block';
   loadCourses();
@@ -220,7 +219,7 @@ function showPanel(token){
 (function boot(){
   authFetch('/acc/admin/ip-auth',{method:'POST',body:JSON.stringify({})})
     .then(r=>r.json()).then(d=>{
-      if(d.ok) showPanel(d.token);
+      if(d.ok) showPanel();
       else document.getElementById('loginBox').style.display='';
     }).catch(()=>{ document.getElementById('loginBox').style.display=''; });
 })();
@@ -229,7 +228,7 @@ function doLogin(){
   const pw = document.getElementById('pwInput').value;
   authFetch('/acc/admin/api-login',{method:'POST',body:JSON.stringify({password:pw})})
     .then(r=>r.json()).then(d=>{
-      if(d.ok) showPanel(d.token);
+      if(d.ok) showPanel();
       else document.getElementById('loginErr').style.display='block';
     }).catch(()=>{document.getElementById('loginErr').style.display='block';});
 }
@@ -353,7 +352,7 @@ function handleUpload(file){
 
 function exportGradebook(){
   if(!COURSE) return;
-  window.open(API+'/acc/admin/gradebook/export?course='+encodeURIComponent(COURSE)+'&token='+SESSION);
+  window.open(API+'/acc/admin/gradebook/export?course='+encodeURIComponent(COURSE));
 }
 
 // ── Add column ────────────────────────────────────────────────────
@@ -448,6 +447,7 @@ function esc(s){
 
 </body>
 </html>
+
 
 
 

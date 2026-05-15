@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<!-- ============================================================
+     FILE: exam-poc.html
+     REPO: rhollowa/special-topics (branch: main)
+     DEPLOYS TO: acc.indiafoxtrotcharlie.com/exam-poc.html
+     PURPOSE: Standalone POC for timed exam — not linked from nav
+     ----
+     2026-05-15  Pappy  Initial POC: 5 MC questions, 90-min timer
+     ============================================================ -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam POC · Test</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    margin: 0;
+    padding: 0;
+  }
+  .exam-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+  .exam-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    border-bottom: 1.5px solid var(--rule);
+    margin-bottom: 2rem;
+  }
+  .exam-title {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0;
+  }
+  .exam-meta {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.07em;
+    margin-top: 4px;
+  }
+  .timer {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    background: var(--paper-warm);
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1.5px solid var(--rule);
+  }
+  .timer.warn { color: #b8860b; }
+  .timer.crit { color: #c0392b; animation: pulse 1s infinite; }
+  @keyframes pulse { 50% { opacity: 0.5; } }
+
+  .progress {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    letter-spacing: 0.05em;
+  }
+  .question-card {
+    background: var(--paper-warm);
+    border-radius: 12px;
+    padding: 2rem 1.75rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--rule-soft);
+  }
+  .question-text {
+    font-family: var(--serif);
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+    line-height: 1.4;
+  }
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #fff;
+    border: 1.5px solid var(--rule);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    font-size: 15px;
+    color: var(--ink-soft);
+  }
+  .option:hover { border-color: var(--accent); }
+  .option.selected {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .option input[type=radio] {
+    margin: 0;
+    accent-color: var(--accent);
+  }
+  .option-letter {
+    font-family: var(--mono);
+    font-weight: 700;
+    color: var(--muted);
+    min-width: 18px;
+  }
+  .option.selected .option-letter { color: var(--accent); }
+
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+  }
+  .nav-btn {
+    padding: 10px 20px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .nav-btn:hover { background: #5c2412; }
+  .nav-btn:disabled {
+    background: var(--rule);
+    cursor: not-allowed;
+  }
+  .nav-btn.secondary {
+    background: transparent;
+    color: var(--accent);
+    border: 1.5px solid var(--accent);
+  }
+  .nav-btn.secondary:hover {
+    background: var(--accent-soft);
+  }
+  .nav-btn.submit {
+    background: #2d6e3e;
+  }
+  .nav-btn.submit:hover { background: #23552f; }
+
+  .result-card {
+    background: var(--paper-warm);
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    text-align: center;
+    border: 1px solid var(--rule-soft);
+  }
+  .result-card h2 {
+    font-family: var(--serif);
+    font-size: 26px;
+    color: var(--ink);
+    margin: 0 0 0.5rem;
+  }
+  .result-card .score {
+    font-family: var(--mono);
+    font-size: 56px;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 1rem 0;
+    letter-spacing: 0.02em;
+  }
+  .result-card .pct {
+    font-family: var(--sans);
+    font-size: 18px;
+    color: var(--muted);
+  }
+  .start-card {
+    background: var(--paper-warm);
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    text-align: center;
+    border: 1px solid var(--rule-soft);
+  }
+  .start-card h2 {
+    font-family: var(--serif);
+    font-size: 24px;
+    color: var(--ink);
+    margin: 0 0 1rem;
+  }
+  .start-card p {
+    color: var(--muted);
+    font-size: 15px;
+    margin: 0.5rem 0;
+  }
+  .start-card .start-btn {
+    margin-top: 1.5rem;
+    padding: 12px 28px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--sans);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .start-card .start-btn:hover { background: #5c2412; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="exam-wrap">
+
+  <!-- START SCREEN -->
+  <div id="start-screen">
+    <div class="exam-header">
+      <div>
+        <h1 class="exam-title">Exam POC</h1>
+        <div class="exam-meta">PROOF OF CONCEPT · TIMED ASSESSMENT</div>
+      </div>
+    </div>
+    <div class="start-card">
+      <h2>Ready to begin?</h2>
+      <p>5 multiple-choice questions · 90 minute time limit</p>
+      <p>Timer starts when you click Begin. Exam auto-submits at expiry.</p>
+      <button class="start-btn" onclick="startExam()">Begin Exam</button>
+    </div>
+  </div>
+
+  <!-- EXAM SCREEN -->
+  <div id="exam-screen" class="hidden">
+    <div class="exam-header">
+      <div>
+        <h1 class="exam-title">Exam POC</h1>
+        <div class="exam-meta">5 QUESTIONS · 90 MINUTES</div>
+      </div>
+      <div class="timer" id="timer">90:00</div>
+    </div>
+
+    <div class="progress" id="progress">QUESTION 1 OF 5</div>
+
+    <div class="question-card">
+      <div class="question-text" id="question-text"></div>
+      <div class="options" id="options"></div>
+    </div>
+
+    <div class="nav-row">
+      <button class="nav-btn secondary" id="prev-btn" onclick="prevQ()">← Previous</button>
+      <button class="nav-btn" id="next-btn" onclick="nextQ()">Next →</button>
+    </div>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div id="result-screen" class="hidden">
+    <div class="exam-header">
+      <div>
+        <h1 class="exam-title">Exam Complete</h1>
+        <div class="exam-meta">RESULTS</div>
+      </div>
+    </div>
+    <div class="result-card">
+      <h2>Your Score</h2>
+      <div class="score" id="score-display">0 / 5</div>
+      <div class="pct" id="pct-display">0%</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const QUESTIONS = [
+  {
+    q: "What is the capital of France?",
+    opts: ["London", "Berlin", "Paris", "Madrid"],
+    answer: 2
+  },
+  {
+    q: "How many sides does a triangle have?",
+    opts: ["2", "3", "4", "5"],
+    answer: 1
+  },
+  {
+    q: "Which planet is closest to the sun?",
+    opts: ["Venus", "Earth", "Mars", "Mercury"],
+    answer: 3
+  },
+  {
+    q: "What year did World War II end?",
+    opts: ["1943", "1944", "1945", "1946"],
+    answer: 2
+  },
+  {
+    q: "What is 7 × 8?",
+    opts: ["54", "56", "63", "64"],
+    answer: 1
+  }
+];
+
+const DURATION_SEC = 90 * 60;
+let current = 0;
+let answers = new Array(QUESTIONS.length).fill(null);
+let timerInterval = null;
+let endTime = null;
+
+function startExam() {
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('exam-screen').classList.remove('hidden');
+  endTime = Date.now() + DURATION_SEC * 1000;
+  renderQ();
+  tick();
+  timerInterval = setInterval(tick, 1000);
+}
+
+function tick() {
+  const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
+  const m = Math.floor(remaining / 60);
+  const s = remaining % 60;
+  const tEl = document.getElementById('timer');
+  tEl.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  tEl.classList.toggle('warn', remaining <= 600 && remaining > 60);
+  tEl.classList.toggle('crit', remaining <= 60);
+  if (remaining === 0) {
+    clearInterval(timerInterval);
+    submitExam(true);
+  }
+}
+
+function renderQ() {
+  const q = QUESTIONS[current];
+  document.getElementById('progress').textContent = `QUESTION ${current + 1} OF ${QUESTIONS.length}`;
+  document.getElementById('question-text').textContent = q.q;
+  const optsEl = document.getElementById('options');
+  optsEl.innerHTML = '';
+  const letters = ['A', 'B', 'C', 'D'];
+  q.opts.forEach((opt, i) => {
+    const div = document.createElement('label');
+    div.className = 'option' + (answers[current] === i ? ' selected' : '');
+    div.innerHTML = `
+      <input type="radio" name="q${current}" ${answers[current] === i ? 'checked' : ''}>
+      <span class="option-letter">${letters[i]}</span>
+      <span>${opt}</span>
+    `;
+    div.addEventListener('click', () => {
+      answers[current] = i;
+      renderQ();
+    });
+    optsEl.appendChild(div);
+  });
+  document.getElementById('prev-btn').disabled = current === 0;
+  const nextBtn = document.getElementById('next-btn');
+  if (current === QUESTIONS.length - 1) {
+    nextBtn.textContent = 'Submit';
+    nextBtn.classList.add('submit');
+    nextBtn.onclick = () => submitExam(false);
+  } else {
+    nextBtn.textContent = 'Next →';
+    nextBtn.classList.remove('submit');
+    nextBtn.onclick = nextQ;
+  }
+}
+
+function nextQ() {
+  if (current < QUESTIONS.length - 1) {
+    current++;
+    renderQ();
+  }
+}
+
+function prevQ() {
+  if (current > 0) {
+    current--;
+    renderQ();
+  }
+}
+
+function submitExam(autoSubmit) {
+  clearInterval(timerInterval);
+  let score = 0;
+  for (let i = 0; i < QUESTIONS.length; i++) {
+    if (answers[i] === QUESTIONS[i].answer) score++;
+  }
+  const pct = Math.round((score / QUESTIONS.length) * 100);
+  document.getElementById('exam-screen').classList.add('hidden');
+  document.getElementById('result-screen').classList.remove('hidden');
+  document.getElementById('score-display').textContent = `${score} / ${QUESTIONS.length}`;
+  document.getElementById('pct-display').textContent = `${pct}%${autoSubmit ? ' · time expired' : ''}`;
+}
+</script>
+
+</body>
+</html>

@@ -68,9 +68,6 @@
 .col-modal-row{display:flex;gap:.5rem;justify-content:flex-end;}
 
 /* Add course modal */
-.ac-fetch-status.ok{color:#1a7a4a;}
-.ac-fetch-status.err{color:#c00;}
-.ac-actions{display:flex;gap:.5rem;justify-content:flex-end;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border,#eee);}
 </style>
 </head>
 <body>
@@ -387,40 +384,6 @@ function confirmAddCol(){
 
 function openEdit(course){ alert('Edit course coming soon.'); }
 
-function saveNewCourse(){
-  const course_num = document.getElementById('acCourseNum').value.trim();
-  if(!course_num){ document.getElementById('acMsg').textContent='Course number is required.'; document.getElementById('acMsg').className='msg err'; return; }
-
-  const payload = {
-    course_num,
-    section_id: document.getElementById('acSectionId').value.trim(),
-    title:      document.getElementById('acTitle').value.trim(),
-    semester:   document.getElementById('acSemester').value.trim(),
-    term:       document.getElementById('acTerm').value.trim(),
-    delivery:   document.getElementById('acDelivery').value,
-    days_times: document.getElementById('acDaysTimes').value.trim(),
-    start_date: document.getElementById('acStartDate').value,
-    end_date:   document.getElementById('acEndDate').value,
-    location:   document.getElementById('acLocation').value.trim(),
-  };
-
-  fetch(API+'/acc/admin/courses/create',{
-    method:'POST',
-    headers:authHeaders(),
-    body:JSON.stringify(payload)
-  }).then(r=>r.json()).then(d=>{
-    if(d.ok){
-      closeAddCourse();
-      loadCourses();
-    } else {
-      document.getElementById('acMsg').textContent = d.error || 'Error saving course.';
-      document.getElementById('acMsg').className='msg err';
-    }
-  }).catch(()=>{
-    document.getElementById('acMsg').textContent='Network error.';
-    document.getElementById('acMsg').className='msg err';
-  });
-}
 
 function esc(s){
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');

@@ -91,24 +91,7 @@
 
 <main id="main-content">
 
-<!-- LOGIN MODAL -->
-<div class="up-modal" id="loginModal" onclick="loginOverlayClick(event)">
-  <div class="up-modal-inner">
-    <h3>Admin Sign In</h3>
-    <input type="password" id="loginPw" placeholder="Password" autofocus
-           style="width:100%;padding:.55rem .7rem;border:1px solid #ccc;border-radius:4px;font-size:.95rem;margin-bottom:.75rem;box-sizing:border-box;"
-           onkeydown="if(event.key==='Enter')submitLogin()">
-    <label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;margin-bottom:1rem;cursor:pointer;">
-      <input type="checkbox" id="loginRemember">
-      Remember this IP
-    </label>
-    <div class="msg err" id="loginMsg" style="display:none;margin-bottom:.5rem;"></div>
-    <div style="display:flex;gap:.5rem;justify-content:flex-end;">
-      <button class="ct-btn" onclick="closeLogin()">Cancel</button>
-      <button class="ct-btn" style="background:#1a7a4a;color:#fff;border-color:#1a7a4a;" onclick="submitLogin()">Sign In</button>
-    </div>
-  </div>
-</div>
+<!-- LOGIN MODAL injected dynamically by openLogin() only on auth fail -->
 
 <!-- ADMIN PANEL -->
 <div class="admin-panel" id="adminPanel" style="display:none;">
@@ -217,21 +200,33 @@ function authFetch(url, opts={}){
 // ── Boot ──────────────────────────────────────────────────────────
 function showPanel(){
   AUTHED = true;
-  document.getElementById('loginModal').classList.remove('open');
   document.getElementById('adminPanel').style.display='block';
   loadCourses();
 }
 
 function openLogin(){
-  document.getElementById('loginPw').value='';
-  document.getElementById('loginRemember').checked=false;
-  document.getElementById('loginMsg').style.display='none';
-  document.getElementById('loginModal').classList.add('open');
-  setTimeout(()=>document.getElementById('loginPw').focus(),50);
+  if(!document.getElementById('loginModal')){
+    const html = '<div class="up-modal open" id="loginModal" onclick="loginOverlayClick(event)">'
+      + '<div class="up-modal-inner">'
+      + '<h3>Admin Sign In</h3>'
+      + '<input type="password" id="loginPw" placeholder="Password" autofocus '
+      + 'style="width:100%;padding:.55rem .7rem;border:1px solid #ccc;border-radius:4px;font-size:.95rem;margin-bottom:.75rem;box-sizing:border-box;" '
+      + 'onkeydown="if(event.key===\'Enter\')submitLogin()">'
+      + '<label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;margin-bottom:1rem;cursor:pointer;">'
+      + '<input type="checkbox" id="loginRemember"> Remember this IP</label>'
+      + '<div class="msg err" id="loginMsg" style="display:none;margin-bottom:.5rem;"></div>'
+      + '<div style="display:flex;gap:.5rem;justify-content:flex-end;">'
+      + '<button class="ct-btn" onclick="closeLogin()">Cancel</button>'
+      + '<button class="ct-btn" style="background:#1a7a4a;color:#fff;border-color:#1a7a4a;" onclick="submitLogin()">Sign In</button>'
+      + '</div></div></div>';
+    document.getElementById('main-content').insertAdjacentHTML('afterbegin', html);
+    setTimeout(()=>document.getElementById('loginPw').focus(),50);
+  }
 }
 
 function closeLogin(){
-  document.getElementById('loginModal').classList.remove('open');
+  const m = document.getElementById('loginModal');
+  if(m) m.remove();
 }
 
 function loginOverlayClick(e){

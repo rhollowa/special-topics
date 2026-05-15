@@ -3,11 +3,17 @@
 https://busi-2305.indiafoxtrotcharlie.com/*  https://acc.indiafoxtrotcharlie.com/2305/:splat  301!
 http://busi-2305.indiafoxtrotcharlie.com/*  https://acc.indiafoxtrotcharlie.com/2305/:splat  301!
 
-# Clean URLs — /2305/tests resolves to /2305/tests.html (no .html in address bar)
-/2305/tests       /2305/tests.html      200
-/2305/lessons     /2305/lessons.html    200
-/2305/data        /2305/data.html       200
-/2305/contact     /2305/contact.html    200
-/2305/about       /2305/about.html      200
-/2305/resources   /2305/resources.html  200
-/2305/policies    /2305/policies.html   200
+# Old .html bookmarks → clean URLs (301 permanent)
+/2305/tests.html       /2305/tests/      301!
+/2305/lessons.html     /2305/lessons/    301!
+/2305/data.html        /2305/data/       301!
+/2305/contact.html     /2305/contact/    301!
+/2305/about.html       /2305/about/      301!
+/2305/resources.html   /2305/resources/  301!
+/2305/policies.html    /2305/policies/   301!
+
+/special-topics/about.html       /special-topics/about/       301!
+/special-topics/contact.html     /special-topics/contact/     301!
+/special-topics/curriculum.html  /special-topics/curriculum/  301!
+/special-topics/data.html        /special-topics/data/        301!
+/special-topics/objectives.html  /special-topics/objectives/  301!

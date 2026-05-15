@@ -199,9 +199,7 @@
       </div>
     </summary><div class="collapse-wrap"><div class="collapse-inner"><div class="collapse-body prose">
       <h3>Download</h3>
-      <p>
-        <a href="../files/Modeling_final.xlsx" download>Modeling_final.xlsx</a>
-      </p>
+      <p><em>Coming soon — check back shortly.</em></p>
 
       <!-- Submit button — fires modal for Final Exam -->
       <button class="submit-btn" onclick="openModal('Final Exam', 'final')">
@@ -400,7 +398,7 @@
     clearTimeout(pending);
     if(clicks>=3){
       clicks=0;
-      window.location.href='/admin/';
+      window.location.href='../admin/';
     } else {
       t=setTimeout(function(){
         var dest=el.getAttribute('href');

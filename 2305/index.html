@@ -209,30 +209,7 @@
   </div>
 </footer>
 
-<!-- admin-crest-hook -->
-<script>
-(function(){
-  var clicks=0,t=null,pending=null;
-  var el=document.querySelector('.crest');
-  if(!el) return;
-  el.addEventListener('click',function(e){
-    e.preventDefault();
-    clicks++;
-    clearTimeout(t);
-    clearTimeout(pending);
-    if(clicks>=3){
-      clicks=0;
-      window.location.href='/admin/';
-    } else {
-      t=setTimeout(function(){
-        var dest=el.getAttribute('href');
-        clicks=0;
-        if(dest) window.location.href=dest;
-      },400);
-    }
-  });
-})();
-</script>
+<!-- admin-crest-hook --><script src="/admin-crest.js" defer></script>
 </body>
 </html>
 

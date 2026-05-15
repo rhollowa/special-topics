@@ -14,12 +14,7 @@
     font-size: 22px;
     font-weight: 700;
     color: var(--ink);
-    margin-bottom: 4px;
-  }
-  .contact-section .sub {
-    font-size: 14px;
-    color: var(--muted);
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
   .contact-btn {
     display: inline-block;
@@ -36,16 +31,9 @@
     transition: background 0.15s;
   }
   .contact-btn:hover { background: #5c2412; }
+  .contact-btn:disabled { background: #c0a89e; cursor: not-allowed; }
 
   .msg-form { max-width: 480px; }
-  .msg-form label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--ink-soft);
-    margin-bottom: 5px;
-  }
-  .msg-form input,
   .msg-form textarea {
     width: 100%;
     padding: 9px 12px;
@@ -55,13 +43,16 @@
     color: var(--ink);
     background: #fff;
     font-family: var(--sans);
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     box-sizing: border-box;
-    transition: border-color 0.15s;
+    resize: vertical;
+    min-height: 42px;
+    height: 42px;
+    overflow-y: hidden;
+    transition: border-color 0.15s, height 0.1s;
+    display: block;
   }
-  .msg-form input:focus,
   .msg-form textarea:focus { outline: none; border-color: var(--accent); }
-  .msg-form textarea { resize: vertical; min-height: 100px; }
   .msg-status {
     margin-top: 12px;
     padding: 10px 14px;
@@ -99,38 +90,22 @@
 <section class="hero">
   <div class="eyebrow">Reach out anytime</div>
   <h1>Contact</h1>
-  <p class="lede">Two ways to reach me — send a message or call directly.</p>
 </section>
 
 <section class="page">
 
-  <!-- SECTION 1: MESSAGE -->
   <div class="contact-section">
     <h2>Message</h2>
-    <p class="sub">I'll receive your message as a text and reply within 24 hours on weekdays.</p>
     <div class="msg-form">
-      <label for="msgName">Name</label>
-      <input type="text" id="msgName" placeholder="First Last" autocomplete="name" />
-
-      <label for="msgAccId">ACC Student ID</label>
-      <input type="text" id="msgAccId" placeholder="e.g. 1234567" autocomplete="off" />
-
-      <label for="msgEmail">Email</label>
-      <input type="email" id="msgEmail" placeholder="you@student.austincc.edu" autocomplete="email" />
-
-      <label for="msgBody">Message</label>
-      <textarea id="msgBody" placeholder="Your question or what you'd like to schedule..."></textarea>
-
-      <button class="contact-btn" onclick="sendMessage()">Send Message</button>
+      <textarea id="msgBody" placeholder="Your message..."></textarea>
+      <button class="contact-btn" id="sendBtn" onclick="sendMessage()">Send</button>
       <div class="msg-status" id="msgStatus"></div>
     </div>
   </div>
 
-  <!-- SECTION 2: CALL -->
   <div class="contact-section">
     <h2>Call</h2>
-    <p class="sub">For a quick question or to schedule a meeting.</p>
-    <a href="tel:+12146837762" class="contact-btn">Call the Professor</a>
+    <a href="tel:+12146837762" class="contact-btn">Call Now</a>
   </div>
 
 </section>
@@ -170,20 +145,17 @@
 
 <script>
 async function sendMessage() {
-  const name    = document.getElementById('msgName').value.trim();
-  const accId   = document.getElementById('msgAccId').value.trim();
-  const email   = document.getElementById('msgEmail').value.trim();
-  const body    = document.getElementById('msgBody').value.trim();
-  const status  = document.getElementById('msgStatus');
+  const body   = document.getElementById('msgBody').value.trim();
+  const status = document.getElementById('msgStatus');
+  const btn    = document.getElementById('sendBtn');
 
-  if (!name || !accId || !email || !body) {
-    status.textContent = 'Please fill in all fields.';
+  if (!body) {
+    status.textContent = 'Please enter a message.';
     status.className = 'msg-status err';
     status.style.display = 'block';
     return;
   }
 
-  const btn = document.querySelector('.contact-btn');
   btn.disabled = true;
   btn.textContent = 'Sending...';
 
@@ -191,27 +163,22 @@ async function sendMessage() {
     const res = await fetch('https://tourcast-docker.onrender.com/acc/contact', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, acc_id: accId, email, message: body, course: 'BUSI-2305' })
+      body: JSON.stringify({ message: body, course: 'BUSI-2305' })
     });
     if (res.ok) {
-      status.textContent = 'Message sent. I\'ll reply within 24 hours on weekdays.';
+      status.textContent = 'Message sent.';
       status.className = 'msg-status ok';
-      document.getElementById('msgName').value = '';
-      document.getElementById('msgAccId').value = '';
-      document.getElementById('msgEmail').value = '';
       document.getElementById('msgBody').value = '';
-      btn.textContent = 'Send Message';
-      btn.disabled = false;
     } else {
-      throw new Error('non-200');
+      throw new Error();
     }
   } catch(e) {
-    status.textContent = 'Something went wrong. Email me directly at russell.holloway@austincc.edu.';
+    status.textContent = 'Something went wrong. Email russell.holloway@austincc.edu directly.';
     status.className = 'msg-status err';
-    btn.textContent = 'Send Message';
-    btn.disabled = false;
   }
   status.style.display = 'block';
+  btn.textContent = 'Send';
+  btn.disabled = false;
 }
 </script>
 

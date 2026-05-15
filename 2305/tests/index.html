@@ -131,6 +131,41 @@
   }
   .sub-msg.ok  { background: #e8f4ee; color: var(--ok); border: 1px solid #b2d8c0; }
   .sub-msg.err { background: #fdf0ee; color: #a02020; border: 1px solid #f0c0b8; }
+
+  /* === COLLAPSIBLE SECTIONS === */
+  details.collapse { margin: 0; padding: 0; }
+  details.collapse > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1.5rem 0 1rem;
+    border-bottom: 1px solid var(--rule-soft);
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    position: relative;
+    transition: border-color 0.15s;
+  }
+  details.collapse > summary::-webkit-details-marker { display: none; }
+  details.collapse > summary::after {
+    content: '▾';
+    margin-left: auto;
+    font-size: 14px;
+    color: var(--muted);
+    transition: transform 0.2s;
+    transform: rotate(-90deg);
+  }
+  details.collapse[open] > summary::after { transform: rotate(0deg); }
+  details.collapse > summary:hover::after { color: var(--accent); }
+  details.collapse[open] > summary { border-bottom-color: var(--rule); }
+  details.collapse > summary .section-head {
+    margin: 0;
+    flex: 1;
+  }
+  details.collapse > summary .section-head .num { margin-bottom: 4px; }
+  details.collapse > summary .section-head h2 { margin: 0; }
+  details.collapse > summary .section-head .sub { margin: 4px 0 0; }
+  details.collapse > .collapse-body { padding-top: 1.5rem; }
+
 </style>
 </head>
 <body>
@@ -166,59 +201,51 @@
 </section>
 
 <section class="page">
-
-  <div class="section-head">
-    <div class="num">Now active</div>
-    <h2>Final Exam</h2>
-    <p class="sub">Due Sunday, May 17 at 11:59 PM</p>
-  </div>
-
-  <div class="prose">
-    <h3>Submit</h3>
-    <!-- Submit button — fires modal for Final Exam -->
-    <button class="submit-btn" onclick="openModal('Final Exam', 'final')">
-      &#8593; Submit Assignment
-    </button>
-  </div>
-
+  <details class="collapse" open>
+    <summary>
+      <div class="section-head">
+        <div class="num">Now active</div>
+        <h2>Final Exam</h2>
+        <p class="sub">Due Sunday, May 17 at 11:59 PM</p>
+      </div>
+    </summary>
+    <div class="collapse-body prose">
+      <h3>Submit</h3>
+      <!-- Submit button — fires modal for Final Exam -->
+      <button class="submit-btn" onclick="openModal('Final Exam', 'final')">
+        &#8593; Submit Assignment
+      </button>
+    </div>
+  </details>
 </section>
 <section class="page">
+  <details class="collapse">
+    <summary>
+      <div class="section-head">
+        <div class="num">Closed</div>
+        <h2>Exam 1 &mdash; Modeling Problems</h2>
+        <p class="sub">Due Friday, May 8 at 11:59 PM</p>
+      </div>
+    </summary>
+    <div class="collapse-body prose">
+      <h3>Download</h3>
+      <p>
+        <a href="../files/Modeling_problems.xlsx" download>Modeling_problems.xlsx</a> &mdash; Excel workbook, 6 tabs (3 instructions + 3 models).
+      </p>
 
-  <div class="section-head">
-    <div class="num">Closed</div>
-    <h2>Exam 1 &mdash; Modeling Problems</h2>
-    <p class="sub">Due Friday, May 8 at 11:59 PM</p>
-  </div>
+      <!-- Submit button — fires modal for Exam 1 -->
+      <button class="submit-btn" onclick="openModal('Exam 1 &mdash; Modeling Problems', 'exam1')">
+        &#8593; Submit Assignment
+      </button>
 
-  <div class="prose">
-    <h3>Download</h3>
-    <p>
-      <a href="../files/Modeling_problems.xlsx" download>Modeling_problems.xlsx</a> &mdash; Excel workbook, 6 tabs (3 instructions + 3 models).
-    </p>
-
-    <!-- Submit button — fires modal for Exam 1 -->
-    <button class="submit-btn" onclick="openModal('Exam 1 &mdash; Modeling Problems', 'exam1')">
-      &#8593; Submit Assignment
-    </button>
-
-    <h3>Review</h3>
-    <ul class="walkthroughs">
-      <li><a href="https://youtu.be/BoYcj7Pk7DU" target="_blank" rel="noopener">Bollinger Bands</a></li>
-      <li><a href="https://youtu.be/UFpjaLHvIJw" target="_blank" rel="noopener">Sector Allocation</a></li>
-      <li><a href="https://youtu.be/mNGh-s5ZCLM" target="_blank" rel="noopener">Pro Forma</a></li>
-    </ul>
-  </div>
-
-</section>
-
-<section class="page">
-  <div class="section-head">
-    <div class="num">Coming up</div>
-    <h2>What&apos;s next</h2>
-  </div>
-  <div class="prose">
-    <p>The exam schedule for the rest of the term is on the <a href="../about/">syllabus &amp; schedule page</a>. Each one will land here when it&apos;s posted, with the workbook and the due date.</p>
-  </div>
+      <h3>Review</h3>
+      <ul class="walkthroughs">
+        <li><a href="https://youtu.be/BoYcj7Pk7DU" target="_blank" rel="noopener">Bollinger Bands</a></li>
+        <li><a href="https://youtu.be/UFpjaLHvIJw" target="_blank" rel="noopener">Sector Allocation</a></li>
+        <li><a href="https://youtu.be/mNGh-s5ZCLM" target="_blank" rel="noopener">Pro Forma</a></li>
+      </ul>
+    </div>
+  </details>
 </section>
 
 </main>

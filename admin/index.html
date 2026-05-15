@@ -12,35 +12,58 @@
 .admin-login button{padding:.6rem 1.4rem;font-size:.95rem;cursor:pointer;}
 .admin-error{color:#c00;font-size:.9rem;margin-top:.5rem;display:none;}
 .admin-panel{display:none;max-width:960px;margin:40px auto;padding:2rem;}
-.course-picker{margin-bottom:2rem;}
-.course-picker h2{font-size:1rem;font-weight:700;margin-bottom:.75rem;color:var(--text-muted,#666);}
-.course-cards{display:flex;gap:.75rem;flex-wrap:wrap;}
-.course-card{padding:.6rem 1.2rem;border:1.5px solid var(--border,#ccc);border-radius:6px;cursor:pointer;font-size:.9rem;font-weight:600;background:var(--surface,#f9f9f9);transition:all .15s;}
-.course-card:hover{border-color:#1a7a4a;color:#1a7a4a;}
-.course-card.active{background:#1a7a4a;color:#fff;border-color:#1a7a4a;}
-.course-label{font-size:.75rem;font-weight:400;opacity:.75;display:block;margin-top:.1rem;}
-.admin-nav{display:flex;gap:1rem;margin-bottom:2rem;flex-wrap:wrap;border-top:1px solid var(--border,#eee);padding-top:1.5rem;}
-.admin-nav button{padding:.45rem 1rem;font-size:.9rem;cursor:pointer;border-radius:4px;}
-.admin-nav button.active{font-weight:600;}
-.admin-section{display:none;}
-.admin-section.active{display:block;}
-table{width:100%;border-collapse:collapse;font-size:.9rem;}
-th,td{padding:.4rem .6rem;border:1px solid var(--border,#ddd);text-align:left;}
-th{background:var(--surface,#f5f5f5);}
-.upload-row{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin-bottom:1rem;}
-.upload-row input,.upload-row select{padding:.45rem .6rem;font-size:.9rem;border:1px solid var(--border,#ccc);border-radius:4px;}
-.msg{font-size:.9rem;margin-top:.5rem;}
-.msg.ok{color:green;} .msg.err{color:#c00;}
-.no-course{color:#888;font-size:.9rem;font-style:italic;}
+
+/* Course table */
 .course-table{margin-bottom:2rem;border:1px solid var(--border,#ddd);border-radius:6px;overflow:hidden;}
 .ct-head{display:grid;grid-template-columns:2fr 1fr 1fr;background:var(--surface,#f5f5f5);font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted,#888);padding:.5rem 1rem;gap:1rem;}
-.ct-row{display:grid;grid-template-columns:2fr 1fr 1fr;align-items:center;padding:.75rem 1rem;gap:1rem;border-top:1px solid var(--border,#eee);cursor:pointer;transition:background .12s;}
-.ct-row:hover{background:var(--surface,#f9f9f9);}
-.ct-row.active{background:#f0faf5;}
+.ct-row{display:grid;grid-template-columns:2fr 1fr 1fr;align-items:center;padding:.75rem 1rem;gap:1rem;border-top:1px solid var(--border,#eee);}
 .ct-name{font-size:.95rem;font-weight:700;color:var(--ink,#111);}
 .ct-sub{font-size:.78rem;color:var(--text-muted,#888);margin-top:.1rem;}
-.ct-btn{display:inline-block;padding:.3rem .8rem;font-size:.82rem;border:1px solid var(--border,#ccc);border-radius:4px;color:var(--ink,#111);text-decoration:none;background:#fff;}
+.ct-btn{display:inline-block;padding:.3rem .9rem;font-size:.82rem;border:1px solid var(--border,#ccc);border-radius:4px;color:var(--ink,#111);text-decoration:none;background:#fff;cursor:pointer;}
 .ct-btn:hover{border-color:#1a7a4a;color:#1a7a4a;}
+
+/* Modal overlay */
+.gb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;}
+.gb-overlay.open{display:flex;}
+.gb-modal{background:#fff;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.18);width:92vw;max-width:900px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;}
+.gb-modal-head{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.25rem;border-bottom:1px solid var(--border,#eee);flex-shrink:0;}
+.gb-modal-head h2{font-size:1rem;font-weight:700;margin:0;}
+.gb-modal-actions{display:flex;gap:.5rem;align-items:center;}
+.gb-modal-body{overflow:auto;flex:1;padding:1.25rem;}
+.gb-close{background:none;border:none;font-size:1.3rem;cursor:pointer;color:#888;line-height:1;padding:.1rem .4rem;}
+.gb-close:hover{color:#111;}
+
+/* Upload zone */
+.gb-upload-zone{border:2px dashed var(--border,#ccc);border-radius:8px;padding:2.5rem;text-align:center;cursor:pointer;transition:border-color .15s;}
+.gb-upload-zone:hover{border-color:#1a7a4a;}
+.gb-upload-zone p{margin:.5rem 0 0;font-size:.9rem;color:#888;}
+.gb-upload-zone input{display:none;}
+
+/* Editable grade grid */
+.gb-grid-wrap{overflow-x:auto;}
+.gb-grid{border-collapse:collapse;width:100%;font-size:.85rem;}
+.gb-grid th{background:var(--surface,#f5f5f5);padding:.4rem .6rem;border:1px solid var(--border,#ddd);white-space:nowrap;font-weight:600;position:sticky;top:0;}
+.gb-grid th.col-asg{cursor:pointer;position:relative;}
+.gb-grid th.col-asg:hover{background:#e8f5ee;}
+.gb-grid td{padding:0;border:1px solid var(--border,#eee);}
+.gb-grid td.fixed{padding:.35rem .6rem;color:#555;white-space:nowrap;}
+.gb-grid td input{width:100%;border:none;padding:.35rem .5rem;font-size:.85rem;background:transparent;text-align:center;}
+.gb-grid td input:focus{background:#fffde7;outline:none;}
+.gb-grid tr:hover td{background:#fafafa;}
+.gb-add-col{background:none;border:1px dashed var(--border,#ccc);border-radius:4px;padding:.25rem .7rem;font-size:.8rem;cursor:pointer;color:#888;margin-top:.75rem;}
+.gb-add-col:hover{border-color:#1a7a4a;color:#1a7a4a;}
+.gb-toolbar{display:flex;gap:.6rem;align-items:center;margin-bottom:.85rem;flex-wrap:wrap;}
+.msg{font-size:.85rem;margin-top:.4rem;}
+.msg.ok{color:green;} .msg.err{color:#c00;}
+
+/* Add col modal */
+.col-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1100;align-items:center;justify-content:center;}
+.col-modal.open{display:flex;}
+.col-modal-inner{background:#fff;border-radius:8px;padding:1.5rem;width:340px;box-shadow:0 4px 24px rgba(0,0,0,.15);}
+.col-modal-inner h3{margin:0 0 1rem;font-size:1rem;}
+.col-modal-inner label{display:block;font-size:.82rem;font-weight:600;margin-bottom:.25rem;}
+.col-modal-inner input{width:100%;padding:.5rem .65rem;border:1px solid var(--border,#ccc);border-radius:4px;font-size:.9rem;margin-bottom:.75rem;box-sizing:border-box;}
+.col-modal-row{display:flex;gap:.5rem;justify-content:flex-end;}
 </style>
 </head>
 <body>
@@ -72,91 +95,99 @@ th{background:var(--surface,#f5f5f5);}
   <!-- COURSE TABLE -->
   <div class="course-table">
     <div class="ct-head">
-      <div class="ct-col-course">Course</div>
-      <div class="ct-col-grades">Gradebook</div>
-      <div class="ct-col-edit">Edit / Update</div>
+      <div>Course</div>
+      <div>Gradebook</div>
+      <div>Edit / Update</div>
     </div>
-    <div class="ct-row active" data-course="BUSI-2305" onclick="selectCourse('BUSI-2305',this)">
-      <div class="ct-col-course">
+    <div class="ct-row">
+      <div>
         <div class="ct-name">BUSI 2305</div>
         <div class="ct-sub">Business Statistics · Spring 2026</div>
       </div>
-      <div class="ct-col-grades">
-        <a href="#" class="ct-btn" onclick="event.stopPropagation();showTab('gradebook',document.querySelector('.admin-nav button'));">Gradebook</a>
+      <div>
+        <button class="ct-btn" onclick="openGradebook('BUSI-2305')">Gradebook</button>
       </div>
-      <div class="ct-col-edit">
-        <a href="#" class="ct-btn" onclick="event.stopPropagation();showTab('assignments',document.querySelectorAll('.admin-nav button')[1]);">Edit Course</a>
+      <div>
+        <button class="ct-btn" onclick="openEdit('BUSI-2305')">Edit Course</button>
       </div>
     </div>
   </div>
 
-  <div class="admin-nav">
-    <button class="active" onclick="showTab('gradebook',this)">Gradebook</button>
-    <button onclick="showTab('assignments',this)">Assignments</button>
-    <button onclick="showTab('submissions',this)">Submissions</button>
-    <button style="margin-left:auto;font-size:.85rem;" onclick="doLogout()">Log out</button>
-  </div>
+</div><!-- /admin-panel -->
 
-  <!-- GRADEBOOK TAB -->
-  <div class="admin-section active" id="tab-gradebook">
-    <h2 style="font-size:1.1rem;margin:0 0 1rem;">Gradebook</h2>
-    <div class="upload-row">
-      <input type="file" id="gbFile" accept=".csv,.xlsx,.xls">
-      <button onclick="uploadGradebook()">Upload BB Export</button>
-      <button onclick="exportGradebook()">Export to BB Format</button>
+<!-- GRADEBOOK MODAL -->
+<div class="gb-overlay" id="gbOverlay" onclick="overlayClick(event)">
+  <div class="gb-modal">
+    <div class="gb-modal-head">
+      <h2 id="gbModalTitle">Gradebook</h2>
+      <div class="gb-modal-actions">
+        <button class="ct-btn" onclick="triggerUpload()">Upload BB Export</button>
+        <button class="ct-btn" onclick="exportGradebook()">Export to BB</button>
+        <button class="gb-close" onclick="closeGradebook()">×</button>
+      </div>
     </div>
-    <div class="msg" id="gbMsg"></div>
-    <div id="gbTable"></div>
-  </div>
-
-  <!-- ASSIGNMENTS TAB -->
-  <div class="admin-section" id="tab-assignments">
-    <h2 style="font-size:1.1rem;margin:0 0 1rem;">Assignments / Answer Keys</h2>
-    <div class="upload-row">
-      <input type="text" id="asgId" placeholder="Assignment ID (e.g. exam1)" style="width:160px;">
-      <input type="text" id="asgName" placeholder="Name" style="width:200px;">
-      <input type="number" id="asgPts" placeholder="Max pts" style="width:90px;" value="100">
-      <input type="file" id="asgFile" accept=".xlsx,.xls,.csv,.pdf">
-      <button onclick="createAssignment()">Save</button>
+    <div class="gb-modal-body">
+      <div class="msg" id="gbMsg"></div>
+      <!-- Upload zone (shown when empty) -->
+      <div class="gb-upload-zone" id="gbUploadZone" onclick="document.getElementById('gbFileInput').click()">
+        <svg width="32" height="32" fill="none" stroke="#aaa" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 16V8m0 0-3 3m3-3 3 3"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+        <p>Click to upload a Blackboard gradebook export (.csv or .xlsx)</p>
+        <input type="file" id="gbFileInput" accept=".csv,.xlsx,.xls" onchange="handleUpload(this.files[0])">
+      </div>
+      <!-- Grid (shown when students exist) -->
+      <div id="gbGridWrap" style="display:none;">
+        <div class="gb-toolbar">
+          <button class="gb-add-col" onclick="openAddCol()">+ Add assignment / quiz / participation</button>
+        </div>
+        <div class="gb-grid-wrap">
+          <table class="gb-grid" id="gbGridTable"></table>
+        </div>
+      </div>
     </div>
-    <div class="msg" id="asgMsg"></div>
-    <div id="asgTable"></div>
   </div>
-
-  <!-- SUBMISSIONS TAB -->
-  <div class="admin-section" id="tab-submissions">
-    <h2 style="font-size:1.1rem;margin:0 0 1rem;">Submissions</h2>
-    <div id="subTable"></div>
-  </div>
-
 </div>
+
+<!-- ADD COLUMN MODAL -->
+<div class="col-modal" id="colModal">
+  <div class="col-modal-inner">
+    <h3>Add Grade Column</h3>
+    <label>Column name</label>
+    <input type="text" id="colName" placeholder="e.g. Quiz 3, Participation, Exam 1">
+    <label>Max points</label>
+    <input type="number" id="colPts" value="100" min="0">
+    <div class="col-modal-row">
+      <button class="ct-btn" onclick="closeAddCol()">Cancel</button>
+      <button class="ct-btn" style="background:#1a7a4a;color:#fff;border-color:#1a7a4a;" onclick="confirmAddCol()">Add</button>
+    </div>
+  </div>
+</div>
+
 </main>
 
 <script>
 const API = 'https://tourcast-docker.onrender.com';
 const API_KEY = 'c7852252558744ea5bef3c86136edbf31b5e3e556fd447454a4d37b06151b4e7';
 let SESSION = null;
-let COURSE = 'BUSI-2305';
+let COURSE = null;
+let GB_DATA = null; // {rows, grade_cols, assignments}
 
 // ── Auth ──────────────────────────────────────────────────────────
 function doLogin(){
   const pw = document.getElementById('pwInput').value;
-  fetch(API+'/acc/admin/api-login', {
+  fetch(API+'/acc/admin/api-login',{
     method:'POST',
     headers:{'Content-Type':'application/json','X-API-Key':API_KEY},
-    body: JSON.stringify({password:pw})
+    body:JSON.stringify({password:pw})
   }).then(r=>r.json()).then(d=>{
     if(d.ok){
       SESSION=d.token;
       document.getElementById('loginBox').style.display='none';
       document.getElementById('adminPanel').style.display='block';
-      loadGradebook();
     } else {
       document.getElementById('loginErr').style.display='block';
     }
   }).catch(()=>{document.getElementById('loginErr').style.display='block';});
 }
-
 document.getElementById('pwInput').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
 function doLogout(){
@@ -164,137 +195,170 @@ function doLogout(){
   document.getElementById('loginBox').style.display='block';
   document.getElementById('adminPanel').style.display='none';
   document.getElementById('pwInput').value='';
-  document.getElementById('loginErr').style.display='none';
 }
 
 function authHeaders(){
   return {'X-API-Key':API_KEY,'X-Admin-Token':SESSION,'Content-Type':'application/json'};
 }
 
-// ── Course picker ─────────────────────────────────────────────────
-function selectCourse(course, el){
+// ── Gradebook modal ───────────────────────────────────────────────
+function openGradebook(course){
   COURSE = course;
-  document.querySelectorAll('.course-card').forEach(c=>c.classList.remove('active'));
-  el.classList.add('active');
-  // Reload active tab for new course
-  const activeTab = document.querySelector('.admin-section.active');
-  if(activeTab){
-    const name = activeTab.id.replace('tab-','');
-    if(name==='gradebook') loadGradebook();
-    if(name==='assignments') loadAssignments();
-    if(name==='submissions') loadSubmissions();
-  }
+  document.getElementById('gbModalTitle').textContent = 'Gradebook — '+course;
+  document.getElementById('gbMsg').textContent='';
+  document.getElementById('gbOverlay').classList.add('open');
+  fetchGradebook();
 }
 
-// ── Tabs ──────────────────────────────────────────────────────────
-function showTab(name,btn){
-  document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.admin-nav button').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
-  btn.classList.add('active');
-  if(name==='gradebook') loadGradebook();
-  if(name==='assignments') loadAssignments();
-  if(name==='submissions') loadSubmissions();
+function closeGradebook(){
+  document.getElementById('gbOverlay').classList.remove('open');
 }
 
-// ── Gradebook ─────────────────────────────────────────────────────
-function loadGradebook(){
-  if(!SESSION) return;
-  fetch(API+'/acc/admin/gradebook/json?course='+encodeURIComponent(COURSE),
-    {headers:authHeaders()})
-    .then(r=>r.json()).then(d=>{renderGradebook(d);}).catch(()=>{});
+function overlayClick(e){
+  if(e.target===document.getElementById('gbOverlay')) closeGradebook();
 }
 
-function renderGradebook(d){
-  const el=document.getElementById('gbTable');
-  if(!d.rows||!d.rows.length){el.innerHTML='<p style="color:#888;font-size:.9rem;">No records yet.</p>';return;}
-  const cols=['Last Name','First Name','Student ID','Email'].concat(d.grade_cols||[]);
-  let t='<table><thead><tr>'+cols.map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>';
-  d.rows.forEach(r=>{
-    t+='<tr><td>'+esc(r.last_name)+'</td><td>'+esc(r.first_name)+'</td><td>'+esc(r.acc_id)+'</td><td>'+esc(r.email||'')+'</td>';
-    (d.grade_cols||[]).forEach(col=>{t+='<td>'+(r.grades&&r.grades[col]!=null?r.grades[col]:'')+'</td>';});
-    t+='</tr>';
+function fetchGradebook(){
+  fetch(API+'/acc/admin/gradebook/json?course='+encodeURIComponent(COURSE),{headers:authHeaders()})
+    .then(r=>r.json())
+    .then(d=>{
+      GB_DATA = d;
+      if(!d.rows||!d.rows.length){
+        document.getElementById('gbUploadZone').style.display='block';
+        document.getElementById('gbGridWrap').style.display='none';
+      } else {
+        document.getElementById('gbUploadZone').style.display='none';
+        document.getElementById('gbGridWrap').style.display='block';
+        renderGrid(d);
+      }
+    }).catch(()=>{});
+}
+
+function renderGrid(d){
+  const cols = d.grade_cols || [];
+  const asgMap = {};
+  (d.assignments||[]).forEach(a=>{ asgMap[a.assignment_id]=a; });
+
+  let thead = '<thead><tr><th>Last Name</th><th>First Name</th><th>Student ID</th>';
+  cols.forEach(col=>{
+    const pts = asgMap[col] ? ' <span style="font-weight:400;opacity:.6;">/'+asgMap[col].max_points+'</span>' : '';
+    thead += `<th class="col-asg" title="${col}">${esc(col)}${pts}</th>`;
   });
-  t+='</tbody></table>';
-  el.innerHTML=t;
+  thead += '</tr></thead>';
+
+  let tbody = '<tbody>';
+  d.rows.forEach(r=>{
+    tbody += `<tr>
+      <td class="fixed">${esc(r.last_name)}</td>
+      <td class="fixed">${esc(r.first_name)}</td>
+      <td class="fixed">${esc(r.acc_id)}</td>`;
+    cols.forEach(col=>{
+      const val = (r.grades&&r.grades[col]!=null) ? r.grades[col] : '';
+      tbody += `<td><input type="number" value="${esc(String(val))}" min="0"
+        onblur="saveGrade('${esc(r.acc_id)}','${esc(col)}',this.value)"
+        onkeydown="if(event.key==='Enter')this.blur()"></td>`;
+    });
+    tbody += '</tr>';
+  });
+  tbody += '</tbody>';
+
+  document.getElementById('gbGridTable').innerHTML = thead + tbody;
 }
 
-function uploadGradebook(){
-  const f=document.getElementById('gbFile').files[0];
+function saveGrade(acc_id, assignment_id, score){
+  fetch(API+'/acc/admin/gradebook/grade',{
+    method:'POST',
+    headers:authHeaders(),
+    body:JSON.stringify({course:COURSE, acc_id, assignment_id, score: score===''?null:parseFloat(score)})
+  }).catch(()=>{});
+}
+
+// ── Upload ────────────────────────────────────────────────────────
+function triggerUpload(){
+  document.getElementById('gbFileInput').click();
+}
+
+function handleUpload(file){
+  if(!file) return;
   const msg=document.getElementById('gbMsg');
-  if(!f){msg.textContent='Select a file.';msg.className='msg err';return;}
-  const fd=new FormData();fd.append('file',f);fd.append('course',COURSE);
   msg.textContent='Uploading…';msg.className='msg';
+  const fd=new FormData();fd.append('file',file);fd.append('course',COURSE);
   fetch(API+'/acc/admin/gradebook/upload',{
     method:'POST',
     headers:{'X-API-Key':API_KEY,'X-Admin-Token':SESSION},
     body:fd
   }).then(r=>r.json()).then(d=>{
-    if(d.ok){msg.textContent=`Done — ${d.inserted} inserted, ${d.updated} updated, ${d.skipped} skipped.`;msg.className='msg ok';loadGradebook();}
-    else{msg.textContent=d.error||'Error';msg.className='msg err';}
-  }).catch(()=>{msg.textContent='Request failed';msg.className='msg err';});
+    if(d.ok){
+      msg.textContent=`Imported — ${d.inserted} new, ${d.updated} updated.`;
+      msg.className='msg ok';
+      fetchGradebook();
+    } else {
+      msg.textContent=d.error||'Error';msg.className='msg err';
+    }
+  }).catch(()=>{msg.textContent='Upload failed';msg.className='msg err';});
 }
 
 function exportGradebook(){
+  if(!COURSE) return;
   window.open(API+'/acc/admin/gradebook/export?course='+encodeURIComponent(COURSE)+'&token='+SESSION);
 }
 
-// ── Assignments ───────────────────────────────────────────────────
-function loadAssignments(){
-  if(!SESSION) return;
-  fetch(API+'/acc/admin/assignments/json?course='+encodeURIComponent(COURSE),{headers:authHeaders()})
-    .then(r=>r.json()).then(d=>renderAssignments(d)).catch(()=>{});
+// ── Add column ────────────────────────────────────────────────────
+function openAddCol(){
+  document.getElementById('colName').value='';
+  document.getElementById('colPts').value='100';
+  document.getElementById('colModal').classList.add('open');
+  setTimeout(()=>document.getElementById('colName').focus(),50);
 }
 
-function renderAssignments(d){
-  const el=document.getElementById('asgTable');
-  if(!d.rows||!d.rows.length){el.innerHTML='<p style="color:#888;font-size:.9rem;">No assignments yet.</p>';return;}
-  let t='<table><thead><tr><th>ID</th><th>Name</th><th>Max Pts</th><th>Answer Key</th></tr></thead><tbody>';
-  d.rows.forEach(r=>{
-    t+=`<tr><td>${esc(r.assignment_id)}</td><td>${esc(r.name)}</td><td>${r.max_points}</td><td>${r.answer_key_r2_key?'✓':'—'}</td></tr>`;
-  });
-  t+='</tbody></table>';
-  el.innerHTML=t;
+function closeAddCol(){
+  document.getElementById('colModal').classList.remove('open');
 }
 
-function createAssignment(){
-  const msg=document.getElementById('asgMsg');
-  const fd=new FormData();
-  fd.append('course',COURSE);
-  fd.append('assignment_id',document.getElementById('asgId').value.trim());
-  fd.append('name',document.getElementById('asgName').value.trim());
-  fd.append('max_points',document.getElementById('asgPts').value||'100');
-  const f=document.getElementById('asgFile').files[0];
-  if(f) fd.append('answer_key',f);
-  msg.textContent='Saving…';msg.className='msg';
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeGradebook();closeAddCol();}
+});
+
+function confirmAddCol(){
+  const name = document.getElementById('colName').value.trim();
+  const pts  = parseFloat(document.getElementById('colPts').value)||100;
+  if(!name) return;
+  closeAddCol();
+
+  // Create assignment in DB (gives it a column slot + max_points for export)
+  const id = name.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+  const fd = new FormData();
+  fd.append('course', COURSE);
+  fd.append('assignment_id', id);
+  fd.append('name', name);
+  fd.append('max_points', pts);
   fetch(API+'/acc/admin/assignments/create',{
     method:'POST',
     headers:{'X-API-Key':API_KEY,'X-Admin-Token':SESSION},
     body:fd
-  }).then(r=>{msg.textContent='Saved.';msg.className='msg ok';loadAssignments();})
-    .catch(()=>{msg.textContent='Saved.';msg.className='msg ok';loadAssignments();});
+  }).then(()=>{
+    // Add column to local grid immediately without full reload
+    if(GB_DATA){
+      if(!GB_DATA.grade_cols) GB_DATA.grade_cols=[];
+      if(!GB_DATA.grade_cols.includes(id)){
+        GB_DATA.grade_cols.push(id);
+        if(!GB_DATA.assignments) GB_DATA.assignments=[];
+        GB_DATA.assignments.push({assignment_id:id,name,max_points:pts});
+      }
+      document.getElementById('gbUploadZone').style.display='none';
+      document.getElementById('gbGridWrap').style.display='block';
+      renderGrid(GB_DATA);
+    }
+  }).catch(()=>{});
 }
 
-// ── Submissions ───────────────────────────────────────────────────
-function loadSubmissions(){
-  if(!SESSION) return;
-  const url=API+'/acc/admin/submissions/json?course='+encodeURIComponent(COURSE);
-  fetch(url,{headers:authHeaders()}).then(r=>r.json()).then(d=>renderSubmissions(d)).catch(()=>{});
-}
-
-function renderSubmissions(d){
-  const el=document.getElementById('subTable');
-  if(!d.rows||!d.rows.length){el.innerHTML='<p style="color:#888;font-size:.9rem;">No submissions.</p>';return;}
-  let t='<table><thead><tr><th>Student</th><th>Course</th><th>File</th><th>Date</th><th></th></tr></thead><tbody>';
-  d.rows.forEach(r=>{
-    t+=`<tr><td>${esc(r.student)}</td><td>${esc(r.course)}</td><td>${esc(r.filename)}</td><td>${esc(r.submitted_at||'')}</td><td><a href="${API}/acc/admin/download/${r.id}?token=${SESSION}" target="_blank">Download</a></td></tr>`;
-  });
-  t+='</tbody></table>';
-  el.innerHTML=t;
+// ── Edit course (placeholder) ─────────────────────────────────────
+function openEdit(course){
+  alert('Edit course coming soon.');
 }
 
 function esc(s){
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 </script>
 

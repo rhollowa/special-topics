@@ -105,7 +105,7 @@
   <!-- COURSE TABLE -->
   <div class="course-table" id="courseTable">
     <div class="ct-head">
-      <div>Course</div>
+      <div>Course <button class="ct-btn" onclick="openUpload(null,null)" style="margin-left:.5rem;padding:.2rem .55rem;font-size:1rem;line-height:1;color:#c0392b;border-color:#c0392b;" title="Add course / upload gradebook">+</button></div>
       <div>Gradebook</div>
       <div>Edit / Update</div>
     </div>
@@ -387,7 +387,7 @@ let UP_COURSE_KEY = null, UP_COURSE_ID = null;
 function openUpload(key, id){
   UP_COURSE_KEY = key;
   UP_COURSE_ID  = id;
-  document.getElementById('upTitle').textContent = 'Upload File — ' + key.replace(/-/g,' ');
+  document.getElementById('upTitle').textContent = key ? 'Upload File — ' + key.replace(/-/g,' ') : 'Add Course — Upload BB Gradebook';
   document.getElementById('upMsg').textContent = '';
   document.getElementById('upFileInput').value = '';
   document.getElementById('upModal').classList.add('open');
@@ -422,3 +422,4 @@ function esc(s){
 
 </body>
 </html>
+

@@ -6,18 +6,26 @@
 <title>Lessons · BUSI 2305 — Spring 2026</title>
 <link rel="stylesheet" href="../../theme.css">
 <style>
-  /* Hover-to-expand week sections; click pins */
-  .week-group { position: relative; }
+  /* Hover-to-expand week sections; click-to-pin; full-rectangle hover zone */
+  .week-group {
+    position: relative;
+    margin-bottom: 0 !important;
+    border-bottom: 1px solid var(--rule-soft);
+  }
   .week-group > summary {
     list-style: none;
     cursor: pointer;
-    display: block;
     position: relative;
-    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-height: 96px;
+    padding: 1.25rem 0;
     margin: 0;
+    border-bottom: none;
   }
   .week-group > summary::-webkit-details-marker { display: none; }
-  /* Pin indicator: bullet that appears when pinned */
+  .week-group > summary > .week-header { display: contents; }
   .week-group.pinned > summary::before {
     content: '●';
     position: absolute;
@@ -31,6 +39,18 @@
   }
   @media (max-width: 720px) {
     .week-group.pinned > summary::before { left: -1rem; font-size: 10px; }
+    .week-group > summary { min-height: 72px; }
+  }
+  .week-group .collapse-wrap {
+    overflow: hidden;
+    transition: height 0.3s ease;
+    height: 0;
+  }
+  /* Override theme.css week-header that adds its own bottom border/margin */
+  .lectures.view-grid .week-header {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+    border-bottom: none !important;
   }
 </style>
 </head>
@@ -87,7 +107,7 @@
       <summary class="week-header">
         <span class="wk">Week 1</span>
         <span class="wk-title">Introduction & Greeks</span>
-      </summary>
+      </summary><div class="collapse-wrap"><div class="collapse-inner">
       <div class="video-grid">
         <div class="video-card" data-video-id="ySBcVB80Q8Q" data-video-title="Week 1 — The Greek Alphabet">
           <div class="video-thumb"><span class="lbl">Lecture</span></div>
@@ -103,14 +123,14 @@
           <li><a href="../files/The_Greeks.pptx" download>The Greeks <span class="file-ext">.pptx</span></a></li>
         </ul>
       </div>
-    </details>
+    </div></div></details>
 
     <!-- WEEK 2 -->
     <details class="week-group">
       <summary class="week-header">
         <span class="wk">Week 2</span>
         <span class="wk-title">What is Statistics</span>
-      </summary>
+      </summary><div class="collapse-wrap"><div class="collapse-inner">
       <div class="video-grid">
         <div class="video-card" data-video-id="8z_uGLX4NeA" data-video-title="Week 2 — What is Statistics?">
           <div class="video-thumb"><span class="lbl">Lecture</span></div>
@@ -126,14 +146,14 @@
           <li><a href="../files/What_is_Statistics.pptx" download>What is Statistics <span class="file-ext">.pptx</span></a></li>
         </ul>
       </div>
-    </details>
+    </div></div></details>
 
     <!-- WEEK 3 -->
     <details class="week-group">
       <summary class="week-header">
         <span class="wk">Week 3</span>
         <span class="wk-title">Describing Data & Data Visualization</span>
-      </summary>
+      </summary><div class="collapse-wrap"><div class="collapse-inner">
       <div class="video-grid">
         <div class="video-card" data-video-id="9UGlp0oCqO4" data-video-title="Week 3 — Data Visualization">
           <div class="video-thumb"><span class="lbl">Lecture</span></div>
@@ -156,14 +176,14 @@
           <li><a href="../files/Data_Visualization_excel_primer.pptx" download>Data Visualization (Excel Primer) <span class="file-ext">.pptx</span></a></li>
         </ul>
       </div>
-    </details>
+    </div></div></details>
 
     <!-- WEEK 4 -->
     <details class="week-group">
       <summary class="week-header">
         <span class="wk">Week 4</span>
         <span class="wk-title">Averages</span>
-      </summary>
+      </summary><div class="collapse-wrap"><div class="collapse-inner">
       <div class="video-grid">
         <div class="video-card" data-video-id="tXbwX-eK_i4" data-video-title="Week 4 — Averages">
           <div class="video-thumb"><span class="lbl">Lecture</span></div>
@@ -180,14 +200,14 @@
           <li><a href="../files/Weighted_average_exercises.xlsx" download>Weighted Average Exercises <span class="file-ext">.xlsx</span></a></li>
         </ul>
       </div>
-    </details>
+    </div></div></details>
 
     <!-- WEEK 5 -->
     <details class="week-group">
       <summary class="week-header">
         <span class="wk">Week 5</span>
         <span class="wk-title">Dispersion</span>
-      </summary>
+      </summary><div class="collapse-wrap"><div class="collapse-inner">
       <div class="video-grid">
         <div class="video-card" data-video-id="Ufgoh3BgROc" data-video-title="Week 5 — Dispersion">
           <div class="video-thumb"><span class="lbl">Lecture</span></div>
@@ -203,14 +223,14 @@
           <li><a href="../files/Dispersion.pptx" download>Dispersion <span class="file-ext">.pptx</span></a></li>
         </ul>
       </div>
-    </details>
+    </div></div></details>
 
     <!-- WEEK 6 -->
     <details class="week-group">
       <summary class="week-header">
         <span class="wk">Week 6</span>
         <span class="wk-title">Probability</span>
-      </summary>
+      </summary><div class="collapse-wrap"><div class="collapse-inner">
       <div class="video-grid">
         <div class="video-card" data-video-id="yTUm4vsDlkw" data-video-title="Week 6 — A Survey of Probability Concepts">
           <div class="video-thumb"><span class="lbl">Lecture</span></div>
@@ -226,14 +246,14 @@
           <li><a href="../files/Probability_and_Combinatorics.pptx" download>Probability and Combinatorics <span class="file-ext">.pptx</span></a></li>
         </ul>
       </div>
-    </details>
+    </div></div></details>
 
     <!-- WEEK 7 -->
     <details class="week-group">
       <summary class="week-header">
         <span class="wk">Week 7</span>
         <span class="wk-title">Confidence Intervals</span>
-      </summary>
+      </summary><div class="collapse-wrap"><div class="collapse-inner">
       <div class="video-grid">
         <div class="video-card" data-video-id="5GN_CF3ZA84" data-video-title="Week 7 — Confidence Intervals (Pt 1)">
           <div class="video-thumb"><span class="lbl">Lecture</span></div>
@@ -256,14 +276,14 @@
           <li><a href="../files/Confidence_Intervals.pptx" download>Confidence Intervals <span class="file-ext">.pptx</span></a></li>
         </ul>
       </div>
-    </details>
+    </div></div></details>
 
     <!-- WEEK 8 -->
     <details class="week-group">
       <summary class="week-header">
         <span class="wk">Week 8</span>
         <span class="wk-title">Correlation & Regression</span>
-      </summary>
+      </summary><div class="collapse-wrap"><div class="collapse-inner">
       <div class="video-grid">
         <div class="video-card" data-video-id="hgaBelAOGak" data-video-title="Week 8 — Regression">
           <div class="video-thumb"><span class="lbl">Lecture</span></div>
@@ -294,7 +314,7 @@
           <li><a href="../files/Regression_examples.xlsx" download>Regression Examples <span class="file-ext">.xlsx</span></a></li>
         </ul>
       </div>
-    </details>
+    </div></div></details>
 
 
     <!-- LIST/DETAIL VIEW TABLE -->
@@ -434,34 +454,70 @@
 
 <script>
 (function() {
-  var groups = document.querySelectorAll('details.week-group');
-  // Touch detection: if any touchstart fires before mouseenter, switch to tap-mode globally
+  var GROUPS = 'details.week-group, details.collapse';
+  var COLLAPSE_DELAY_MS = 500;
+  var ANIM_MS = 300;
+
+  function openGroup(g) {
+    var wrap = g.querySelector(':scope > .collapse-wrap');
+    if (!wrap) return;
+    clearTimeout(g._collapseTimer);
+    g.open = true;
+    var inner = wrap.querySelector(':scope > .collapse-inner');
+    var target = inner ? inner.scrollHeight : wrap.scrollHeight;
+    var current = wrap.getBoundingClientRect().height;
+    wrap.style.height = current + 'px';
+    requestAnimationFrame(function() { wrap.style.height = target + 'px'; });
+    clearTimeout(g._openTimer);
+    g._openTimer = setTimeout(function() {
+      if (g.open) wrap.style.height = 'auto';
+    }, ANIM_MS + 20);
+  }
+
+  function collapseGroup(g) {
+    var wrap = g.querySelector(':scope > .collapse-wrap');
+    if (!wrap) return;
+    var current = wrap.getBoundingClientRect().height;
+    wrap.style.height = current + 'px';
+    requestAnimationFrame(function() { wrap.style.height = '0px'; });
+    clearTimeout(g._openTimer);
+    setTimeout(function() {
+      if (!g.classList.contains('pinned') && !g.matches(':hover')) g.open = false;
+    }, ANIM_MS);
+  }
+
+  function scheduleCollapse(g) {
+    clearTimeout(g._collapseTimer);
+    g._collapseTimer = setTimeout(function() {
+      if (!g.classList.contains('pinned') && !g.matches(':hover')) collapseGroup(g);
+    }, COLLAPSE_DELAY_MS);
+  }
+
+  var groups = document.querySelectorAll(GROUPS);
   var hasHover = window.matchMedia('(hover: hover)').matches;
 
   groups.forEach(function(g) {
-    var summary = g.querySelector('summary');
+    var summary = g.querySelector(':scope > summary');
     if (!summary) return;
+    var wrap = g.querySelector(':scope > .collapse-wrap');
+    if (g.open && wrap) wrap.style.height = 'auto';
 
     if (hasHover) {
-      g.addEventListener('mouseenter', function() {
-        g.open = true;
-      });
+      g.addEventListener('mouseenter', function() { openGroup(g); });
       g.addEventListener('mouseleave', function() {
-        if (!g.classList.contains('pinned')) g.open = false;
+        if (!g.classList.contains('pinned')) scheduleCollapse(g);
       });
     }
 
     summary.addEventListener('click', function(e) {
       e.preventDefault();
-      // Toggle pinned state
       var nowPinned = !g.classList.contains('pinned');
       g.classList.toggle('pinned');
       if (nowPinned) {
-        g.open = true;
+        openGroup(g);
       } else {
-        // Unpinning: collapse unless hovered (mouseenter will re-open if so)
-        if (!hasHover) g.open = false;
-        else if (!g.matches(':hover')) g.open = false;
+        if (!hasHover) collapseGroup(g);
+        else if (!g.matches(':hover')) collapseGroup(g);
       }
     });
   });

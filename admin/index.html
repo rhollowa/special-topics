@@ -193,47 +193,47 @@
 <script>
 const API = 'https://tourcast-docker.onrender.com';
 const API_KEY = 'c7852252558744ea5bef3c86136edbf31b5e3e556fd447454a4d37b06151b4e7';
+const CREDS = { credentials: 'include' };
+let AUTHED = false;
 let SESSION = null;
 let COURSE = null;
 let GB_DATA = null;
 
+function authFetch(url, opts={}){
+  const isForm = opts.body instanceof FormData;
+  const headers = Object.assign(
+    {'X-API-Key':API_KEY,'X-Admin-Token':SESSION},
+    isForm ? {} : {'Content-Type':'application/json'},
+    opts.headers||{}
+  );
+  return fetch(API+url, Object.assign({}, CREDS, opts, {headers}));
+}
 
-// ── Boot: try IP auth first, then device token ───────────────────
+// ── Boot ──────────────────────────────────────────────────────────
 function showPanel(token){
-  SESSION = token;
+  AUTHED = true; SESSION = token;
   document.getElementById('loginBox').style.display='none';
   document.getElementById('adminPanel').style.display='block';
   loadCourses();
 }
 
 (function boot(){
-  fetch(API+'/acc/admin/ip-auth',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','X-API-Key':API_KEY}
-  }).then(r=>r.json()).then(d=>{
-    if(d.ok) showPanel(d.token);
-    else document.getElementById('loginBox').style.display='';
-  }).catch(()=>{ document.getElementById('loginBox').style.display=''; });
+  authFetch('/acc/admin/ip-auth',{method:'POST',body:JSON.stringify({})})
+    .then(r=>r.json()).then(d=>{
+      if(d.ok) showPanel(d.token);
+      else document.getElementById('loginBox').style.display='';
+    }).catch(()=>{ document.getElementById('loginBox').style.display=''; });
 })();
 
-// ── Auth ──────────────────────────────────────────────────────────
 function doLogin(){
   const pw = document.getElementById('pwInput').value;
-  fetch(API+'/acc/admin/api-login',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','X-API-Key':API_KEY},
-    body:JSON.stringify({password:pw})
-  }).then(r=>r.json()).then(d=>{
-    if(d.ok){ showPanel(d.token); }
-    else { document.getElementById('loginErr').style.display='block'; }
-  }).catch(()=>{document.getElementById('loginErr').style.display='block';});
+  authFetch('/acc/admin/api-login',{method:'POST',body:JSON.stringify({password:pw})})
+    .then(r=>r.json()).then(d=>{
+      if(d.ok) showPanel(d.token);
+      else document.getElementById('loginErr').style.display='block';
+    }).catch(()=>{document.getElementById('loginErr').style.display='block';});
 }
 document.getElementById('pwInput').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
-
-
-function authHeaders(){
-  return {'X-API-Key':API_KEY,'X-Admin-Token':SESSION,'Content-Type':'application/json'};
-}
 
 // ── Course list ───────────────────────────────────────────────────
 
@@ -263,7 +263,7 @@ function renderCourseTable(dbCourses){
 
 function deleteCourse(id){
   if(!confirm('Remove this course from the admin panel?')) return;
-  fetch(API+'/acc/admin/courses/'+id+'/delete',{method:'POST',headers:authHeaders()})
+  authFetch('/acc/admin/courses/'+id+'/delete',{method:'POST'})
     .then(r=>r.json()).then(d=>{ if(d.ok) loadCourses(); });
 }
 
@@ -285,7 +285,7 @@ function overlayClick(e){
 }
 
 function fetchGradebook(){
-  fetch(API+'/acc/admin/gradebook/json?course='+encodeURIComponent(COURSE),{headers:authHeaders()})
+  authFetch('/acc/admin/gradebook/json?course='+encodeURIComponent(COURSE),{})
     .then(r=>r.json())
     .then(d=>{
       GB_DATA = d;
@@ -329,8 +329,8 @@ function renderGrid(d){
 }
 
 function saveGrade(acc_id, assignment_id, score){
-  fetch(API+'/acc/admin/gradebook/grade',{
-    method:'POST', headers:authHeaders(),
+  authFetch('/acc/admin/gradebook/grade',{
+    method:'POST',
     body:JSON.stringify({course:COURSE, acc_id, assignment_id, score: score===''?null:parseFloat(score)})
   }).catch(()=>{});
 }
@@ -343,8 +343,8 @@ function handleUpload(file){
   const msg=document.getElementById('gbMsg');
   msg.textContent='Uploading…';msg.className='msg';
   const fd=new FormData();fd.append('file',file);fd.append('course',COURSE);
-  fetch(API+'/acc/admin/gradebook/upload',{
-    method:'POST', headers:{'X-API-Key':API_KEY,'X-Admin-Token':SESSION}, body:fd
+  authFetch('/acc/admin/gradebook/upload',{
+    method:'POST', body:fd
   }).then(r=>r.json()).then(d=>{
     if(d.ok){ msg.textContent=`Imported — ${d.inserted} new, ${d.updated} updated.`; msg.className='msg ok'; fetchGradebook(); }
     else { msg.textContent=d.error||'Error'; msg.className='msg err'; }
@@ -375,8 +375,8 @@ function confirmAddCol(){
   const id = name.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
   const fd = new FormData();
   fd.append('course',COURSE); fd.append('assignment_id',id); fd.append('name',name); fd.append('max_points',pts);
-  fetch(API+'/acc/admin/assignments/create',{
-    method:'POST', headers:{'X-API-Key':API_KEY,'X-Admin-Token':SESSION}, body:fd
+  authFetch('/acc/admin/assignments/create',{
+    method:'POST', body:fd
   }).then(()=>{
     if(GB_DATA){
       if(!GB_DATA.grade_cols) GB_DATA.grade_cols=[];
@@ -431,9 +431,8 @@ function submitUpload(){
   fd.append('course_id', UP_COURSE_ID);
   fd.append('course_key', UP_COURSE_KEY);
   msg.textContent = 'Uploading…'; msg.className='msg';
-  fetch(API+'/acc/admin/courses/upload', {
+  authFetch('/acc/admin/courses/upload', {
     method:'POST',
-    headers: {'X-API-Key':API_KEY,'X-Admin-Token':SESSION},
     body: fd
   }).then(r=>r.json()).then(d=>{
     if(d.ok){ msg.textContent='Uploaded: '+d.filename; msg.className='msg ok'; }
@@ -449,6 +448,7 @@ function esc(s){
 
 </body>
 </html>
+
 
 
 

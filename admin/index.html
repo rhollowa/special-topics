@@ -26,6 +26,11 @@
 .up-modal.open{display:flex;}
 .up-modal-inner{background:#fff;border-radius:8px;padding:1.5rem;width:100%;max-width:420px;box-shadow:0 4px 24px rgba(0,0,0,.15);}
 .up-modal-inner h3{margin:0 0 .75rem;font-size:1rem;font-weight:700;}
+.up-drop{border:2px dashed #ccc;border-radius:8px;padding:1.5rem 1rem;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;margin:.75rem 0 1rem;position:relative;}
+.up-drop.drag-over{border-color:#1a7a4a;background:#f0faf4;}
+.up-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.up-drop-hint{font-size:.85rem;color:#888;}.up-drop-hint strong{color:#1a7a4a;}
+.up-file-name{font-size:.82rem;color:#1a7a4a;font-weight:600;margin-top:6px;display:none;}
 .ct-add-row{padding:.75rem 1rem;border-top:1px solid var(--border,#eee);}
 
 /* Modal overlay */
@@ -120,7 +125,11 @@
 <div class="up-modal" id="upModal" onclick="upOverlayClick(event)">
   <div class="up-modal-inner">
     <h3 id="upTitle">Upload File</h3>
-    <input type="file" id="upFileInput" accept=".xlsx,.xls,.csv" style="margin:.75rem 0 1rem;display:block;font-size:.88rem;">
+    <div class="up-drop" id="upDrop">
+      <input type="file" id="upFileInput" accept=".xlsx,.xls,.csv">
+      <div class="up-drop-hint">📂 Drag &amp; drop or <strong>click to browse</strong></div>
+      <div class="up-file-name" id="upFileName"></div>
+    </div>
     <div class="msg" id="upMsg" style="margin-bottom:.5rem;"></div>
     <div style="display:flex;gap:.5rem;justify-content:flex-end;">
       <button class="ct-btn" onclick="closeUpload()">Cancel</button>
@@ -390,10 +399,27 @@ function openUpload(key, id){
   document.getElementById('upTitle').textContent = key ? 'Upload File — ' + key.replace(/-/g,' ') : 'Add Course — Upload BB Gradebook';
   document.getElementById('upMsg').textContent = '';
   document.getElementById('upFileInput').value = '';
+  const fn = document.getElementById('upFileName'); fn.textContent=''; fn.style.display='none';
   document.getElementById('upModal').classList.add('open');
 }
 function closeUpload(){ document.getElementById('upModal').classList.remove('open'); }
 function upOverlayClick(e){ if(e.target===document.getElementById('upModal')) closeUpload(); }
+(function(){
+  var drop = document.getElementById('upDrop');
+  drop.addEventListener('dragover',  function(e){ e.preventDefault(); this.classList.add('drag-over'); });
+  drop.addEventListener('dragleave', function(){ this.classList.remove('drag-over'); });
+  drop.addEventListener('drop', function(e){
+    e.preventDefault(); this.classList.remove('drag-over');
+    var f = e.dataTransfer.files[0];
+    if(f){ var dt=new DataTransfer(); dt.items.add(f); document.getElementById('upFileInput').files=dt.files;
+      var fn=document.getElementById('upFileName'); fn.textContent=f.name; fn.style.display='block'; }
+  });
+  document.getElementById('upFileInput').addEventListener('change', function(){
+    var fn=document.getElementById('upFileName');
+    if(this.files[0]){ fn.textContent=this.files[0].name; fn.style.display='block'; }
+    else { fn.textContent=''; fn.style.display='none'; }
+  });
+})();
 
 function submitUpload(){
   const file = document.getElementById('upFileInput').files[0];
@@ -422,4 +448,5 @@ function esc(s){
 
 </body>
 </html>
+
 

@@ -6,34 +6,25 @@
 <title>Lessons · BUSI 2305 — Spring 2026</title>
 <link rel="stylesheet" href="../../theme.css">
 <style>
-  .week-group {
-    position: relative;
-    margin-bottom: 0 !important;
-    border-bottom: 1px solid var(--rule-soft);
-  }
-  .week-group > summary {
-    list-style: none;
-    cursor: default;
-    position: relative;
+  /* ── Week table: single grid spanning all rows ── */
+  .week-table {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    align-items: center;
-    min-height: 80px;
-    padding: 0.75rem 0;
-    margin: 0;
-    border-bottom: none;
+    border-top: 1px solid var(--rule-soft);
   }
-  .week-group > summary::-webkit-details-marker { display: none; }
-
-  .summary-label {
+  .wt-label, .wt-videos, .wt-files {
+    padding: 1rem 1rem 1rem 0;
+    border-bottom: 1px solid var(--rule-soft);
     display: flex;
     flex-direction: column;
-    gap: 3px;
-    align-self: center;
-    padding-right: 1rem;
-    min-width: 0;
+    justify-content: center;
+    gap: 4px;
+    min-height: 72px;
   }
-  .summary-label .wk {
+  .wt-files { padding-left: 1rem; }
+
+  /* Label col */
+  .wt-label .wk {
     font-family: var(--mono);
     font-size: 11px;
     color: var(--accent);
@@ -41,24 +32,15 @@
     letter-spacing: 0.1em;
     font-weight: 500;
   }
-  .summary-label .wk-title {
+  .wt-label .wk-title {
     font-family: var(--serif);
     font-size: 13px;
     font-weight: 500;
     color: var(--ink);
     line-height: 1.3;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
-  .summary-videos {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    align-self: center;
-    min-width: 0;
-  }
+  /* Video col */
   .summary-card {
     display: flex;
     align-items: center;
@@ -66,11 +48,11 @@
     cursor: pointer;
     text-decoration: none;
     color: inherit;
-    min-width: 0;
+    padding: 2px 0;
   }
   .summary-thumb {
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     background: linear-gradient(135deg, #2d2d2d 0%, #4a3525 100%);
     flex-shrink: 0;
@@ -82,7 +64,7 @@
   .summary-thumb::after {
     content: "▶";
     color: rgba(255,255,255,0.85);
-    font-size: 8px;
+    font-size: 7px;
     margin-left: 1px;
   }
   .summary-thumb.type-excel {
@@ -95,22 +77,14 @@
     color: var(--ink);
     font-weight: 500;
     line-height: 1.3;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    min-width: 0;
   }
   .summary-card:hover .summary-card-ttl { color: var(--accent); }
 
-  .summary-files {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    align-self: center;
-    min-width: 0;
-    padding-left: 1rem;
+  /* Files col */
+  .wt-files {
+    gap: 5px;
   }
-  .summary-files a {
+  .wt-files a {
     font-family: var(--serif);
     font-size: 13px;
     color: var(--ink);
@@ -119,32 +93,25 @@
     align-items: baseline;
     gap: 0.4rem;
     transition: color 0.15s;
-    padding: 0.1rem 0;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    min-width: 0;
   }
-  .summary-files a::before {
+  .wt-files a::before {
     content: "↓";
     color: var(--accent);
     font-weight: bold;
     flex-shrink: 0;
   }
-  .summary-files a:hover { color: var(--accent); }
-  .summary-files .file-ext {
+  .wt-files a:hover { color: var(--accent); }
+  .wt-files .file-ext {
     font-family: var(--mono);
     font-size: 11px;
     color: var(--muted);
-    flex-shrink: 0;
   }
 
-  .lectures.view-grid .collapse-wrap { display: none; }
-  .lectures.view-grid .week-header {
-    margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
-    border-bottom: none !important;
-  }
+  /* Hide old week-group details in grid view */
+  .lectures.view-grid .week-group { display: none; }
+  .lectures.view-list .week-table { display: none; }
+  .lectures.view-list .week-group { display: block; }
   .lectures.view-list .week-group > summary { display: none; }
   .lectures.view-list .collapse-wrap { display: none; }
 </style>
@@ -196,315 +163,148 @@
 
   <div class="lectures view-grid">
 
+    <!-- GRID TABLE: single 3-col layout across all weeks -->
+    <div class="week-table">
 
-    <!-- WEEK 1 -->
-    <details class="week-group">
-      <summary class="week-header">
-        <div class="summary-label">
-          <span class="wk">Week 1</span>
-          <span class="wk-title">Introduction &amp; Greeks</span>
-        </div>
-        <div class="summary-videos">
+      <!-- WEEK 1 -->
+      <div class="wt-label">
+        <span class="wk">Week 1</span>
+        <span class="wk-title">Introduction &amp; Greeks</span>
+      </div>
+      <div class="wt-videos">
         <div class="summary-card" data-video-id="ySBcVB80Q8Q" data-video-title="Week 1 — The Greek Alphabet">
-          <div class="summary-thumb "></div>
-            <div class="summary-card-ttl">The Greek Alphabet</div>
+          <div class="summary-thumb"></div>
+          <div class="summary-card-ttl">The Greek Alphabet</div>
         </div>
-        </div>
-        <div class="summary-files">
+      </div>
+      <div class="wt-files">
         <a href="../files/The_Greeks.pptx" download>The Greeks <span class="file-ext">.pptx</span></a>
-        </div>
-      </summary><div class="collapse-wrap"><div class="collapse-inner">
-      <div class="video-grid">
-        <div class="video-card" data-video-id="ySBcVB80Q8Q" data-video-title="Week 1 — The Greek Alphabet">
-          <div class="video-thumb"><span class="lbl">Lecture</span></div>
-          <div class="video-meta">
-            <div class="tag">Lecture</div>
-            <div class="ttl">The Greek Alphabet</div>
-        </div>
       </div>
-      <div class="week-files">
-        <div class="files-label">Files</div>
-        <ul class="files-list">
-          <li><a href="../files/The_Greeks.pptx" download>The Greeks <span class="file-ext">.pptx</span></a></li>
-        </ul>
-      </div>
-    </div></div></details>
 
-    <!-- WEEK 2 -->
-    <details class="week-group">
-      <summary class="week-header">
-        <div class="summary-label">
-          <span class="wk">Week 2</span>
-          <span class="wk-title">What is Statistics</span>
-        </div>
-        <div class="summary-videos">
+      <!-- WEEK 2 -->
+      <div class="wt-label">
+        <span class="wk">Week 2</span>
+        <span class="wk-title">What is Statistics</span>
+      </div>
+      <div class="wt-videos">
         <div class="summary-card" data-video-id="8z_uGLX4NeA" data-video-title="Week 2 — What is Statistics?">
-          <div class="summary-thumb "></div>
-            <div class="summary-card-ttl">What is Statistics?</div>
+          <div class="summary-thumb"></div>
+          <div class="summary-card-ttl">What is Statistics?</div>
         </div>
-        </div>
-        <div class="summary-files">
+      </div>
+      <div class="wt-files">
         <a href="../files/What_is_Statistics.pptx" download>What is Statistics <span class="file-ext">.pptx</span></a>
-        </div>
-      </summary><div class="collapse-wrap"><div class="collapse-inner">
-      <div class="video-grid">
-        <div class="video-card" data-video-id="8z_uGLX4NeA" data-video-title="Week 2 — What is Statistics?">
-          <div class="video-thumb"><span class="lbl">Lecture</span></div>
-          <div class="video-meta">
-            <div class="tag">Lecture</div>
-            <div class="ttl">What is Statistics?</div>
-        </div>
       </div>
-      <div class="week-files">
-        <div class="files-label">Files</div>
-        <ul class="files-list">
-          <li><a href="../files/What_is_Statistics.pptx" download>What is Statistics <span class="file-ext">.pptx</span></a></li>
-        </ul>
-      </div>
-    </div></div></details>
 
-    <!-- WEEK 3 -->
-    <details class="week-group">
-      <summary class="week-header">
-        <div class="summary-label">
-          <span class="wk">Week 3</span>
-          <span class="wk-title">Describing Data</span>
-        </div>
-        <div class="summary-videos">
+      <!-- WEEK 3 -->
+      <div class="wt-label">
+        <span class="wk">Week 3</span>
+        <span class="wk-title">Describing Data &amp; Visualization</span>
+      </div>
+      <div class="wt-videos">
         <div class="summary-card" data-video-id="9UGlp0oCqO4" data-video-title="Week 3 — Data Visualization">
-          <div class="summary-thumb "></div>
-            <div class="summary-card-ttl">Data Visualization</div>
+          <div class="summary-thumb"></div>
+          <div class="summary-card-ttl">Data Visualization</div>
         </div>
         <div class="summary-card" data-video-id="kqcmqul6FsY" data-video-title="Week 3 — Data Visualization Examples">
           <div class="summary-thumb type-excel"></div>
-            <div class="summary-card-ttl">Data Visualization Examples</div>
+          <div class="summary-card-ttl">Data Visualization Examples</div>
         </div>
-        </div>
-        <div class="summary-files">
+      </div>
+      <div class="wt-files">
         <a href="../files/Data_Visualization_excel_primer.pptx" download>Data Visualization (Excel Primer) <span class="file-ext">.pptx</span></a>
-        </div>
-      </summary><div class="collapse-wrap"><div class="collapse-inner">
-      <div class="video-grid">
-        <div class="video-card" data-video-id="9UGlp0oCqO4" data-video-title="Week 3 — Data Visualization">
-          <div class="video-thumb"><span class="lbl">Lecture</span></div>
-          <div class="video-meta">
-            <div class="tag">Lecture</div>
-            <div class="ttl">Data Visualization</div>
-        </div>
-        <div class="video-card" data-video-id="kqcmqul6FsY" data-video-title="Week 3 — Data Visualization Examples">
-          <div class="video-thumb type-excel"><span class="lbl">Excel</span></div>
-          <div class="video-meta">
-            <div class="tag excel">Excel Walkthrough</div>
-            <div class="ttl">Data Visualization Examples</div>
-        </div>
       </div>
-      <div class="week-files">
-        <div class="files-label">Files</div>
-        <ul class="files-list">
-          <li><a href="../files/Data_Visualization_excel_primer.pptx" download>Data Visualization (Excel Primer) <span class="file-ext">.pptx</span></a></li>
-        </ul>
-      </div>
-    </div></div></details>
 
-    <!-- WEEK 4 -->
-    <details class="week-group">
-      <summary class="week-header">
-        <div class="summary-label">
-          <span class="wk">Week 4</span>
-          <span class="wk-title">Averages</span>
-        </div>
-        <div class="summary-videos">
+      <!-- WEEK 4 -->
+      <div class="wt-label">
+        <span class="wk">Week 4</span>
+        <span class="wk-title">Averages</span>
+      </div>
+      <div class="wt-videos">
         <div class="summary-card" data-video-id="tXbwX-eK_i4" data-video-title="Week 4 — Averages">
-          <div class="summary-thumb "></div>
-            <div class="summary-card-ttl">Averages</div>
+          <div class="summary-thumb"></div>
+          <div class="summary-card-ttl">Averages</div>
         </div>
-        </div>
-        <div class="summary-files">
+      </div>
+      <div class="wt-files">
         <a href="../files/Averages.pptx" download>Averages <span class="file-ext">.pptx</span></a>
         <a href="../files/Weighted_average_exercises.xlsx" download>Weighted Average Exercises <span class="file-ext">.xlsx</span></a>
-        </div>
-      </summary><div class="collapse-wrap"><div class="collapse-inner">
-      <div class="video-grid">
-        <div class="video-card" data-video-id="tXbwX-eK_i4" data-video-title="Week 4 — Averages">
-          <div class="video-thumb"><span class="lbl">Lecture</span></div>
-          <div class="video-meta">
-            <div class="tag">Lecture</div>
-            <div class="ttl">Averages</div>
-        </div>
       </div>
-      <div class="week-files">
-        <div class="files-label">Files</div>
-        <ul class="files-list">
-          <li><a href="../files/Averages.pptx" download>Averages <span class="file-ext">.pptx</span></a></li>
-          <li><a href="../files/Weighted_average_exercises.xlsx" download>Weighted Average Exercises <span class="file-ext">.xlsx</span></a></li>
-        </ul>
-      </div>
-    </div></div></details>
 
-    <!-- WEEK 5 -->
-    <details class="week-group">
-      <summary class="week-header">
-        <div class="summary-label">
-          <span class="wk">Week 5</span>
-          <span class="wk-title">Dispersion</span>
-        </div>
-        <div class="summary-videos">
+      <!-- WEEK 5 -->
+      <div class="wt-label">
+        <span class="wk">Week 5</span>
+        <span class="wk-title">Dispersion</span>
+      </div>
+      <div class="wt-videos">
         <div class="summary-card" data-video-id="Ufgoh3BgROc" data-video-title="Week 5 — Dispersion">
-          <div class="summary-thumb "></div>
-            <div class="summary-card-ttl">Dispersion</div>
+          <div class="summary-thumb"></div>
+          <div class="summary-card-ttl">Dispersion</div>
         </div>
-        </div>
-        <div class="summary-files">
+      </div>
+      <div class="wt-files">
         <a href="../files/Dispersion.pptx" download>Dispersion <span class="file-ext">.pptx</span></a>
-        </div>
-      </summary><div class="collapse-wrap"><div class="collapse-inner">
-      <div class="video-grid">
-        <div class="video-card" data-video-id="Ufgoh3BgROc" data-video-title="Week 5 — Dispersion">
-          <div class="video-thumb"><span class="lbl">Lecture</span></div>
-          <div class="video-meta">
-            <div class="tag">Lecture</div>
-            <div class="ttl">Dispersion</div>
-        </div>
       </div>
-      <div class="week-files">
-        <div class="files-label">Files</div>
-        <ul class="files-list">
-          <li><a href="../files/Dispersion.pptx" download>Dispersion <span class="file-ext">.pptx</span></a></li>
-        </ul>
-      </div>
-    </div></div></details>
 
-    <!-- WEEK 6 -->
-    <details class="week-group">
-      <summary class="week-header">
-        <div class="summary-label">
-          <span class="wk">Week 6</span>
-          <span class="wk-title">Probability</span>
-        </div>
-        <div class="summary-videos">
+      <!-- WEEK 6 -->
+      <div class="wt-label">
+        <span class="wk">Week 6</span>
+        <span class="wk-title">Probability</span>
+      </div>
+      <div class="wt-videos">
         <div class="summary-card" data-video-id="yTUm4vsDlkw" data-video-title="Week 6 — A Survey of Probability Concepts">
-          <div class="summary-thumb "></div>
-            <div class="summary-card-ttl">A Survey of Probability Concepts</div>
+          <div class="summary-thumb"></div>
+          <div class="summary-card-ttl">A Survey of Probability Concepts</div>
         </div>
-        </div>
-        <div class="summary-files">
+      </div>
+      <div class="wt-files">
         <a href="../files/Probability_and_Combinatorics.pptx" download>Probability and Combinatorics <span class="file-ext">.pptx</span></a>
-        </div>
-      </summary><div class="collapse-wrap"><div class="collapse-inner">
-      <div class="video-grid">
-        <div class="video-card" data-video-id="yTUm4vsDlkw" data-video-title="Week 6 — A Survey of Probability Concepts">
-          <div class="video-thumb"><span class="lbl">Lecture</span></div>
-          <div class="video-meta">
-            <div class="tag">Lecture</div>
-            <div class="ttl">A Survey of Probability Concepts</div>
-        </div>
       </div>
-      <div class="week-files">
-        <div class="files-label">Files</div>
-        <ul class="files-list">
-          <li><a href="../files/Probability_and_Combinatorics.pptx" download>Probability and Combinatorics <span class="file-ext">.pptx</span></a></li>
-        </ul>
-      </div>
-    </div></div></details>
 
-    <!-- WEEK 7 -->
-    <details class="week-group">
-      <summary class="week-header">
-        <div class="summary-label">
-          <span class="wk">Week 7</span>
-          <span class="wk-title">Confidence Intervals</span>
-        </div>
-        <div class="summary-videos">
+      <!-- WEEK 7 -->
+      <div class="wt-label">
+        <span class="wk">Week 7</span>
+        <span class="wk-title">Confidence Intervals</span>
+      </div>
+      <div class="wt-videos">
         <div class="summary-card" data-video-id="5GN_CF3ZA84" data-video-title="Week 7 — Confidence Intervals (Pt 1)">
-          <div class="summary-thumb "></div>
-            <div class="summary-card-ttl">Confidence Intervals (Pt 1)</div>
+          <div class="summary-thumb"></div>
+          <div class="summary-card-ttl">Confidence Intervals (Pt 1)</div>
         </div>
         <div class="summary-card" data-video-id="nIAhwqnw9NM" data-video-title="Week 7 — Confidence Intervals (Pt 2)">
-          <div class="summary-thumb "></div>
-            <div class="summary-card-ttl">Confidence Intervals (Pt 2)</div>
+          <div class="summary-thumb"></div>
+          <div class="summary-card-ttl">Confidence Intervals (Pt 2)</div>
         </div>
-        </div>
-        <div class="summary-files">
+      </div>
+      <div class="wt-files">
         <a href="../files/Confidence_Intervals.pptx" download>Confidence Intervals <span class="file-ext">.pptx</span></a>
-        </div>
-      </summary><div class="collapse-wrap"><div class="collapse-inner">
-      <div class="video-grid">
-        <div class="video-card" data-video-id="5GN_CF3ZA84" data-video-title="Week 7 — Confidence Intervals (Pt 1)">
-          <div class="video-thumb"><span class="lbl">Lecture</span></div>
-          <div class="video-meta">
-            <div class="tag">Lecture</div>
-            <div class="ttl">Confidence Intervals (Pt 1)</div>
-        </div>
-        <div class="video-card" data-video-id="nIAhwqnw9NM" data-video-title="Week 7 — Confidence Intervals (Pt 2)">
-          <div class="video-thumb"><span class="lbl">Lecture</span></div>
-          <div class="video-meta">
-            <div class="tag">Lecture</div>
-            <div class="ttl">Confidence Intervals (Pt 2)</div>
-        </div>
       </div>
-      <div class="week-files">
-        <div class="files-label">Files</div>
-        <ul class="files-list">
-          <li><a href="../files/Confidence_Intervals.pptx" download>Confidence Intervals <span class="file-ext">.pptx</span></a></li>
-        </ul>
-      </div>
-    </div></div></details>
 
-    <!-- WEEK 8 -->
-    <details class="week-group">
-      <summary class="week-header">
-        <div class="summary-label">
-          <span class="wk">Week 8</span>
-          <span class="wk-title">Correlation &amp; Regression</span>
-        </div>
-        <div class="summary-videos">
+      <!-- WEEK 8 -->
+      <div class="wt-label">
+        <span class="wk">Week 8</span>
+        <span class="wk-title">Correlation &amp; Regression</span>
+      </div>
+      <div class="wt-videos">
         <div class="summary-card" data-video-id="hgaBelAOGak" data-video-title="Week 8 — Regression">
-          <div class="summary-thumb "></div>
-            <div class="summary-card-ttl">Regression</div>
+          <div class="summary-thumb"></div>
+          <div class="summary-card-ttl">Regression</div>
         </div>
         <div class="summary-card" data-video-id="2iZ8SKqarIg" data-video-title="Week 8 — Regression Examples">
-          <div class="summary-thumb "></div>
-            <div class="summary-card-ttl">Regression Examples</div>
+          <div class="summary-thumb"></div>
+          <div class="summary-card-ttl">Regression Examples</div>
         </div>
         <div class="summary-card" data-video-id="RjcuE6xOI5Q" data-video-title="Week 8 — Adding Analysis Toolkit">
-          <div class="summary-thumb "></div>
-            <div class="summary-card-ttl">Adding Analysis Toolkit</div>
+          <div class="summary-thumb"></div>
+          <div class="summary-card-ttl">Adding Analysis Toolkit</div>
         </div>
-        </div>
-        <div class="summary-files">
+      </div>
+      <div class="wt-files">
         <a href="../files/Regression.pptx" download>Regression <span class="file-ext">.pptx</span></a>
         <a href="../files/Regression_examples.xlsx" download>Regression Examples <span class="file-ext">.xlsx</span></a>
-        </div>
-      </summary><div class="collapse-wrap"><div class="collapse-inner">
-      <div class="video-grid">
-        <div class="video-card" data-video-id="hgaBelAOGak" data-video-title="Week 8 — Regression">
-          <div class="video-thumb"><span class="lbl">Lecture</span></div>
-          <div class="video-meta">
-            <div class="tag">Lecture</div>
-            <div class="ttl">Regression</div>
-        </div>
-        <div class="video-card" data-video-id="2iZ8SKqarIg" data-video-title="Week 8 — Regression Examples">
-          <div class="video-thumb"><span class="lbl">Lecture</span></div>
-          <div class="video-meta">
-            <div class="tag">Lecture</div>
-            <div class="ttl">Regression Examples</div>
-        </div>
-        <div class="video-card" data-video-id="RjcuE6xOI5Q" data-video-title="Week 8 — Adding Analysis Toolkit">
-          <div class="video-thumb"><span class="lbl">Lecture</span></div>
-          <div class="video-meta">
-            <div class="tag">Lecture</div>
-            <div class="ttl">Adding Analysis Toolkit</div>
-        </div>
       </div>
-      <div class="week-files">
-        <div class="files-label">Files</div>
-        <ul class="files-list">
-          <li><a href="../files/Regression.pptx" download>Regression <span class="file-ext">.pptx</span></a></li>
-          <li><a href="../files/Regression_examples.xlsx" download>Regression Examples <span class="file-ext">.xlsx</span></a></li>
-        </ul>
-      </div>
-    </div></div></details>
 
+    </div><!-- /week-table -->
 
     <!-- LIST/DETAIL VIEW TABLE -->
     <table class="lecture-table">

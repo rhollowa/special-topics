@@ -132,19 +132,22 @@
   .sub-msg.ok  { background: #e8f4ee; color: var(--ok); border: 1px solid #b2d8c0; }
   .sub-msg.err { background: #fdf0ee; color: #a02020; border: 1px solid #f0c0b8; }
 
-  /* === COLLAPSIBLE SECTIONS — hover to expand, click to pin === */
-  details.collapse { margin: 0; padding: 0; position: relative; }
+  /* === COLLAPSIBLE SECTIONS — hover-to-expand, click-to-pin, animated === */
+  details.collapse {
+    margin: 0; padding: 0; position: relative;
+    border-bottom: 1px solid var(--rule-soft);
+  }
   details.collapse > summary {
     list-style: none;
     cursor: pointer;
-    padding: 1.25rem 0 1rem;
-    border-bottom: 1px solid var(--rule-soft);
-    display: block;
+    padding: 1.25rem 0;
+    display: flex;
+    align-items: center;
+    min-height: 96px;
     position: relative;
-    transition: border-color 0.15s;
+    border-bottom: none;
   }
   details.collapse > summary::-webkit-details-marker { display: none; }
-  /* Pin indicator: bullet in left margin when pinned */
   details.collapse.pinned > summary::before {
     content: '●';
     position: absolute;
@@ -156,14 +159,19 @@
     color: var(--accent);
     user-select: none;
   }
-  details.collapse[open] > summary { border-bottom-color: var(--rule); }
-  details.collapse > summary .section-head { margin: 0; }
+  details.collapse > summary .section-head { margin: 0; flex: 1; }
   details.collapse > summary .section-head .num { margin-bottom: 4px; }
   details.collapse > summary .section-head h2 { margin: 0; }
   details.collapse > summary .section-head .sub { margin: 4px 0 0; }
-  details.collapse > .collapse-body { padding-top: 1.5rem; }
+  details.collapse .collapse-wrap {
+    overflow: hidden;
+    transition: height 0.3s ease;
+    height: 0;
+  }
+  details.collapse .collapse-inner > .collapse-body { padding-top: 0.5rem; }
   @media (max-width: 720px) {
     details.collapse.pinned > summary::before { left: -1rem; font-size: 10px; }
+    details.collapse > summary { min-height: 72px; }
   }
 
 </style>
@@ -208,15 +216,13 @@
         <h2>Final Exam</h2>
         <p class="sub">Due Sunday, May 17 at 11:59 PM</p>
       </div>
-    </summary>
-    <div class="collapse-body prose">
+    </summary><div class="collapse-wrap"><div class="collapse-inner"><div class="collapse-body prose">
       <h3>Submit</h3>
       <!-- Submit button — fires modal for Final Exam -->
       <button class="submit-btn" onclick="openModal('Final Exam', 'final')">
         &#8593; Submit Assignment
       </button>
-    </div>
-  </details>
+    </div></div></div></details>
 </section>
 <section class="page">
   <details class="collapse">
@@ -226,8 +232,7 @@
         <h2>Exam 1 &mdash; Modeling Problems</h2>
         <p class="sub">Due Friday, May 8 at 11:59 PM</p>
       </div>
-    </summary>
-    <div class="collapse-body prose">
+    </summary><div class="collapse-wrap"><div class="collapse-inner"><div class="collapse-body prose">
       <h3>Download</h3>
       <p>
         <a href="../files/Modeling_problems.xlsx" download>Modeling_problems.xlsx</a> &mdash; Excel workbook, 6 tabs (3 instructions + 3 models).
@@ -244,8 +249,7 @@
         <li><a href="https://youtu.be/UFpjaLHvIJw" target="_blank" rel="noopener">Sector Allocation</a></li>
         <li><a href="https://youtu.be/mNGh-s5ZCLM" target="_blank" rel="noopener">Pro Forma</a></li>
       </ul>
-    </div>
-  </details>
+    </div></div></div></details>
 </section>
 
 </main>
@@ -401,19 +405,58 @@
 
 <script>
 (function() {
-  var groups = document.querySelectorAll('details.collapse');
+  var GROUPS = 'details.week-group, details.collapse';
+  var COLLAPSE_DELAY_MS = 500;
+  var ANIM_MS = 300;
+
+  function openGroup(g) {
+    var wrap = g.querySelector(':scope > .collapse-wrap');
+    if (!wrap) return;
+    clearTimeout(g._collapseTimer);
+    g.open = true;
+    var inner = wrap.querySelector(':scope > .collapse-inner');
+    var target = inner ? inner.scrollHeight : wrap.scrollHeight;
+    var current = wrap.getBoundingClientRect().height;
+    wrap.style.height = current + 'px';
+    requestAnimationFrame(function() { wrap.style.height = target + 'px'; });
+    clearTimeout(g._openTimer);
+    g._openTimer = setTimeout(function() {
+      if (g.open) wrap.style.height = 'auto';
+    }, ANIM_MS + 20);
+  }
+
+  function collapseGroup(g) {
+    var wrap = g.querySelector(':scope > .collapse-wrap');
+    if (!wrap) return;
+    var current = wrap.getBoundingClientRect().height;
+    wrap.style.height = current + 'px';
+    requestAnimationFrame(function() { wrap.style.height = '0px'; });
+    clearTimeout(g._openTimer);
+    setTimeout(function() {
+      if (!g.classList.contains('pinned') && !g.matches(':hover')) g.open = false;
+    }, ANIM_MS);
+  }
+
+  function scheduleCollapse(g) {
+    clearTimeout(g._collapseTimer);
+    g._collapseTimer = setTimeout(function() {
+      if (!g.classList.contains('pinned') && !g.matches(':hover')) collapseGroup(g);
+    }, COLLAPSE_DELAY_MS);
+  }
+
+  var groups = document.querySelectorAll(GROUPS);
   var hasHover = window.matchMedia('(hover: hover)').matches;
 
   groups.forEach(function(g) {
-    var summary = g.querySelector('summary');
+    var summary = g.querySelector(':scope > summary');
     if (!summary) return;
+    var wrap = g.querySelector(':scope > .collapse-wrap');
+    if (g.open && wrap) wrap.style.height = 'auto';
 
     if (hasHover) {
-      g.addEventListener('mouseenter', function() {
-        g.open = true;
-      });
+      g.addEventListener('mouseenter', function() { openGroup(g); });
       g.addEventListener('mouseleave', function() {
-        if (!g.classList.contains('pinned')) g.open = false;
+        if (!g.classList.contains('pinned')) scheduleCollapse(g);
       });
     }
 
@@ -422,10 +465,10 @@
       var nowPinned = !g.classList.contains('pinned');
       g.classList.toggle('pinned');
       if (nowPinned) {
-        g.open = true;
+        openGroup(g);
       } else {
-        if (!hasHover) g.open = false;
-        else if (!g.matches(':hover')) g.open = false;
+        if (!hasHover) collapseGroup(g);
+        else if (!g.matches(':hover')) collapseGroup(g);
       }
     });
   });

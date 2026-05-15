@@ -17,33 +17,51 @@
     position: relative;
     display: flex;
     align-items: center;
-    gap: 24px;
-    min-height: 96px;
+    gap: 0;
+    min-height: 80px;
     padding: 0.75rem 0;
     margin: 0;
     border-bottom: none;
   }
   .week-group > summary::-webkit-details-marker { display: none; }
-  /* Week label */
+
+  /* Col 1: week label — fixed width */
   .summary-label {
-    flex: 0 0 130px;
-    max-width: 130px;
+    flex: 0 0 200px;
+    max-width: 200px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
     align-self: center;
+    padding-right: 1rem;
+  }
+  .summary-label .wk {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 500;
   }
   .summary-label .wk-title {
-    font-size: 15px;
-    line-height: 1.25;
-    white-space: normal;
+    font-family: var(--serif);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  /* Video links — vertical stack, no box */
+
+  /* Col 2: video links — pushed right with left margin */
   .summary-videos {
+    flex: 0 0 240px;
+    margin-left: 80px;
     display: flex;
     flex-direction: column;
     gap: 6px;
-    flex-shrink: 0;
+    align-self: center;
   }
   .summary-card {
     display: flex;
@@ -52,11 +70,10 @@
     cursor: pointer;
     text-decoration: none;
     color: inherit;
-    width: 220px;
   }
   .summary-thumb {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     background: linear-gradient(135deg, #2d2d2d 0%, #4a3525 100%);
     flex-shrink: 0;
@@ -68,7 +85,7 @@
   .summary-thumb::after {
     content: "▶";
     color: rgba(255,255,255,0.85);
-    font-size: 9px;
+    font-size: 8px;
     margin-left: 1px;
   }
   .summary-thumb.type-excel {
@@ -86,17 +103,19 @@
     text-overflow: ellipsis;
   }
   .summary-card:hover .summary-card-ttl { color: var(--accent); }
-  /* File links */
+
+  /* Col 3: file links — pushed to far right */
   .summary-files {
     display: flex;
     flex-direction: column;
     gap: 4px;
     margin-left: auto;
+    align-self: center;
     flex-shrink: 0;
   }
   .summary-files a {
     font-family: var(--serif);
-    font-size: 0.88rem;
+    font-size: 13px;
     color: var(--ink);
     text-decoration: none;
     display: inline-flex;
@@ -104,6 +123,7 @@
     gap: 0.4rem;
     transition: color 0.15s;
     padding: 0.1rem 0;
+    white-space: nowrap;
   }
   .summary-files a::before {
     content: "↓";
@@ -114,9 +134,10 @@
   .summary-files a:hover { color: var(--accent); }
   .summary-files .file-ext {
     font-family: var(--mono);
-    font-size: 0.78rem;
+    font-size: 11px;
     color: var(--muted);
   }
+
   .lectures.view-grid .collapse-wrap { display: none; }
   .lectures.view-grid .week-header {
     margin-bottom: 0 !important;
@@ -246,7 +267,7 @@
       <summary class="week-header">
         <div class="summary-label">
           <span class="wk">Week 3</span>
-          <span class="wk-title">Describing Data &amp; Data Visualization</span>
+          <span class="wk-title">Describing Data</span>
         </div>
         <div class="summary-videos">
         <div class="summary-card" data-video-id="9UGlp0oCqO4" data-video-title="Week 3 — Data Visualization">

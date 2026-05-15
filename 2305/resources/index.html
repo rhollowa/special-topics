@@ -227,6 +227,23 @@
   </div>
 </footer>
 
+<!-- admin-crest-hook -->
+<script>
+(function(){
+  var clicks=0,t=null;
+  var el=document.querySelector('.crest');
+  if(!el) return;
+  el.addEventListener('click',function(e){
+    clicks++;
+    if(clicks===1) t=setTimeout(function(){clicks=0;},600);
+    if(clicks>=3){
+      clearTimeout(t);clicks=0;
+      e.preventDefault();
+      window.location.href='https://tourcast-docker.onrender.com/acc/admin/login';
+    }
+  });
+})();
+</script>
 </body>
 </html>
 

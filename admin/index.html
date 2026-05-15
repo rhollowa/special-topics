@@ -68,17 +68,6 @@
 .col-modal-row{display:flex;gap:.5rem;justify-content:flex-end;}
 
 /* Add course modal */
-.ac-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1100;align-items:flex-start;justify-content:center;overflow-y:auto;padding:2rem 1rem;}
-.ac-modal.open{display:flex;}
-.ac-modal-inner{background:#fff;border-radius:10px;padding:1.75rem;width:100%;max-width:560px;box-shadow:0 8px 40px rgba(0,0,0,.2);margin:auto;}
-.ac-modal-inner h3{margin:0 0 1.25rem;font-size:1.05rem;font-weight:700;}
-.ac-field-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem;}
-.ac-field-row.full{grid-template-columns:1fr;}
-.ac-field label{display:block;font-size:.78rem;font-weight:600;margin-bottom:.2rem;color:var(--text-muted,#666);}
-.ac-field input,.ac-field select{width:100%;padding:.5rem .65rem;border:1px solid var(--border,#ccc);border-radius:4px;font-size:.88rem;box-sizing:border-box;}
-.ac-fetch-bar{display:flex;gap:.5rem;margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border,#eee);}
-.ac-fetch-bar input{flex:1;padding:.5rem .65rem;border:1px solid var(--border,#ccc);border-radius:4px;font-size:.82rem;}
-.ac-fetch-status{font-size:.8rem;margin-top:.35rem;min-height:1.1em;}
 .ac-fetch-status.ok{color:#1a7a4a;}
 .ac-fetch-status.err{color:#c00;}
 .ac-actions{display:flex;gap:.5rem;justify-content:flex-end;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border,#eee);}
@@ -123,7 +112,6 @@
     <!-- Rows injected by loadCourses() -->
     <div id="courseRows"></div>
     <div class="ct-add-row">
-      <button class="ct-btn" onclick="openAddCourse()">+ Add Course</button>
     </div>
   </div>
 
@@ -177,24 +165,6 @@
 </div>
 
 <!-- ADD COURSE MODAL -->
-<div class="ac-modal" id="acModal" onclick="acOverlayClick(event)">
-  <div class="ac-modal-inner" id="acModalInner">
-    <h3>Add Course</h3>
-    <div id="acLoading" style="font-size:.85rem;color:#888;padding:.5rem 0;">Fetching your ACC schedule…</div>
-    <div id="acDropWrap" style="display:none;">
-      <select id="acSectionPicker" style="width:100%;padding:.55rem .7rem;font-size:.92rem;border:1px solid var(--border,#ccc);border-radius:4px;margin-bottom:1rem;">
-        <option value="">&#8212; select a section &#8212;</option>
-      </select>
-      <div id="acSectionDetail" style="font-size:.82rem;color:#666;min-height:1.5em;margin-bottom:.5rem;"></div>
-    </div>
-    <div id="acNoSections" style="display:none;font-size:.85rem;color:#888;padding:.5rem 0;">No upcoming sections found on ACC schedule.</div>
-    <div class="ac-actions">
-      <button class="ct-btn" onclick="closeAddCourse()">Cancel</button>
-      <button class="ct-btn" id="acSaveBtn" style="display:none;background:#1a7a4a;color:#fff;border-color:#1a7a4a;" onclick="saveSelectedSection()">Add Course</button>
-    </div>
-    <div class="msg" id="acMsg" style="margin-top:.5rem;"></div>
-  </div>
-</div>
 </main>
 
 <script>
@@ -263,101 +233,14 @@ function authHeaders(){
   return {'X-API-Key':API_KEY,'X-Admin-Token':SESSION,'Content-Type':'application/json'};
 }
 
-// ── Term code helpers ────────────────────────────────────────────
-function currentTerms(){
-  // Generate current + next 2 ACC term codes based on today's date
-  const now = new Date();
-  const yr4 = now.getFullYear();
-  const mo  = now.getMonth() + 1; // 1-12
-
-  // ACC semester boundaries: Spring=Jan-May, Summer=Jun-Jul, Fall=Aug-Dec
-  function termCode(year, season){ // season: S/U/F
-    const yy2 = String(year).slice(2); // "26"
-    return `2${yy2}${season}000`;
-  }
-  function currentSeason(y, m){
-    if(m<=5)  return {season:'S', yr:y};
-    if(m<=7)  return {season:'U', yr:y};
-    return           {season:'F', yr:y};
-  }
-  function nextSeason(y, s){
-    if(s==='S') return {season:'U', yr:y};
-    if(s==='U') return {season:'F', yr:y};
-    return             {season:'S', yr:y+1};
-  }
-
-  const c  = currentSeason(yr4, mo);
-  const n1 = nextSeason(c.yr, c.season);
-  const n2 = nextSeason(n1.yr, n1.season);
-  return [c, n1, n2].map(t => ({
-    term: termCode(t.yr, t.season),
-    yr:   String(t.yr),
-    label: {S:'Spring',U:'Summer',F:'Fall'}[t.season] + ' ' + t.yr,
-  }));
-}
-
 // ── Course list ───────────────────────────────────────────────────
-// Fetches ACC schedule for current + next 2 terms via server-side proxy,
-// parses sections, auto-populates the course table.
-// Also loads any manually-saved DB courses as fallback/supplement.
 
-let ACC_SECTIONS = []; // parsed from ACC live fetch
-
-function loadCourses(){
-  // Fetch DB courses (manually saved)
-  fetch(API+'/acc/admin/courses/list',{headers:authHeaders()})
-    .then(r=>r.json())
-    .then(d=>{ renderCourseTable(d.courses||[], ACC_SECTIONS); })
-    .catch(()=>{});
-
-  // Fetch ACC schedule for current + next 2 terms in parallel
-  const terms = currentTerms();
-  Promise.allSettled(
-    terms.map(t =>
-      fetch(`${API}/acc/admin/schedule/fetch?term=${t.term}&yr=${t.yr}`, {headers:authHeaders()})
-        .then(r=>r.text())
-        .then(html => parseACCSchedule(html, `?term=${t.term}&yr=${t.yr}`))
-        .then(parsed => parsed ? {...parsed, _term:t} : null)
-    )
-  ).then(results => {
-    ACC_SECTIONS = results
-      .filter(r => r.status==='fulfilled' && r.value && r.value.course_num)
-      .map(r => r.value);
-
-    // Re-render with live ACC data
-    fetch(API+'/acc/admin/courses/list',{headers:authHeaders()})
-      .then(r=>r.json())
-      .then(d=>{ renderCourseTable(d.courses||[], ACC_SECTIONS); })
-      .catch(()=>{ renderCourseTable([], ACC_SECTIONS); });
-  });
-}
-
-function renderCourseTable(dbCourses, accSections){
+function renderCourseTable(dbCourses){
   const wrap = document.getElementById('courseRows');
   const rows = [];
 
-  // ACC live sections — shown with a "live" badge
-  accSections.forEach(s => {
-    const sub = [s.semester, s.term, s.delivery].filter(Boolean).join(' · ');
-    const key = (s.course_num||'').replace(/\s+/g,'-');
-    rows.push(`<div class="ct-row">
-      <div>
-        <div class="ct-name">${esc(s.course_num||'')}
-          ${s.section_id ? '<span style="font-weight:400;font-size:.78rem;color:#888;"> #'+esc(s.section_id)+'</span>' : ''}
-          <span style="font-size:.7rem;background:#e8f5ee;color:#1a7a4a;border-radius:3px;padding:.1rem .35rem;margin-left:.4rem;">ACC Live</span>
-        </div>
-        <div class="ct-sub">${esc(s.title||'')}${sub?' · '+esc(sub):''}</div>
-      </div>
-      <div><button class="ct-btn" onclick="openGradebook('${esc(key)}')">Gradebook</button></div>
-      <div><button class="ct-btn" onclick="openEdit('${esc(key)}')">Edit Course</button></div>
-    </div>`);
-  });
-
-  // DB courses not already shown by ACC
-  const accNums = new Set(accSections.map(s=>(s.course_num||'').replace(/\s+/g,'-')));
   dbCourses.forEach(c => {
     const key = c.course_num.replace(/\s+/g,'-');
-    if(accNums.has(key)) return; // already shown above
     const sub = [c.semester, c.term, c.delivery].filter(Boolean).join(' · ');
     rows.push(`<div class="ct-row">
       <div>
@@ -503,192 +386,6 @@ function confirmAddCol(){
 }
 
 function openEdit(course){ alert('Edit course coming soon.'); }
-
-// ── Add Course modal ────────────────────────────────────
-let ACC_AVAILABLE = [];
-
-function openAddCourse(){
-  document.getElementById('acModal').classList.add('open');
-  document.getElementById('acLoading').style.display='block';
-  document.getElementById('acDropWrap').style.display='none';
-  document.getElementById('acNoSections').style.display='none';
-  document.getElementById('acSaveBtn').style.display='none';
-  document.getElementById('acMsg').textContent='';
-  document.getElementById('acSectionDetail').textContent='';
-
-  fetch(API+'/acc/admin/courses/list',{headers:authHeaders()})
-    .then(r=>r.json())
-    .then(d=>{
-      const existing = new Set((d.courses||[]).map(c=>c.section_id).filter(Boolean));
-      fetchAllTermSections(existing);
-    })
-    .catch(()=>fetchAllTermSections(new Set()));
-}
-
-function fetchAllTermSections(existingIds){
-  const terms = [
-    {term:'226S000', yr:'2026'},
-    {term:'226U000', yr:'2026'},
-    {term:'226F000', yr:'2026'},
-  ];
-  Promise.allSettled(
-    terms.map(t =>
-      fetch(`${API}/acc/admin/schedule/fetch?term=${t.term}&yr=${t.yr}`,{headers:authHeaders()})
-        .then(r=>r.json())
-    )
-  ).then(results => {
-    ACC_AVAILABLE = [];
-    results.forEach(r => {
-      if(r.status==='fulfilled' && r.value.sections){
-        r.value.sections.forEach(s => {
-          if(!existingIds.has(s.synonym)) ACC_AVAILABLE.push(s);
-        });
-      }
-    });
-    document.getElementById('acLoading').style.display='none';
-    if(!ACC_AVAILABLE.length){ document.getElementById('acNoSections').style.display='block'; return; }
-    const sel = document.getElementById('acSectionPicker');
-    sel.innerHTML = '<option value="">— select a section —</option>';
-    ACC_AVAILABLE.forEach((s, i) => {
-      const label = `${s.course_num} — ${s.semester}${s.term ? ' · '+s.term : ''} — #${s.synonym}${s.delivery ? ' · '+s.delivery : ''}`;
-      sel.innerHTML += `<option value="${i}">${esc(label)}</option>`;
-    });
-    document.getElementById('acDropWrap').style.display='block';
-    document.getElementById('acSaveBtn').style.display='inline-block';
-    sel.onchange = () => updateSectionDetail(sel.value);
-  });
-}
-
-function updateSectionDetail(idx){
-  const detail = document.getElementById('acSectionDetail');
-  if(idx===''){detail.textContent='';return;}
-  const s = ACC_AVAILABLE[parseInt(idx)];
-  if(!s){detail.textContent='';return;}
-  const parts=[s.title,s.days_times,s.start_date&&s.end_date?s.start_date+' – '+s.end_date:'',s.location].filter(Boolean);
-  detail.textContent=parts.join('  ·  ');
-}
-
-function closeAddCourse(){document.getElementById('acModal').classList.remove('open');}
-function acOverlayClick(e){if(e.target===document.getElementById('acModal'))closeAddCourse();}
-
-function saveSelectedSection(){
-  const sel=document.getElementById('acSectionPicker');
-  if(!sel.value) return;
-  const s=ACC_AVAILABLE[parseInt(sel.value)];
-  if(!s) return;
-  fetch(API+'/acc/admin/courses/create',{
-    method:'POST',headers:authHeaders(),
-    body:JSON.stringify({
-      course_num:s.course_num,section_id:s.synonym,title:s.title,
-      semester:s.semester,term:s.term,delivery:s.delivery,
-      days_times:s.days_times,start_date:s.start_date,end_date:s.end_date,
-      location:s.location,
-    })
-  }).then(r=>r.json()).then(d=>{
-    if(d.ok){closeAddCourse();loadCourses();}
-    else{document.getElementById('acMsg').textContent=d.error||'Error';document.getElementById('acMsg').className='msg err';}
-  }).catch(()=>{document.getElementById('acMsg').textContent='Network error.';document.getElementById('acMsg').className='msg err';});
-}
-
-function parseACCSchedule(html, url){
-  // Parse URL params
-  const params = new URLSearchParams((url.split('?')[1])||'');
-  const termCode = params.get('term') || '';
-  const yr = params.get('yr') || '';
-
-  // Semester from page header: "Credit Summer 2026", "Credit Fall 2026", etc.
-  let semester = '';
-  const semMatch = html.match(/Course Schedule by Instructor\s*-\s*\(([^)]+)\)/i);
-  if(semMatch) semester = semMatch[1].trim();  // e.g. "Credit Summer 2026"
-  // Simplify: strip "Credit "
-  semester = semester.replace(/^Credit\s+/i,'').trim();
-
-  // DOMParser for structured extraction
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-
-  const result = {semester};
-
-  // Course number + title from h4 link: "BUSI 2305 Business Statistics"
-  const h4 = doc.querySelector('h4 a');
-  if(h4){
-    const txt = h4.textContent.trim();
-    // e.g. "BUSI 2305 Business Statistics"
-    const m = txt.match(/^([A-Z]{2,5}\s+\d{4}[A-Z]?)\s+(.+)$/);
-    if(m){ result.course_num = m[1]; result.title = m[2]; }
-    else { result.course_num = txt; }
-  }
-
-  // Term type from <p class='teach_term'>: "10 Week Session: June 1 - August 9"
-  const termP = doc.querySelector("p.teach_term");
-  if(termP){
-    const txt = termP.textContent.trim();
-    // Extract term label before colon
-    const termM = txt.match(/^([^:]+):\s*(.+)$/);
-    if(termM){
-      result.term = termM[1].trim();  // "10 Week Session"
-      // Extract dates from "June 1 - August 9" + year from semester
-      const dateRange = termM[2].trim();
-      const drM = dateRange.match(/(\w+ \d+)\s*-\s*(\w+ \d+)/);
-      if(drM && yr){
-        result.start_date = parseMonthDay(drM[1], yr);
-        result.end_date   = parseMonthDay(drM[2], yr);
-      }
-    }
-  }
-
-  // Section table: synonym number + section type + campus + room + dates
-  // Table row with section data — look for the synonym (5-6 digit number)
-  const tds = Array.from(doc.querySelectorAll('table.section_line_odd td, table.section_line_even td'))
-    .map(td=>td.textContent.trim());
-
-  // Synonym number: 5-6 digit standalone cell
-  for(const td of tds){
-    if(/^\d{5,6}$/.test(td)){ result.section_id = td; break; }
-  }
-
-  // Delivery: look for ONL, DIL, HYB in table cells or body text
-  const bodyText = doc.body ? doc.body.textContent : '';
-  if(/\bONL\b|online/i.test(bodyText)) result.delivery = 'Online';
-  else if(/\bHYB\b|hybrid/i.test(bodyText)) result.delivery = 'Hybrid';
-  else result.delivery = 'In Person';
-
-  // Days/Times: look for day patterns in table cells
-  for(const td of tds){
-    const m = td.match(/\b(Mon|Tue|Wed|Thu|Fri|Sat|Sun|M|T|W|Th|F|MWF|TTh|MW)[^,\n]*/i);
-    if(m){ result.days_times = m[0].trim(); break; }
-  }
-  // Online courses typically have no meeting times
-  if(!result.days_times && result.delivery==='Online') result.days_times = '';
-
-  // Location: campus code from table (ONL, NRG, HLC, etc.)
-  for(const td of tds){
-    if(/^(ONL|NRG|HLC|RGC|SAC|CYP|EVC|PIN|RVS|SCC|SVC|HWY|RGS|HBC|ANS)\b/.test(td)){
-      result.location = td; break;
-    }
-  }
-
-  return result;
-}
-
-function parseMonthDay(str, yr){
-  // "June 1" → "2026-06-01"
-  const months = {January:'01',February:'02',March:'03',April:'04',May:'05',June:'06',
-    July:'07',August:'08',September:'09',October:'10',November:'11',December:'12',
-    Jan:'01',Feb:'02',Mar:'03',Apr:'04',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
-  const m = str.trim().match(/^(\w+)\s+(\d+)$/);
-  if(!m) return '';
-  const mon = months[m[1]];
-  if(!mon) return '';
-  return `${yr}-${mon}-${m[2].padStart(2,'0')}`;
-}
-
-
-function toISODate(mdY){
-  // MM/DD/YYYY → YYYY-MM-DD
-  const p = mdY.split('/');
-  if(p.length!==3) return '';
-  return `${p[2]}-${p[0].padStart(2,'0')}-${p[1].padStart(2,'0')}`;
-}
 
 function saveNewCourse(){
   const course_num = document.getElementById('acCourseNum').value.trim();

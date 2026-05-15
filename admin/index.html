@@ -205,7 +205,7 @@ function showPanel(){
 }
 
 function openLogin(){
-  if(!document.getElementById('loginModal')){
+  if(document.getElementById('loginModal')){
     const html = '<div class="up-modal open" id="loginModal" onclick="loginOverlayClick(event)">'
       + '<div class="up-modal-inner">'
       + '<h3>Admin Sign In</h3>'

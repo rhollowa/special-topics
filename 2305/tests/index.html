@@ -132,52 +132,26 @@
   .sub-msg.ok  { background: #e8f4ee; color: var(--ok); border: 1px solid #b2d8c0; }
   .sub-msg.err { background: #fdf0ee; color: #a02020; border: 1px solid #f0c0b8; }
 
-  /* === COLLAPSIBLE SECTIONS — hover-to-expand, click-to-pin, animated === */
+  /* === EXAM SECTIONS — always expanded === */
   details.collapse {
-    margin: 0; padding: 0; position: relative;
+    margin: 0; padding: 0;
     border-bottom: 1px solid var(--rule-soft);
   }
   details.collapse > summary {
     list-style: none;
-    cursor: pointer;
     padding: 1.25rem 0;
     display: flex;
     align-items: center;
     min-height: 96px;
-    position: relative;
     border-bottom: none;
   }
   details.collapse > summary::-webkit-details-marker { display: none; }
-  details.collapse.pinned > summary::before {
-    content: '●';
-    position: absolute;
-    left: -1.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 11px;
-    line-height: 1;
-    color: var(--accent);
-    user-select: none;
-  }
   details.collapse > summary .section-head { margin: 0; flex: 1; }
   details.collapse > summary .section-head .num { margin-bottom: 4px; }
   details.collapse > summary .section-head h2 { margin: 0; }
   details.collapse > summary .section-head .sub { margin: 4px 0 0; }
-  details.collapse .collapse-wrap {
-    overflow: hidden;
-    transition: height 0.6s ease;
-    height: 0;
-  }
-  details.collapse .collapse-inner {
-    transition: transform 0.6s ease;
-    transform: translateY(-100%);
-  }
-  details.collapse[open] .collapse-inner {
-    transform: translateY(0);
-  }
   details.collapse .collapse-inner > .collapse-body { padding-top: 0.5rem; }
   @media (max-width: 720px) {
-    details.collapse.pinned > summary::before { left: -1rem; font-size: 10px; }
     details.collapse > summary { min-height: 72px; }
   }
 
@@ -216,7 +190,7 @@
 </section>
 
 <section class="page">
-  <details class="collapse pinned" open>
+  <details class="collapse" open>
     <summary>
       <div class="section-head">
         <div class="num">Now active</div>
@@ -232,7 +206,7 @@
     </div></div></div></details>
 </section>
 <section class="page">
-  <details class="collapse">
+  <details class="collapse" open>
     <summary>
       <div class="section-head">
         <div class="num">Closed</div>
@@ -409,78 +383,6 @@
   }
 </script>
 
-
-<script>
-(function() {
-  var GROUPS = 'details.week-group, details.collapse';
-  var COLLAPSE_DELAY_MS = 500;
-  var ANIM_MS = 600;
-
-  function openGroup(g) {
-    var wrap = g.querySelector(':scope > .collapse-wrap');
-    if (!wrap) return;
-    clearTimeout(g._collapseTimer);
-    g.open = true;
-    var inner = wrap.querySelector(':scope > .collapse-inner');
-    var target = inner ? inner.scrollHeight : wrap.scrollHeight;
-    var current = wrap.getBoundingClientRect().height;
-    wrap.style.height = current + 'px';
-    requestAnimationFrame(function() { wrap.style.height = target + 'px'; });
-    clearTimeout(g._openTimer);
-    g._openTimer = setTimeout(function() {
-      if (g.open) wrap.style.height = 'auto';
-    }, ANIM_MS + 20);
-  }
-
-  function collapseGroup(g) {
-    var wrap = g.querySelector(':scope > .collapse-wrap');
-    if (!wrap) return;
-    var current = wrap.getBoundingClientRect().height;
-    wrap.style.height = current + 'px';
-    requestAnimationFrame(function() { wrap.style.height = '0px'; });
-    clearTimeout(g._openTimer);
-    setTimeout(function() {
-      if (!g.classList.contains('pinned') && !g.matches(':hover')) g.open = false;
-    }, ANIM_MS);
-  }
-
-  function scheduleCollapse(g) {
-    clearTimeout(g._collapseTimer);
-    g._collapseTimer = setTimeout(function() {
-      if (!g.classList.contains('pinned') && !g.matches(':hover')) collapseGroup(g);
-    }, COLLAPSE_DELAY_MS);
-  }
-
-  var groups = document.querySelectorAll(GROUPS);
-  var hasHover = window.matchMedia('(hover: hover)').matches;
-
-  groups.forEach(function(g) {
-    var summary = g.querySelector(':scope > summary');
-    if (!summary) return;
-    var wrap = g.querySelector(':scope > .collapse-wrap');
-    if (g.open && wrap) wrap.style.height = 'auto';
-
-    if (hasHover) {
-      g.addEventListener('mouseenter', function() { openGroup(g); });
-      g.addEventListener('mouseleave', function() {
-        if (!g.classList.contains('pinned')) scheduleCollapse(g);
-      });
-    }
-
-    summary.addEventListener('click', function(e) {
-      e.preventDefault();
-      var nowPinned = !g.classList.contains('pinned');
-      g.classList.toggle('pinned');
-      if (nowPinned) {
-        openGroup(g);
-      } else {
-        if (!hasHover) collapseGroup(g);
-        else if (!g.matches(':hover')) collapseGroup(g);
-      }
-    });
-  });
-})();
-</script>
 <!-- admin-crest-hook -->
 <script>
 (function(){

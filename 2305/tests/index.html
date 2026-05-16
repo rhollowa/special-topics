@@ -250,8 +250,6 @@
     <h2 id="subTitle">Submit Assignment</h2>
     <div class="sub-exam-tag" id="subExamTag"></div>
 
-    <label for="subAccId">Your name</label>
-    <input type="text" id="subAccId" placeholder="First Last" autocomplete="off" />
 
     <label>File</label>
     <div class="sub-drop" id="subDrop">
@@ -303,7 +301,6 @@
     _examLabel = label;
     _examKey   = key;
     document.getElementById('subExamTag').textContent = label;
-    document.getElementById('subAccId').value = '';
     document.getElementById('subFile').value = '';
     document.getElementById('subFileName').style.display = 'none';
     document.getElementById('subFileName').textContent = '';
@@ -312,7 +309,6 @@
     document.getElementById('subGo').disabled = false;
     document.getElementById('subGo').textContent = 'Submit';
     document.getElementById('subOverlay').classList.add('open');
-    setTimeout(function(){ document.getElementById('subAccId').focus(); }, 50);
   }
 
   function closeModal() {
@@ -347,18 +343,15 @@
   });
 
   async function submitAssignment() {
-    var name = document.getElementById('subAccId').value.trim();
     var file  = document.getElementById('subFile').files[0];
     var btn   = document.getElementById('subGo');
 
-    if (!name) { showMsg('Please enter your name.', 'err'); return; }
     if (!file)  { showMsg('Please select a file to upload.',   'err'); return; }
 
     btn.disabled = true;
     btn.textContent = 'Submitting\u2026';
 
     var fd = new FormData();
-    fd.append('student_name', name);
     fd.append('course',       'BUSI-2305');
     fd.append('exam_label',   _examLabel);
     fd.append('file',         file);
@@ -413,4 +406,5 @@
 </script>
 </body>
 </html>
+
 

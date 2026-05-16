@@ -326,6 +326,7 @@
   document.getElementById('subFile').addEventListener('change', function() {
     var fn = document.getElementById('subFileName');
     if (this.files[0]) { fn.textContent = this.files[0].name; fn.style.display = 'block'; }
+    else { fn.textContent = ''; fn.style.display = 'none'; }
   });
 
   var drop = document.getElementById('subDrop');

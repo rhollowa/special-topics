@@ -242,7 +242,7 @@
 <!-- ============================================================
      SUBMIT MODAL
      POST to: https://tourcast-docker.onrender.com/acc/submit
-     Fields:  acc_id, course, exam_label, file
+     Fields:  student_name, course, exam_label, file
      ============================================================ -->
 <div class="sub-overlay" id="subOverlay" role="dialog" aria-modal="true" aria-labelledby="subTitle">
   <div class="sub-modal">
@@ -250,8 +250,8 @@
     <h2 id="subTitle">Submit Assignment</h2>
     <div class="sub-exam-tag" id="subExamTag"></div>
 
-    <label for="subAccId">ACC Student ID</label>
-    <input type="text" id="subAccId" placeholder="e.g. 1234567" autocomplete="off" />
+    <label for="subAccId">Your name</label>
+    <input type="text" id="subAccId" placeholder="First Last" autocomplete="off" />
 
     <label>File</label>
     <div class="sub-drop" id="subDrop">
@@ -347,21 +347,21 @@
   });
 
   async function submitAssignment() {
-    var accId = document.getElementById('subAccId').value.trim();
+    var name = document.getElementById('subAccId').value.trim();
     var file  = document.getElementById('subFile').files[0];
     var btn   = document.getElementById('subGo');
 
-    if (!accId) { showMsg('Please enter your ACC Student ID.', 'err'); return; }
+    if (!name) { showMsg('Please enter your name.', 'err'); return; }
     if (!file)  { showMsg('Please select a file to upload.',   'err'); return; }
 
     btn.disabled = true;
     btn.textContent = 'Submitting\u2026';
 
     var fd = new FormData();
-    fd.append('acc_id',     accId);
-    fd.append('course',     'BUSI-2305');
-    fd.append('exam_label', _examLabel);
-    fd.append('file',       file);
+    fd.append('student_name', name);
+    fd.append('course',       'BUSI-2305');
+    fd.append('exam_label',   _examLabel);
+    fd.append('file',         file);
 
     try {
       var res  = await fetch('https://tourcast-docker.onrender.com/acc/submit', { method: 'POST', body: fd });

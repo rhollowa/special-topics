@@ -3,56 +3,117 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin — Upload</title>
+<title>Admin — BUSI 2305</title>
 <link rel="stylesheet" href="../theme.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-body{font-family:system-ui,-apple-system,sans-serif;}
-.wrap{max-width:760px;margin:80px auto;padding:2rem;}
+*{box-sizing:border-box;}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f5f5f5;margin:0;}
+.wrap{max-width:1100px;margin:80px auto;padding:2rem;}
 h1{font-size:1.4rem;margin:0 0 1.5rem;}
-.drop{border:2px dashed var(--border,#ccc);border-radius:8px;padding:3rem 2rem;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;display:block;}
+h2{font-size:1.05rem;margin:0 0 .75rem;font-weight:600;}
+
+/* ── upload section ── */
+.upload-section{background:#fff;border-radius:8px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+.drop{border:2px dashed #ccc;border-radius:8px;padding:2rem 2rem;text-align:center;cursor:pointer;display:block;transition:border-color .15s,background .15s;}
 .drop:hover,.drop.drag{border-color:#1a7a4a;background:#f5fbf7;}
-.drop p{margin:.5rem 0;color:#666;}
+.drop p{margin:.4rem 0;color:#666;font-size:.9rem;}
 .drop .file{font-weight:600;color:#1a7a4a;}
 .drop input{display:none;}
-.actions{margin-top:1.5rem;display:flex;gap:.75rem;justify-content:center;}
-button.ct-btn{padding:.55rem 1.2rem;font-size:.95rem;cursor:pointer;border-radius:4px;border:1px solid #ccc;background:#fff;}
+.actions{margin-top:1rem;display:flex;gap:.75rem;justify-content:center;}
+button.ct-btn{padding:.5rem 1.1rem;font-size:.9rem;cursor:pointer;border-radius:4px;border:1px solid #ccc;background:#fff;}
 button.ct-btn.primary{background:#1a7a4a;color:#fff;border-color:#1a7a4a;}
 button.ct-btn:disabled{opacity:.4;cursor:not-allowed;}
-.msg{margin-top:1rem;font-size:.9rem;min-height:1.2em;text-align:center;}
-.msg.ok{color:#1a7a4a;} .msg.err{color:#c00;}
-.up-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;}
-.up-modal.open{display:flex;}
-.up-modal-inner{background:#fff;padding:2rem;border-radius:8px;max-width:380px;width:90%;}
-.up-modal-inner h3{margin:0 0 1rem;font-size:1.1rem;}
-.picker{margin-top:2.5rem;padding-top:2rem;border-top:1px solid #eee;}
-.picker h2{font-size:1.1rem;margin:0 0 .75rem;}
-.picker select{width:100%;padding:.55rem .7rem;border:1px solid #ccc;border-radius:4px;font-size:.9rem;background:#fff;}
-.picker .pick-actions{margin-top:1rem;display:flex;gap:.5rem;justify-content:flex-end;}
+.msg{margin-top:.75rem;font-size:.85rem;min-height:1.2em;text-align:center;}
+.msg.ok{color:#1a7a4a;}.msg.err{color:#c00;}
+
+/* ── process picker ── */
+.picker-section{background:#fff;border-radius:8px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+.picker select{width:100%;padding:.5rem .65rem;border:1px solid #ccc;border-radius:4px;font-size:.88rem;background:#fff;}
+.pick-actions{margin-top:.75rem;display:flex;gap:.5rem;justify-content:flex-end;}
+
+/* ── submissions section ── */
+.sub-section{background:#fff;border-radius:8px;padding:1.5rem;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+.filters{display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem;align-items:flex-end;}
+.filter-group{position:relative;min-width:160px;}
+.filter-group label{display:block;font-size:.75rem;font-weight:600;color:#666;margin-bottom:.25rem;text-transform:uppercase;letter-spacing:.04em;}
+.filter-btn{width:100%;padding:.45rem .7rem;border:1.5px solid #ddd;border-radius:4px;background:#fff;font-size:.88rem;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:.4rem;}
+.filter-btn:hover{border-color:#1a7a4a;}
+.filter-btn .arrow{font-size:.7rem;color:#999;}
+.filter-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;min-width:220px;background:#fff;border:1.5px solid #ddd;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:200;padding:.35rem 0;}
+.filter-dropdown.open{display:block;}
+.fd-item{display:flex;align-items:center;gap:.5rem;padding:.35rem .75rem;cursor:pointer;font-size:.87rem;}
+.fd-item:hover{background:#f5fbf7;}
+.fd-item input[type=checkbox]{accent-color:#1a7a4a;width:14px;height:14px;cursor:pointer;flex-shrink:0;}
+.fd-divider{height:1px;background:#eee;margin:.3rem 0;}
+.sub-count{font-size:.8rem;color:#888;margin-bottom:.5rem;}
+
+/* table */
+.sub-table-wrap{overflow-x:auto;border:1px solid #e8e8e8;border-radius:6px;}
+table.sub-tbl{width:100%;border-collapse:collapse;font-size:.84rem;}
+table.sub-tbl thead{background:#f8f8f8;}
+table.sub-tbl th{padding:.55rem .8rem;text-align:left;font-weight:600;color:#555;border-bottom:1.5px solid #e0e0e0;white-space:nowrap;cursor:pointer;user-select:none;}
+table.sub-tbl th:hover{color:#1a7a4a;}
+table.sub-tbl th .sort-arrow{font-size:.7rem;margin-left:.25rem;opacity:.4;}
+table.sub-tbl th.sort-asc .sort-arrow::after{content:'▲';opacity:1;}
+table.sub-tbl th.sort-desc .sort-arrow::after{content:'▼';opacity:1;}
+table.sub-tbl td{padding:.55rem .8rem;border-bottom:1px solid #f0f0f0;vertical-align:middle;color:#222;}
+table.sub-tbl tr:last-child td{border-bottom:none;}
+table.sub-tbl tr:hover td{background:#fafff8;}
+.badge{display:inline-block;padding:.15rem .45rem;border-radius:12px;font-size:.73rem;font-weight:600;background:#e8f8f0;color:#1a7a4a;}
+.open-btn{padding:.3rem .65rem;font-size:.78rem;border-radius:4px;border:1px solid #1a7a4a;color:#1a7a4a;background:#fff;cursor:pointer;}
+.open-btn:hover{background:#1a7a4a;color:#fff;}
+.empty-sub{text-align:center;padding:2.5rem;color:#aaa;font-size:.9rem;}
+
+/* ── modals ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;}
+.overlay.open{display:flex;}
+.modal-inner{background:#fff;border-radius:10px;max-width:420px;width:90%;padding:2rem;}
+.modal-inner h3{margin:0 0 1rem;font-size:1.1rem;}
+
+/* ── SheetJS viewer ── */
+.viewer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;flex-direction:column;}
+.viewer-overlay.open{display:flex;}
+.viewer-header{background:#1a2a1a;color:#fff;padding:.6rem 1rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;flex-shrink:0;}
+.viewer-header .vtitle{font-weight:600;font-size:.95rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.viewer-tabs{display:flex;gap:.25rem;overflow-x:auto;padding:.4rem 1rem;background:#2a3a2a;flex-shrink:0;}
+.vtab{padding:.3rem .75rem;border-radius:4px;cursor:pointer;font-size:.83rem;color:#ccc;border:1px solid transparent;white-space:nowrap;}
+.vtab.active{background:#1a7a4a;color:#fff;border-color:#1a7a4a;}
+.vtab:hover:not(.active){background:rgba(255,255,255,.08);}
+.viewer-toolbar{display:flex;align-items:center;gap:.5rem;padding:.4rem 1rem;background:#f8f8f8;border-bottom:1px solid #e0e0e0;flex-wrap:wrap;flex-shrink:0;}
+.vtb-label{font-size:.78rem;font-weight:600;color:#666;margin-right:.25rem;}
+.vtb-sel{font-size:.82rem;padding:.25rem .4rem;border:1px solid #ccc;border-radius:3px;background:#fff;}
+.vtb-btn{padding:.28rem .6rem;font-size:.8rem;border-radius:3px;border:1px solid #ccc;background:#fff;cursor:pointer;font-weight:600;}
+.vtb-btn:hover{border-color:#1a7a4a;color:#1a7a4a;}
+.vtb-btn.active{background:#1a7a4a;color:#fff;border-color:#1a7a4a;}
+.vtb-color{width:26px;height:26px;border-radius:3px;border:1px solid #ccc;cursor:pointer;padding:0;}
+.vtb-comment{flex:1;min-width:160px;padding:.28rem .5rem;font-size:.82rem;border:1px solid #ccc;border-radius:3px;}
+.vtb-divider{width:1px;height:20px;background:#ddd;margin:0 .15rem;}
+.viewer-body{flex:1;overflow:auto;padding:1rem;}
+.sheet-table-wrap{overflow:auto;}
+table.sheet-tbl{border-collapse:collapse;font-size:.82rem;min-width:600px;}
+table.sheet-tbl th,table.sheet-tbl td{border:1px solid #d0d0d0;padding:.3rem .5rem;min-width:80px;white-space:pre;max-width:240px;overflow:hidden;text-overflow:ellipsis;cursor:pointer;}
+table.sheet-tbl th{background:#f0f0f0;font-weight:600;text-align:center;position:sticky;top:0;z-index:1;}
+table.sheet-tbl td.selected{outline:2px solid #1a7a4a;outline-offset:-1px;background:#f0fff8!important;}
+table.sheet-tbl td.flagged{background:#ffd7d7!important;}
+table.sheet-tbl td.bold-cell{font-weight:700;}
+table.sheet-tbl td.fill-yellow{background:#fffacd!important;}
+table.sheet-tbl td.fill-green{background:#d4edda!important;}
+table.sheet-tbl td.fill-red{background:#ffd7d7!important;}
+table.sheet-tbl td.fill-blue{background:#cce5ff!important;}
+.viewer-footer{display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;background:#f8f8f8;border-top:1px solid #e0e0e0;flex-shrink:0;flex-wrap:wrap;}
+.vf-status{font-size:.8rem;color:#666;flex:1;}
+.email-row{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;}
+.email-row input{padding:.3rem .5rem;font-size:.82rem;border:1px solid #ccc;border-radius:3px;min-width:200px;}
+
+/* act modal */
 .act-modal-inner{background:#fff;padding:2rem;border-radius:8px;max-width:440px;width:90%;}
 .act-modal-inner h3{margin:0 0 .5rem;font-size:1.1rem;}
-.act-modal-inner .fname{font-size:.85rem;color:#666;margin-bottom:1.25rem;word-break:break-all;}
-.act-modal-inner .act-buttons{display:flex;flex-direction:column;gap:.5rem;}
-.act-modal-inner .act-buttons button{padding:.7rem 1rem;text-align:left;}
-.act-modal-inner .close-row{margin-top:1rem;display:flex;justify-content:flex-end;}
-pre.receipt{background:#f5f5f5;padding:.75rem;border-radius:4px;font-size:.8rem;max-height:240px;overflow:auto;margin-top:1rem;}
-
-/* ── Submissions panel ── */
-.section-panel{margin-top:2.5rem;padding-top:2rem;border-top:1px solid #eee;}
-.section-panel h2{font-size:1.1rem;margin:0 0 .75rem;}
-.panel-controls{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-bottom:1rem;}
-.panel-controls select{padding:.5rem .7rem;border:1px solid #ccc;border-radius:4px;font-size:.9rem;background:#fff;min-width:180px;}
-.panel-controls button{padding:.5rem 1rem;font-size:.88rem;}
-.sub-table-wrap{border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;margin-top:.5rem;}
-.sub-table{width:100%;border-collapse:collapse;font-size:.88rem;}
-.sub-table thead{background:#f8f8f8;}
-.sub-table th{padding:.6rem .9rem;text-align:left;font-weight:600;color:#555;border-bottom:1.5px solid #e0e0e0;white-space:nowrap;}
-.sub-table td{padding:.6rem .9rem;border-bottom:1px solid #f0f0f0;color:#222;vertical-align:middle;}
-.sub-table tr:last-child td{border-bottom:none;}
-.sub-table tr:hover td{background:#fafff8;}
-.sub-count{font-size:.82rem;color:#888;margin-bottom:.4rem;}
-.dl-link{color:#1a7a4a;font-weight:600;font-size:.82rem;cursor:pointer;background:none;border:none;padding:0;text-decoration:underline;}
-.empty-sub{text-align:center;padding:2rem;color:#aaa;font-size:.9rem;}
-.badge{display:inline-block;padding:.15rem .5rem;border-radius:20px;font-size:.75rem;font-weight:600;background:#e8f8f0;color:#1a7a4a;}
+.act-fname{font-size:.85rem;color:#666;margin-bottom:1.25rem;word-break:break-all;}
+.act-buttons{display:flex;flex-direction:column;gap:.5rem;}
+.act-buttons button{padding:.7rem 1rem;text-align:left;}
+.close-row{margin-top:1rem;display:flex;justify-content:flex-end;}
+pre.receipt{background:#f5f5f5;padding:.75rem;border-radius:4px;font-size:.8rem;max-height:200px;overflow:auto;margin-top:.75rem;}
 </style>
 </head>
 <body>
@@ -64,25 +125,26 @@ pre.receipt{background:#f5f5f5;padding:.75rem;border-radius:4px;font-size:.8rem;
 </header>
 
 <main id="main-content">
-
 <div class="wrap" id="adminPanel" style="display:none;">
-  <h1>Upload</h1>
-  <label class="drop" id="dropZone">
-    <p id="dropText">Click or drop a file</p>
-    <p class="file" id="fileName"></p>
-    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.pdf,.docx,.doc">
-  </label>
-  <div class="actions">
-    <button class="ct-btn primary" id="uploadBtn" onclick="doUpload()" disabled>Upload</button>
-  </div>
-  <div class="msg" id="msg"></div>
 
-  <!-- File picker -->
-  <div class="picker">
+  <!-- Upload -->
+  <div class="upload-section">
+    <h2>Upload file to R2</h2>
+    <label class="drop" id="dropZone">
+      <p id="dropText">Click or drop a file</p>
+      <p class="file" id="fileName"></p>
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.pdf,.docx,.doc">
+    </label>
+    <div class="actions">
+      <button class="ct-btn primary" id="uploadBtn" onclick="doUpload()" disabled>Upload</button>
+    </div>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <!-- Process picker -->
+  <div class="picker-section">
     <h2>Process an uploaded file</h2>
-    <select id="filePicker">
-      <option value="">— Select a file —</option>
-    </select>
+    <select id="filePicker"><option value="">— Select a file —</option></select>
     <div class="pick-actions">
       <button class="ct-btn" onclick="refreshFileList()">Refresh</button>
       <button class="ct-btn primary" id="openActBtn" onclick="openActionDialog()" disabled>Open</button>
@@ -90,374 +152,476 @@ pre.receipt{background:#f5f5f5;padding:.75rem;border-radius:4px;font-size:.8rem;
     <div class="msg" id="pickMsg"></div>
   </div>
 
-  <!-- BUSI-2305 Submissions -->
-  <div class="section-panel">
+  <!-- Submissions -->
+  <div class="sub-section">
     <h2>BUSI-2305 Submissions</h2>
-    <div class="panel-controls">
-      <select id="sectionPicker" onchange="loadSubmissions()">
-        <option value="">— All sections —</option>
-      </select>
-      <button class="ct-btn" onclick="refreshSubmissions()">Refresh</button>
+    <div class="filters">
+      <div class="filter-group" id="fg-course">
+        <label>Course</label>
+        <button class="filter-btn" onclick="toggleDropdown('course')">
+          <span id="fb-course-label">All</span><span class="arrow">▾</span>
+        </button>
+        <div class="filter-dropdown" id="fd-course"></div>
+      </div>
+      <div class="filter-group" id="fg-assignment">
+        <label>Assignment</label>
+        <button class="filter-btn" onclick="toggleDropdown('assignment')">
+          <span id="fb-assignment-label">All</span><span class="arrow">▾</span>
+        </button>
+        <div class="filter-dropdown" id="fd-assignment"></div>
+      </div>
+      <div class="filter-group" style="align-self:flex-end;">
+        <button class="ct-btn" onclick="refreshSubmissions()">Refresh</button>
+      </div>
     </div>
     <div class="sub-count" id="subCount"></div>
     <div id="subTableWrap"></div>
   </div>
-</div>
 
+</div>
 </main>
 
+<!-- Login modal injected dynamically -->
+
+<!-- Act modal -->
+<div class="overlay" id="actOverlay" onclick="actOverlayClick(event)">
+  <div class="act-modal-inner" id="actModalInner">
+    <h3>What do you want to do?</h3>
+    <div class="act-fname" id="actFname"></div>
+    <div class="act-buttons">
+      <button class="ct-btn primary" onclick="actCreateClass()">Create new class</button>
+      <button class="ct-btn" disabled>Update grades</button>
+      <button class="ct-btn" disabled>Post to site</button>
+    </div>
+    <div class="msg" id="actMsg"></div>
+    <div class="close-row"><button class="ct-btn" onclick="closeActModal()">Close</button></div>
+  </div>
+</div>
+
+<!-- SheetJS Viewer -->
+<div class="viewer-overlay" id="viewerOverlay">
+  <div class="viewer-header">
+    <span class="vtitle" id="viewerTitle">—</span>
+    <button class="ct-btn" style="color:#fff;border-color:#fff;background:transparent;font-size:.8rem;" onclick="saveAnnotated()">Save</button>
+    <button class="ct-btn" style="color:#fff;border-color:#fff;background:transparent;font-size:.8rem;" onclick="closeViewer()">✕ Close</button>
+  </div>
+  <div class="viewer-tabs" id="viewerTabs"></div>
+  <div class="viewer-toolbar">
+    <span class="vtb-label">Cell:</span>
+    <span id="vtbCellRef" style="font-size:.82rem;min-width:50px;color:#333;">—</span>
+    <div class="vtb-divider"></div>
+    <span class="vtb-label">Bold</span>
+    <button class="vtb-btn" id="btnBold" onclick="applyBold()"><b>B</b></button>
+    <div class="vtb-divider"></div>
+    <span class="vtb-label">Fill</span>
+    <button class="vtb-btn" title="Red"  onclick="applyFill('red')"    style="background:#ffd7d7;border-color:#fca;">R</button>
+    <button class="vtb-btn" title="Yellow" onclick="applyFill('yellow')" style="background:#fffacd;border-color:#e6d;color:#333;">Y</button>
+    <button class="vtb-btn" title="Green" onclick="applyFill('green')" style="background:#d4edda;border-color:#8c8;">G</button>
+    <button class="vtb-btn" title="Blue"  onclick="applyFill('blue')"  style="background:#cce5ff;border-color:#88c;">B</button>
+    <button class="vtb-btn" title="Clear fill" onclick="applyFill(null)">✕</button>
+    <div class="vtb-divider"></div>
+    <span class="vtb-label">Comment</span>
+    <input class="vtb-comment" id="vtbComment" placeholder="Type comment then press Enter" onkeydown="if(event.key==='Enter')applyComment()">
+    <button class="vtb-btn" onclick="applyComment()">Add</button>
+  </div>
+  <div class="viewer-body" id="viewerBody"></div>
+  <div class="viewer-footer">
+    <span class="vf-status" id="vfStatus">No changes.</span>
+    <div class="email-row">
+      <input id="emailTo" placeholder="Student email" type="email">
+      <input id="emailSubject" placeholder="Subject" type="text" style="min-width:180px;">
+      <button class="ct-btn primary" onclick="emailStudent()">Email student</button>
+    </div>
+  </div>
+</div>
+
 <script>
-const API = 'https://tourcast-docker.onrender.com';
+const API     = 'https://tourcast-docker.onrender.com';
 const API_KEY = 'c7852252558744ea5bef3c86136edbf31b5e3e556fd447454a4d37b06151b4e7';
-const CREDS = { credentials: 'include' };
 let AUTHED = false;
 let ALL_SUBMISSIONS = [];
+let SORT_COL = 'submitted_at', SORT_DIR = -1;
+let FILTER = { course: new Set(), assignment: new Set() };
+const ALL_OPTS = { course: [], assignment: [] };
+
+// ── state for viewer ──
+let VWB = null;           // XLSX workbook
+let VSheet = null;        // active sheet name
+let VKey = null;          // R2 key of open file
+let VEmail = '';          // student email
+let VStudent = '';        // student name
+let VSelectedCell = null; // {r, c} 0-indexed
+let VAnnotations = {};    // key: "sheetname!R!C" → {bold, fill, comment}
+let VDirty = false;
 
 function authFetch(url, opts={}){
   const isForm = opts.body instanceof FormData;
-  const headers = Object.assign(
-    {'X-API-Key':API_KEY},
-    isForm ? {} : {'Content-Type':'application/json'},
-    opts.headers||{}
-  );
-  return fetch(API+url, Object.assign({}, CREDS, opts, {headers}));
+  const headers = Object.assign({'X-API-Key':API_KEY}, isForm?{}:{'Content-Type':'application/json'}, opts.headers||{});
+  return fetch(API+url, Object.assign({credentials:'include'}, opts, {headers}));
 }
 
-// ── Boot ──────────────────────────────────────────────────────────
-function showPanel(){
-  AUTHED = true;
-  document.getElementById('adminPanel').style.display='block';
-  refreshFileList();
-  refreshSubmissions();
-}
+// ── Boot ──
+function showPanel(){ AUTHED=true; document.getElementById('adminPanel').style.display='block'; refreshFileList(); refreshSubmissions(); }
 
 function openLogin(){
-  if(!document.getElementById('loginModal')){
-    const html = '<div class="up-modal open" id="loginModal" onclick="loginOverlayClick(event)">'
-      + '<div class="up-modal-inner">'
-      + '<h3>Admin Sign In</h3>'
-      + '<input type="password" id="loginPw" placeholder="Password" autofocus '
-      + 'style="width:100%;padding:.55rem .7rem;border:1px solid #ccc;border-radius:4px;font-size:.95rem;margin-bottom:.75rem;box-sizing:border-box;" '
-      + 'onkeydown="if(event.key===\'Enter\')submitLogin()">'
-      + '<label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;margin-bottom:1rem;cursor:pointer;">'
-      + '<input type="checkbox" id="loginRemember"> Remember this IP</label>'
-      + '<div class="msg err" id="loginMsg" style="display:none;margin-bottom:.5rem;"></div>'
-      + '<div style="display:flex;gap:.5rem;justify-content:flex-end;">'
-      + '<button class="ct-btn" onclick="closeLogin()">Cancel</button>'
-      + '<button class="ct-btn primary" onclick="submitLogin()">Sign In</button>'
-      + '</div></div></div>';
-    document.getElementById('main-content').insertAdjacentHTML('afterbegin', html);
-    setTimeout(()=>document.getElementById('loginPw').focus(),50);
-  }
+  if(document.getElementById('loginModal')) return;
+  const html='<div class="overlay open" id="loginModal" onclick="loginOverlayClick(event)"><div class="modal-inner"><h3>Admin Sign In</h3>'
+    +'<input type="password" id="loginPw" placeholder="Password" autofocus style="width:100%;padding:.55rem .7rem;border:1px solid #ccc;border-radius:4px;font-size:.95rem;margin-bottom:.75rem;box-sizing:border-box;" onkeydown="if(event.key===\'Enter\')submitLogin()">'
+    +'<label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;margin-bottom:1rem;cursor:pointer;"><input type="checkbox" id="loginRemember"> Remember this IP</label>'
+    +'<div class="msg err" id="loginMsg" style="display:none;margin-bottom:.5rem;"></div>'
+    +'<div style="display:flex;gap:.5rem;justify-content:flex-end;"><button class="ct-btn" onclick="closeLogin()">Cancel</button><button class="ct-btn primary" onclick="submitLogin()">Sign In</button></div></div></div>';
+  document.getElementById('main-content').insertAdjacentHTML('afterbegin', html);
+  setTimeout(()=>document.getElementById('loginPw').focus(),50);
 }
-
-function closeLogin(){
-  const m = document.getElementById('loginModal');
-  if(m) m.remove();
-}
-
-function loginOverlayClick(e){
-  if(e.target.id==='loginModal') closeLogin();
-}
-
+function closeLogin(){ const m=document.getElementById('loginModal'); if(m)m.remove(); }
+function loginOverlayClick(e){ if(e.target.id==='loginModal')closeLogin(); }
 function submitLogin(){
-  const pw = document.getElementById('loginPw').value;
-  const remember = document.getElementById('loginRemember').checked;
-  const msg = document.getElementById('loginMsg');
-  msg.style.display='none';
-  authFetch('/acc/admin/password-auth',{
-    method:'POST',
-    body:JSON.stringify({password:pw, remember:remember})
-  }).then(r=>r.json()).then(d=>{
-    if(d.ok){ closeLogin(); showPanel(); }
-    else {
-      msg.textContent='Incorrect password.';
-      msg.style.display='block';
-    }
-  }).catch(()=>{
-    msg.textContent='Login failed.';
-    msg.style.display='block';
+  const pw=document.getElementById('loginPw').value, remember=document.getElementById('loginRemember').checked;
+  const msg=document.getElementById('loginMsg'); msg.style.display='none';
+  authFetch('/acc/admin/password-auth',{method:'POST',body:JSON.stringify({password:pw,remember})})
+    .then(r=>r.json()).then(d=>{ if(d.ok){closeLogin();showPanel();} else{msg.textContent='Incorrect password.';msg.style.display='block';} })
+    .catch(()=>{const m=document.getElementById('loginMsg');m.textContent='Login failed.';m.style.display='block';});
+}
+(function boot(){
+  authFetch('/acc/admin/ip-auth',{method:'POST',body:JSON.stringify({})}).then(r=>r.json())
+    .then(d=>{ if(d.ok)showPanel(); else openLogin(); }).catch(()=>openLogin());
+})();
+
+// ── Upload ──
+let selectedFile=null;
+const zone=document.getElementById('dropZone'),input=document.getElementById('fileInput'),
+      dropTx=document.getElementById('dropText'),fname=document.getElementById('fileName'),
+      btn=document.getElementById('uploadBtn');
+input.addEventListener('change',e=>setFile(e.target.files[0]));
+['dragenter','dragover'].forEach(ev=>zone.addEventListener(ev,e=>{e.preventDefault();zone.classList.add('drag');}));
+['dragleave','drop'].forEach(ev=>zone.addEventListener(ev,e=>{e.preventDefault();zone.classList.remove('drag');}));
+zone.addEventListener('drop',e=>{if(e.dataTransfer.files[0])setFile(e.dataTransfer.files[0]);});
+function setFile(f){if(!f)return;selectedFile=f;fname.textContent=f.name;dropTx.textContent='Click or drop to change';btn.disabled=false;}
+function doUpload(){
+  if(!selectedFile)return;
+  const msg=document.getElementById('msg'); msg.textContent='Uploading…'; msg.className='msg'; btn.disabled=true;
+  const fd=new FormData(); fd.append('file',selectedFile);
+  authFetch('/acc/admin/upload',{method:'POST',body:fd}).then(r=>r.json()).then(d=>{
+    if(d.ok){msg.textContent='Uploaded: '+d.filename;msg.className='msg ok';selectedFile=null;input.value='';fname.textContent='';dropTx.textContent='Click or drop a file';refreshFileList();}
+    else{msg.textContent=d.error||'Upload failed.';msg.className='msg err';btn.disabled=false;}
+  }).catch(e=>{msg.textContent='Upload failed: '+e.message;msg.className='msg err';btn.disabled=false;});
+}
+
+// ── File picker ──
+function refreshFileList(){
+  const sel=document.getElementById('filePicker'),ob=document.getElementById('openActBtn'),pm=document.getElementById('pickMsg');
+  pm.textContent=''; pm.className='msg'; ob.disabled=true;
+  authFetch('/acc/admin/uploads',{method:'GET'}).then(r=>r.json()).then(d=>{
+    sel.innerHTML='<option value="">— Select a file —</option>';
+    if(!d.ok){pm.textContent=d.error||'List failed.';pm.className='msg err';return;}
+    (d.files||[]).slice().sort((a,b)=>(b.uploaded_at||'').localeCompare(a.uploaded_at||'')).forEach(f=>{
+      const o=document.createElement('option'); o.value=f.key; o.textContent=f.filename; sel.appendChild(o);
+    });
+  }).catch(e=>{pm.textContent='List failed: '+e.message;pm.className='msg err';});
+}
+document.getElementById('filePicker').addEventListener('change',e=>{ document.getElementById('openActBtn').disabled=!e.target.value; });
+function openActionDialog(){
+  const sel=document.getElementById('filePicker'),key=sel.value; if(!key)return;
+  document.getElementById('actFname').textContent=sel.options[sel.selectedIndex].text;
+  document.getElementById('actMsg').textContent=''; document.getElementById('actMsg').className='msg';
+  document.getElementById('actOverlay').dataset.key=key;
+  document.getElementById('actOverlay').classList.add('open');
+}
+function actOverlayClick(e){ if(e.target.id==='actOverlay')closeActModal(); }
+function closeActModal(){ document.getElementById('actOverlay').classList.remove('open'); }
+function actCreateClass(){
+  const key=document.getElementById('actOverlay').dataset.key, m=document.getElementById('actMsg');
+  m.textContent='Processing…'; m.className='msg';
+  authFetch('/acc/admin/process/create-class',{method:'POST',body:JSON.stringify({key})}).then(r=>r.json()).then(d=>{
+    if(d.ok){m.className='msg ok';m.innerHTML='Created — section '+d.section_id+' ('+d.row_count+' rows)<pre class="receipt">'+JSON.stringify(d,null,2)+'</pre>';}
+    else{m.className='msg err';m.textContent=d.error||'Processor failed.';}
+  }).catch(e=>{m.className='msg err';m.textContent='Request failed: '+e.message;});
+}
+
+// ── Multi-select filter dropdowns ──
+function buildDropdown(key, items){
+  const fd=document.getElementById('fd-'+key);
+  fd.innerHTML='';
+  // Select all row
+  const allItem=document.createElement('div'); allItem.className='fd-item';
+  const allCb=document.createElement('input'); allCb.type='checkbox'; allCb.checked=true;
+  allCb.id='cb-'+key+'-all';
+  allCb.addEventListener('change',()=>{ items.forEach((_,i)=>{ const c=document.getElementById('cb-'+key+'-'+i); if(c)c.checked=allCb.checked; }); FILTER[key]=allCb.checked?new Set():new Set([]); applyFilters(); });
+  const allLbl=document.createElement('span'); allLbl.textContent='Select all';
+  allItem.appendChild(allCb); allItem.appendChild(allLbl); fd.appendChild(allItem);
+  const div=document.createElement('div'); div.className='fd-divider'; fd.appendChild(div);
+  // Individual items
+  const sorted=[...items].sort((a,b)=>a.localeCompare(b));
+  ALL_OPTS[key]=sorted;
+  sorted.forEach((val,i)=>{
+    const row=document.createElement('div'); row.className='fd-item';
+    const cb=document.createElement('input'); cb.type='checkbox'; cb.id='cb-'+key+'-'+i;
+    cb.checked=true; // default: all selected means show all
+    cb.addEventListener('change',()=>{
+      const allChecked=sorted.every((_,j)=>document.getElementById('cb-'+key+'-'+j)?.checked);
+      const allCbEl=document.getElementById('cb-'+key+'-all'); if(allCbEl)allCbEl.checked=allChecked;
+      syncFilter(key, sorted);
+      applyFilters();
+    });
+    const lbl=document.createElement('span'); lbl.textContent=val||'(none)';
+    row.appendChild(cb); row.appendChild(lbl); fd.appendChild(row);
   });
 }
 
-(function boot(){
-  authFetch('/acc/admin/ip-auth',{method:'POST',body:JSON.stringify({})})
-    .then(r=>r.json()).then(d=>{
-      if(d.ok) showPanel();
-      else openLogin();
-    }).catch(()=>openLogin());
-})();
+function syncFilter(key, items){
+  // If all checked → FILTER[key] = empty set (means show all)
+  // If some unchecked → FILTER[key] = set of checked values
+  const checked=items.filter((_,i)=>{ const c=document.getElementById('cb-'+key+'-'+i); return c&&c.checked; });
+  FILTER[key] = checked.length===items.length ? new Set() : new Set(checked);
+  const lbl=document.getElementById('fb-'+key+'-label');
+  lbl.textContent = FILTER[key].size===0 ? 'All' : (FILTER[key].size===1?[...FILTER[key]][0]:FILTER[key].size+' selected');
+}
 
-// ── Upload ──────────────────────────────────────────────────────────
-let selectedFile = null;
-const zone   = document.getElementById('dropZone');
-const input  = document.getElementById('fileInput');
-const dropTx = document.getElementById('dropText');
-const fname  = document.getElementById('fileName');
-const btn    = document.getElementById('uploadBtn');
-
-input.addEventListener('change', e => setFile(e.target.files[0]));
-
-['dragenter','dragover'].forEach(ev => zone.addEventListener(ev, e => {
-  e.preventDefault(); zone.classList.add('drag');
-}));
-['dragleave','drop'].forEach(ev => zone.addEventListener(ev, e => {
-  e.preventDefault(); zone.classList.remove('drag');
-}));
-zone.addEventListener('drop', e => {
-  if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+function toggleDropdown(key){
+  ['course','assignment'].forEach(k=>{
+    if(k!==key) document.getElementById('fd-'+k).classList.remove('open');
+  });
+  document.getElementById('fd-'+key).classList.toggle('open');
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.filter-group')) ['course','assignment'].forEach(k=>document.getElementById('fd-'+k)?.classList.remove('open'));
 });
 
-function setFile(f) {
-  if (!f) return;
-  selectedFile = f;
-  fname.textContent = f.name;
-  dropTx.textContent = 'Click or drop to change';
-  btn.disabled = false;
+function applyFilters(){
+  let rows=[...ALL_SUBMISSIONS];
+  if(FILTER.course.size)    rows=rows.filter(r=>FILTER.course.has(r.course));
+  if(FILTER.assignment.size) rows=rows.filter(r=>FILTER.assignment.has(r.assignment||''));
+  renderTable(rows);
 }
 
-function doUpload(){
-  if (!selectedFile) return;
-  const msg = document.getElementById('msg');
-  msg.textContent = 'Uploading…';
-  msg.className = 'msg';
-  btn.disabled = true;
-
-  const fd = new FormData();
-  fd.append('file', selectedFile);
-
-  authFetch('/acc/admin/upload', { method: 'POST', body: fd })
-    .then(r => r.json())
-    .then(d => {
-      if (d.ok) {
-        msg.textContent = 'Uploaded: ' + d.filename;
-        msg.className = 'msg ok';
-        selectedFile = null;
-        input.value = '';
-        fname.textContent = '';
-        dropTx.textContent = 'Click or drop a file';
-        refreshFileList();
-      } else {
-        msg.textContent = d.error || 'Upload failed.';
-        msg.className = 'msg err';
-        btn.disabled = false;
-      }
-    })
-    .catch(e => {
-      msg.textContent = 'Upload failed: ' + e.message;
-      msg.className = 'msg err';
-      btn.disabled = false;
-    });
-}
-
-// ── File picker ──────────────────────────────────────────────────────
-function refreshFileList(){
-  const sel = document.getElementById('filePicker');
-  const openBtn = document.getElementById('openActBtn');
-  const pickMsg = document.getElementById('pickMsg');
-  pickMsg.textContent = '';
-  pickMsg.className = 'msg';
-  openBtn.disabled = true;
-
-  authFetch('/acc/admin/uploads', { method: 'GET' })
-    .then(r => r.json())
-    .then(d => {
-      sel.innerHTML = '<option value="">— Select a file —</option>';
-      if (!d.ok) {
-        pickMsg.textContent = d.error || 'List failed.';
-        pickMsg.className = 'msg err';
-        return;
-      }
-      const files = (d.files || []).slice().sort((a,b) =>
-        (b.uploaded_at || '').localeCompare(a.uploaded_at || '')
-      );
-      files.forEach(f => {
-        const o = document.createElement('option');
-        o.value = f.key;
-        o.textContent = f.filename;
-        sel.appendChild(o);
-      });
-    })
-    .catch(e => {
-      pickMsg.textContent = 'List failed: ' + e.message;
-      pickMsg.className = 'msg err';
-    });
-}
-
-document.getElementById('filePicker').addEventListener('change', e => {
-  document.getElementById('openActBtn').disabled = !e.target.value;
-});
-
-function openActionDialog(){
-  const sel = document.getElementById('filePicker');
-  const key = sel.value;
-  if (!key) return;
-  const filename = sel.options[sel.selectedIndex].text;
-
-  const existing = document.getElementById('actModal');
-  if (existing) existing.remove();
-
-  const html =
-    '<div class="up-modal open" id="actModal" onclick="actOverlayClick(event)">'
-    + '<div class="act-modal-inner">'
-    + '<h3>What do you want to do with this file?</h3>'
-    + '<div class="fname">' + filename.replace(/</g,'&lt;') + '</div>'
-    + '<div class="act-buttons">'
-    + '<button class="ct-btn primary" onclick="actCreateClass()">Create new class</button>'
-    + '<button class="ct-btn">Update grades</button>'
-    + '<button class="ct-btn">Post to site</button>'
-    + '</div>'
-    + '<div class="msg" id="actMsg"></div>'
-    + '<div class="close-row"><button class="ct-btn" onclick="closeActModal()">Close</button></div>'
-    + '</div></div>';
-
-  document.getElementById('main-content').insertAdjacentHTML('beforeend', html);
-  document.getElementById('actModal').dataset.key = key;
-}
-
-function actOverlayClick(e){
-  if (e.target.id === 'actModal') closeActModal();
-}
-
-function closeActModal(){
-  const m = document.getElementById('actModal');
-  if (m) m.remove();
-}
-
-function actCreateClass(){
-  const modal = document.getElementById('actModal');
-  const key = modal.dataset.key;
-  const actMsg = document.getElementById('actMsg');
-  actMsg.textContent = 'Processing…';
-  actMsg.className = 'msg';
-
-  authFetch('/acc/admin/process/create-class', {
-    method: 'POST',
-    body: JSON.stringify({ key: key })
-  })
-    .then(r => r.json())
-    .then(d => {
-      if (d.ok) {
-        actMsg.className = 'msg ok';
-        actMsg.innerHTML =
-          'Created class — section ' + d.section_id + ' (' + d.row_count + ' rows)'
-          + '<pre class="receipt">' + JSON.stringify(d, null, 2) + '</pre>';
-      } else {
-        actMsg.className = 'msg err';
-        actMsg.textContent = d.error || 'Processor failed.';
-      }
-    })
-    .catch(e => {
-      actMsg.className = 'msg err';
-      actMsg.textContent = 'Request failed: ' + e.message;
-    });
-}
-
-// ── Submissions panel ────────────────────────────────────────────────
-
+// ── Submissions ──
 function refreshSubmissions(){
-  authFetch('/acc/admin/submissions', { method: 'GET' })
-    .then(r => r.json())
-    .then(d => {
-      if (!d.ok) { renderSubTable([]); return; }
-      ALL_SUBMISSIONS = (d.files || []).map(f => {
-        // key: submissions/{course}/{date}/{filename}
-        const parts = f.key.split('/');
-        const course = parts[1] || '';
-        const dateStr = parts[2] || '';
-        // filename pattern: FirstName_LastName_AssignmentName.xlsx
-        const rawName = f.filename.replace(/\.[^.]+$/, ''); // strip ext
-        const nameParts = rawName.split('_');
-        const student = nameParts.length >= 2
-          ? nameParts[0] + ' ' + nameParts[1]
-          : rawName;
-        const assignment = nameParts.slice(2).join(' ') || '—';
-        return { ...f, course, dateStr, student, assignment };
-      });
-
-      // Populate section dropdown from unique courses
-      const courses = [...new Set(ALL_SUBMISSIONS.map(s => s.course))].sort();
-      const sel = document.getElementById('sectionPicker');
-      const prev = sel.value;
-      sel.innerHTML = '<option value="">— All sections —</option>';
-      courses.forEach(c => {
-        const o = document.createElement('option');
-        o.value = c;
-        o.textContent = c;
-        sel.appendChild(o);
-      });
-      if (prev) sel.value = prev;
-
-      loadSubmissions();
-    })
-    .catch(() => renderSubTable([]));
+  authFetch('/acc/admin/submissions',{method:'GET'}).then(r=>r.json()).then(d=>{
+    if(!d.ok){renderTable([]);return;}
+    ALL_SUBMISSIONS=d.files||[];
+    const courses=[...new Set(ALL_SUBMISSIONS.map(r=>r.course))];
+    const assigns=[...new Set(ALL_SUBMISSIONS.map(r=>r.assignment||''))];
+    buildDropdown('course',courses);
+    buildDropdown('assignment',assigns);
+    applyFilters();
+  }).catch(()=>renderTable([]));
 }
 
-function loadSubmissions(){
-  const filter = document.getElementById('sectionPicker').value;
-  const filtered = filter
-    ? ALL_SUBMISSIONS.filter(s => s.course === filter)
-    : ALL_SUBMISSIONS;
-  renderSubTable(filtered);
-}
+// ── Table ──
+const COLS=[
+  {key:'student',      label:'Student'},
+  {key:'student_id',   label:'ACC ID'},
+  {key:'course',       label:'Course'},
+  {key:'assignment_label', label:'Assignment'},
+  {key:'filename',     label:'File'},
+  {key:'submitted_at', label:'Submitted ▾', isDate:true},
+];
 
-function renderSubTable(rows){
-  const wrap = document.getElementById('subTableWrap');
-  const count = document.getElementById('subCount');
-  count.textContent = rows.length + ' submission' + (rows.length !== 1 ? 's' : '');
-
-  if (!rows.length) {
-    wrap.innerHTML = '<div class="sub-table-wrap"><div class="empty-sub">No submissions yet.</div></div>';
-    return;
-  }
-
-  // Sort newest first
-  rows = rows.slice().sort((a,b) => b.uploaded_at.localeCompare(a.uploaded_at));
-
-  const rowsHtml = rows.map((r, i) => {
-    const dt = new Date(r.uploaded_at);
-    const dtStr = dt.toLocaleDateString('en-US', {month:'numeric',day:'numeric',year:'numeric'})
-      + ' ' + dt.toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit'});
-    const kb = (r.size / 1024).toFixed(1) + ' KB';
+function renderTable(rows){
+  document.getElementById('subCount').textContent=rows.length+' submission'+(rows.length!==1?'s':'');
+  if(!rows.length){document.getElementById('subTableWrap').innerHTML='<div class="empty-sub">No submissions.</div>';return;}
+  // sort
+  rows=[...rows].sort((a,b)=>{
+    let av=a[SORT_COL]||'', bv=b[SORT_COL]||'';
+    return av<bv?-SORT_DIR:av>bv?SORT_DIR:0;
+  });
+  const thead=COLS.map((c,i)=>{
+    const cls=SORT_COL===c.key?(SORT_DIR===1?'sort-asc':'sort-desc'):'';
+    return `<th class="${cls}" onclick="sortBy('${c.key}')">${c.label}<span class="sort-arrow"></span></th>`;
+  }).join('')+'<th></th>';
+  const tbody=rows.map(r=>{
+    const dt=r.submitted_at?new Date(r.submitted_at).toLocaleString('en-US',{month:'numeric',day:'numeric',year:'2-digit',hour:'numeric',minute:'2-digit'}):'—';
     return `<tr>
-      <td>${i+1}</td>
       <td>${esc(r.student)}</td>
+      <td>${esc(r.student_id)}</td>
       <td><span class="badge">${esc(r.course)}</span></td>
-      <td>${esc(r.assignment)}</td>
-      <td>${esc(r.filename)}</td>
-      <td>${dtStr}</td>
-      <td>${kb}</td>
-      <td><button class="dl-link" onclick="downloadSub('${esc(r.key)}','${esc(r.filename)}')">Download</button></td>
+      <td>${esc(r.assignment_label||r.assignment||'—')}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(r.filename)}">${esc(r.filename)}</td>
+      <td>${dt}</td>
+      <td><button class="open-btn" onclick='openViewer(${JSON.stringify(r)})'>Open</button></td>
     </tr>`;
   }).join('');
-
-  wrap.innerHTML = `<div class="sub-table-wrap">
-    <table class="sub-table">
-      <thead><tr>
-        <th>#</th><th>Student</th><th>Course</th><th>Assignment</th>
-        <th>File</th><th>Submitted</th><th>Size</th><th></th>
-      </tr></thead>
-      <tbody>${rowsHtml}</tbody>
-    </table>
-  </div>`;
+  document.getElementById('subTableWrap').innerHTML=`<div class="sub-table-wrap"><table class="sub-tbl"><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table></div>`;
 }
 
-function downloadSub(key, filename){
-  // Proxy through the backend to serve the R2 file
-  const url = API + '/acc/admin/submissions/' + encodeURIComponent(key);
-  fetch(url, { headers: { 'X-API-Key': API_KEY }, credentials: 'include' })
-    .then(r => r.blob())
-    .then(blob => {
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = filename;
-      a.click();
+function sortBy(col){
+  if(SORT_COL===col)SORT_DIR*=-1; else{SORT_COL=col;SORT_DIR=-1;}
+  applyFilters();
+}
+
+// ── SheetJS Viewer ──
+function openViewer(sub){
+  VKey=sub.key; VEmail=sub.student_email||''; VStudent=sub.student||'';
+  VAnnotations={}; VDirty=false; VSelectedCell=null;
+  document.getElementById('viewerTitle').textContent=sub.filename+' — '+sub.student;
+  document.getElementById('emailTo').value=VEmail;
+  document.getElementById('emailSubject').value='Your graded submission — '+(sub.assignment_label||sub.assignment||'');
+  document.getElementById('vfStatus').textContent='Loading…';
+  document.getElementById('viewerBody').innerHTML='<p style="padding:2rem;color:#888;">Loading file…</p>';
+  document.getElementById('viewerTabs').innerHTML='';
+  document.getElementById('viewerOverlay').classList.add('open');
+  // fetch file bytes
+  fetch(API+'/acc/admin/submissions/file?key='+encodeURIComponent(VKey), {headers:{'X-API-Key':API_KEY},credentials:'include'})
+    .then(r=>r.arrayBuffer())
+    .then(buf=>{
+      VWB=XLSX.read(new Uint8Array(buf),{type:'array',cellStyles:true,cellNF:true});
+      buildTabs();
+      switchSheet(VWB.SheetNames[0]);
+      document.getElementById('vfStatus').textContent='No changes.';
     })
-    .catch(() => alert('Download failed.'));
+    .catch(e=>{ document.getElementById('viewerBody').innerHTML='<p style="padding:2rem;color:#c00;">Error loading file: '+e.message+'</p>'; });
 }
 
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-</script>
+function closeViewer(){
+  document.getElementById('viewerOverlay').classList.remove('open');
+  VWB=null; VKey=null; VAnnotations={}; VDirty=false;
+}
 
+function buildTabs(){
+  const tc=document.getElementById('viewerTabs'); tc.innerHTML='';
+  VWB.SheetNames.forEach(name=>{
+    const t=document.createElement('div'); t.className='vtab'; t.textContent=name;
+    t.onclick=()=>switchSheet(name); tc.appendChild(t);
+  });
+}
+
+function switchSheet(name){
+  VSheet=name; VSelectedCell=null;
+  document.getElementById('vtbCellRef').textContent='—';
+  document.querySelectorAll('.vtab').forEach(t=>t.classList.toggle('active',t.textContent===name));
+  renderSheet();
+}
+
+function renderSheet(){
+  const ws=VWB.Sheets[VSheet];
+  if(!ws){document.getElementById('viewerBody').innerHTML='<p style="color:#999;padding:1rem;">Empty sheet.</p>';return;}
+  const range=XLSX.utils.decode_range(ws['!ref']||'A1');
+  let html='<div class="sheet-table-wrap"><table class="sheet-tbl"><thead><tr><th></th>';
+  for(let c=range.s.c;c<=range.e.c;c++) html+='<th>'+XLSX.utils.encode_col(c)+'</th>';
+  html+='</tr></thead><tbody>';
+  for(let r=range.s.r;r<=range.e.r;r++){
+    html+='<tr><th>'+(r+1)+'</th>';
+    for(let c=range.s.c;c<=range.e.c;c++){
+      const addr=XLSX.utils.encode_cell({r,c});
+      const cell=ws[addr];
+      const val=cell?XLSX.utils.format_cell(cell):'';
+      const ann=VAnnotations[VSheet+'!'+r+'!'+c]||{};
+      let cls='';
+      if(ann.bold) cls+=' bold-cell';
+      if(ann.fill) cls+=' fill-'+ann.fill;
+      const title=ann.comment?'title="'+esc(ann.comment)+'"':'';
+      const commentDot=ann.comment?'<sup style="color:#c00;font-size:.65rem;">●</sup>':'';
+      html+=`<td class="${cls.trim()}" ${title} data-r="${r}" data-c="${c}" onclick="selectCell(this,${r},${c})">${esc(val)}${commentDot}</td>`;
+    }
+    html+='</tr>';
+  }
+  html+='</tbody></table></div>';
+  document.getElementById('viewerBody').innerHTML=html;
+}
+
+function selectCell(el,r,c){
+  document.querySelectorAll('table.sheet-tbl td.selected').forEach(t=>t.classList.remove('selected'));
+  el.classList.add('selected');
+  VSelectedCell={r,c};
+  const ref=XLSX.utils.encode_cell({r,c});
+  document.getElementById('vtbCellRef').textContent=ref;
+  const ann=VAnnotations[VSheet+'!'+r+'!'+c]||{};
+  document.getElementById('vtbComment').value=ann.comment||'';
+  document.getElementById('btnBold').classList.toggle('active',!!ann.bold);
+}
+
+function annKey(){ return VSheet+'!'+VSelectedCell.r+'!'+VSelectedCell.c; }
+
+function applyBold(){
+  if(!VSelectedCell)return;
+  const k=annKey(); VAnnotations[k]=VAnnotations[k]||{};
+  VAnnotations[k].bold=!VAnnotations[k].bold;
+  VDirty=true; document.getElementById('vfStatus').textContent='Unsaved changes.';
+  renderSheet();
+  // re-select
+  const el=document.querySelector(`td[data-r="${VSelectedCell.r}"][data-c="${VSelectedCell.c}"]`);
+  if(el)selectCell(el,VSelectedCell.r,VSelectedCell.c);
+}
+
+function applyFill(color){
+  if(!VSelectedCell)return;
+  const k=annKey(); VAnnotations[k]=VAnnotations[k]||{};
+  VAnnotations[k].fill=color||null;
+  VDirty=true; document.getElementById('vfStatus').textContent='Unsaved changes.';
+  renderSheet();
+  const el=document.querySelector(`td[data-r="${VSelectedCell.r}"][data-c="${VSelectedCell.c}"]`);
+  if(el)selectCell(el,VSelectedCell.r,VSelectedCell.c);
+}
+
+function applyComment(){
+  if(!VSelectedCell)return;
+  const txt=document.getElementById('vtbComment').value.trim();
+  const k=annKey(); VAnnotations[k]=VAnnotations[k]||{};
+  VAnnotations[k].comment=txt||null;
+  VDirty=true; document.getElementById('vfStatus').textContent='Unsaved changes.';
+  renderSheet();
+  const el=document.querySelector(`td[data-r="${VSelectedCell.r}"][data-c="${VSelectedCell.c}"]`);
+  if(el)selectCell(el,VSelectedCell.r,VSelectedCell.c);
+}
+
+function buildAnnotatedWorkbook(){
+  // Apply annotations back into the XLSX workbook object, then export bytes
+  const wb2=XLSX.utils.book_new();
+  VWB.SheetNames.forEach(sname=>{
+    const ws=JSON.parse(JSON.stringify(VWB.Sheets[sname])); // shallow clone
+    Object.entries(VAnnotations).forEach(([key,ann])=>{
+      const parts=key.split('!');
+      if(parts[0]!==sname)return;
+      const r=parseInt(parts[1]),c=parseInt(parts[2]);
+      const addr=XLSX.utils.encode_cell({r,c});
+      if(!ws[addr])ws[addr]={t:'z',v:''};
+      ws[addr].s=ws[addr].s||{};
+      if(ann.fill){
+        const colorMap={red:'FFFFD7D7',yellow:'FFFFFACD',green:'FFD4EDDA',blue:'FFCCE5FF'};
+        ws[addr].s.fill={patternType:'solid',fgColor:{rgb:(colorMap[ann.fill]||'FFFFD7D7').slice(2)}};
+      }
+      if(ann.bold){ ws[addr].s.font=ws[addr].s.font||{}; ws[addr].s.font.bold=true; }
+      if(ann.comment){ ws[addr].c=[{a:'Instructor',t:ann.comment}]; }
+    });
+    XLSX.utils.book_append_sheet(wb2,ws,sname);
+  });
+  return XLSX.write(wb2,{bookType:'xlsx',type:'array',cellStyles:true});
+}
+
+function saveAnnotated(){
+  if(!VWB||!VKey){alert('No file open.');return;}
+  document.getElementById('vfStatus').textContent='Saving…';
+  const bytes=buildAnnotatedWorkbook();
+  const blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const fd=new FormData(); fd.append('key',VKey); fd.append('file',blob,'annotated.xlsx');
+  fetch(API+'/acc/admin/submissions/save',{method:'POST',headers:{'X-API-Key':API_KEY},credentials:'include',body:fd})
+    .then(r=>r.json()).then(d=>{
+      if(d.ok){VDirty=false;document.getElementById('vfStatus').textContent='Saved ✓';}
+      else document.getElementById('vfStatus').textContent='Save failed: '+(d.error||'unknown');
+    }).catch(e=>document.getElementById('vfStatus').textContent='Save failed: '+e.message);
+}
+
+function emailStudent(){
+  if(!VWB||!VKey){alert('No file open.');return;}
+  const to=document.getElementById('emailTo').value.trim();
+  const subject=document.getElementById('emailSubject').value.trim();
+  if(!to){alert('Enter student email first.');return;}
+  document.getElementById('vfStatus').textContent='Saving before email…';
+  const bytes=buildAnnotatedWorkbook();
+  const blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const fd=new FormData(); fd.append('key',VKey); fd.append('file',blob,'annotated.xlsx');
+  fetch(API+'/acc/admin/submissions/save',{method:'POST',headers:{'X-API-Key':API_KEY},credentials:'include',body:fd})
+    .then(r=>r.json()).then(d=>{
+      if(!d.ok){document.getElementById('vfStatus').textContent='Save failed before email.';return;}
+      return authFetch('/acc/admin/submissions/email',{method:'POST',body:JSON.stringify({key:VKey,to_email:to,student_name:VStudent,subject})});
+    }).then(r=>r&&r.json()).then(d=>{
+      if(!d)return;
+      if(d.ok) document.getElementById('vfStatus').textContent='Emailed to '+to+' ✓';
+      else document.getElementById('vfStatus').textContent='Email failed: '+(d.error||'unknown');
+    }).catch(e=>document.getElementById('vfStatus').textContent='Error: '+e.message);
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+</script>
 </body>
 </html>

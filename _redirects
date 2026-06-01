@@ -15,3 +15,13 @@
 /special-topics/curriculum.html  /special-topics/curriculum/  301!
 /special-topics/data.html        /special-topics/data/        301!
 /special-topics/objectives.html  /special-topics/objectives/  301!
+
+# Trailing-slash enforcement — fixes mobile nav 404s
+/2305              /2305/             301!
+/2305/lessons      /2305/lessons/     301!
+/2305/tests        /2305/tests/       301!
+/2305/data         /2305/data/        301!
+/2305/contact      /2305/contact/     301!
+/2305/about        /2305/about/       301!
+/2305/resources    /2305/resources/   301!
+/2305/policies     /2305/policies/    301!

@@ -148,7 +148,7 @@
 <section class="page">
 
   <div class="lectures-controls">
-    <div class="count" id="lecture-count">10 videos available · 8 weeks</div>
+    <div class="count" id="lecture-count">1 video available · Week 1</div>
     <div class="view-toggle" role="group" aria-label="View mode">
       <button data-view="grid" class="active" aria-label="Gallery view">
         <svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
@@ -181,7 +181,7 @@
         <a href="../files/The_Greeks.pptx" download>The Greeks <span class="file-ext">.pptx</span></a>
       </div>
 
-      <!-- WEEK 2 -->
+      <div class="future-weeks" style="display:none">      <!-- WEEK 2 -->
       <div class="wt-label">
         <span class="wk">Week 2</span>
         <span class="wk-title">What is Statistics</span>
@@ -304,6 +304,7 @@
         <a href="../files/Regression_examples.xlsx" download>Regression Examples <span class="file-ext">.xlsx</span></a>
       </div>
 
+      </div><!-- /future-weeks -->
     </div><!-- /week-table -->
 
     <!-- LIST/DETAIL VIEW TABLE -->
@@ -324,6 +325,8 @@
           <td class="type">Lecture</td>
         </tr>
 
+        <tr class="future-weeks" style="display:none" data-hidden-start="week2"></tr>
+        <tbody style="display:none" class="future-rows">
         <tr data-video-id="8z_uGLX4NeA" data-video-title="Week 2 — What is Statistics?">
           <td class="name"><svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1zm2 4l5 3-5 3V6z"/></svg>What is Statistics?</td>
           <td class="wk-cell">Week 2</td>
@@ -391,6 +394,7 @@
 
 
 
+        </tbody>
       </tbody>
     </table>
 

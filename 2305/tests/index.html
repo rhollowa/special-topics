@@ -214,6 +214,8 @@
     <h2 id="subTitle">Submit Assignment</h2>
     <div class="sub-exam-tag" id="subExamTag"></div>
 
+    <label for="subStudentName">Your Name</label>
+    <input type="text" id="subStudentName" placeholder="First Last" />
 
     <label>File</label>
     <div class="sub-drop" id="subDrop">
@@ -265,6 +267,7 @@
     _examLabel = label;
     _examKey   = key;
     document.getElementById('subExamTag').textContent = label;
+    document.getElementById('subStudentName').value = '';
     document.getElementById('subFile').value = '';
     document.getElementById('subFileName').style.display = 'none';
     document.getElementById('subFileName').textContent = '';
@@ -308,9 +311,11 @@
   });
 
   async function submitAssignment() {
+    var name  = document.getElementById('subStudentName').value.trim();
     var file  = document.getElementById('subFile').files[0];
     var btn   = document.getElementById('subGo');
 
+    if (!name)  { showMsg('Please enter your name.',            'err'); return; }
     if (!file)  { showMsg('Please select a file to upload.',   'err'); return; }
 
     btn.disabled = true;
@@ -320,6 +325,7 @@
     fd.append('course',       'BUSI-2305');
     fd.append('exam_label',   _examLabel);
     fd.append('exam_key',     _examKey);
+    fd.append('student_name', name);
     fd.append('file',         file);
 
     try {

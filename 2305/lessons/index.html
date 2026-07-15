@@ -114,6 +114,37 @@
   .lectures.view-list .week-group { display: block; }
   .lectures.view-list .week-group > summary { display: none; }
   .lectures.view-list .collapse-wrap { display: none; }
+
+  /* ── Inline admin controls (only rendered when signed in as admin) ── */
+  .admin-x {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-left: 6px;
+    border-radius: 50%;
+    background: rgba(200,0,0,0.12);
+    color: #c00;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .admin-x:hover { background: #c00; color: #fff; }
+  .admin-add {
+    margin-top: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-family: var(--serif);
+    border: 1px dashed var(--accent);
+    border-radius: 4px;
+    background: none;
+    color: var(--accent);
+    cursor: pointer;
+    align-self: flex-start;
+  }
+  .admin-add:hover { background: var(--accent); color: #fff; }
 </style>
 </head>
 <body>
@@ -162,244 +193,8 @@
   </div>
 
   <div class="lectures view-grid">
-
-    <!-- GRID TABLE: single 3-col layout across all weeks -->
-    <div class="week-table">
-
-      <!-- WEEK 1 -->
-      <div class="wt-label">
-        <span class="wk">Week 1</span>
-        <span class="wk-title">Introduction &amp; Greeks</span>
-      </div>
-      <div class="wt-videos">
-        <div class="summary-card" data-video-id="ySBcVB80Q8Q" data-video-title="Week 1 — The Greek Alphabet">
-          <div class="summary-thumb"></div>
-          <div class="summary-card-ttl">The Greek Alphabet</div>
-        </div>
-      </div>
-      <div class="wt-files">
-        <a href="/2305/files/The_Greeks.pptx" download>The Greeks <span class="file-ext">.pptx</span></a>
-      </div>
-
-      <!-- WEEK 2 -->
-      <div class="wt-label">
-        <span class="wk">Week 2</span>
-        <span class="wk-title">What is Statistics</span>
-      </div>
-      <div class="wt-videos">
-        <div class="summary-card" data-video-id="8z_uGLX4NeA" data-video-title="Week 2 — What is Statistics?">
-          <div class="summary-thumb"></div>
-          <div class="summary-card-ttl">What is Statistics?</div>
-        </div>
-      </div>
-      <div class="wt-files">
-        <a href="/2305/files/What_is_Statistics.pptx" download>What is Statistics <span class="file-ext">.pptx</span></a>
-      </div>
-
-      <!-- WEEK 3 -->
-      <div class="wt-label">
-        <span class="wk">Week 3</span>
-        <span class="wk-title">Describing Data &amp; Visualization</span>
-      </div>
-      <div class="wt-videos">
-        <div class="summary-card" data-video-id="9UGlp0oCqO4" data-video-title="Week 3 — Data Visualization">
-          <div class="summary-thumb"></div>
-          <div class="summary-card-ttl">Data Visualization</div>
-        </div>
-        <div class="summary-card" data-video-id="kqcmqul6FsY" data-video-title="Week 3 — Data Visualization Examples">
-          <div class="summary-thumb"></div>
-          <div class="summary-card-ttl">Data Visualization Examples</div>
-        </div>
-      </div>
-      <div class="wt-files">
-        <a href="/2305/files/Data_Visualization_excel_primer.pptx" download>Data Visualization (Excel Primer) <span class="file-ext">.pptx</span></a>
-        <a href="/2305/files/Data_visualization_examples_HW.xlsx" download>Data Visualization HW <span class="file-ext">.xlsx</span></a>
-        <a href="/2305/files/Data_visualization_examples_HW_SOLUTION.xlsx" download>Data Visualization HW Solution <span class="file-ext">.xlsx</span></a>
-      </div>
-
-      <!-- WEEK 4 -->
-      <div class="wt-label">
-        <span class="wk">Week 4</span>
-        <span class="wk-title">Averages</span>
-      </div>
-      <div class="wt-videos">
-        <div class="summary-card" data-video-id="tXbwX-eK_i4" data-video-title="Week 4 — Averages">
-          <div class="summary-thumb"></div>
-          <div class="summary-card-ttl">Averages</div>
-        </div>
-      </div>
-      <div class="wt-files">
-        <a href="/2305/files/Averages.pptx" download>Averages <span class="file-ext">.pptx</span></a>
-        <a href="/2305/files/Weighted_average_exercises.xlsx" download>Weighted Average Exercises <span class="file-ext">.xlsx</span></a>
-        <a href="/2305/files/Weighted_average_exercises_SOLUTION.xlsx" download>Weighted Average Exercises Solution <span class="file-ext">.xlsx</span></a>
-      </div>
-
-      <!-- WEEK 5 -->
-      <div class="wt-label">
-        <span class="wk">Week 5</span>
-        <span class="wk-title">Dispersion</span>
-      </div>
-      <div class="wt-videos">
-        <div class="summary-card" data-video-id="Ufgoh3BgROc" data-video-title="Week 5 — Dispersion">
-          <div class="summary-thumb"></div>
-          <div class="summary-card-ttl">Dispersion</div>
-        </div>
-      </div>
-      <div class="wt-files">
-        <a href="/2305/files/Dispersion.pptx" download>Dispersion <span class="file-ext">.pptx</span></a>
-      </div>
-
-      <div class="future-weeks" style="display:none"><!-- WEEK 6 -->
-      <div class="wt-label">
-        <span class="wk">Week 6</span>
-        <span class="wk-title">Probability</span>
-      </div>
-      <div class="wt-videos">
-        <div class="summary-card" data-video-id="yTUm4vsDlkw" data-video-title="Week 6 — A Survey of Probability Concepts">
-          <div class="summary-thumb"></div>
-          <div class="summary-card-ttl">A Survey of Probability Concepts</div>
-        </div>
-      </div>
-      <div class="wt-files">
-        <a href="/2305/files/Probability_and_Combinatorics.pptx" download>Probability and Combinatorics <span class="file-ext">.pptx</span></a>
-      </div>
-
-      <!-- WEEK 7 -->
-      <div class="wt-label">
-        <span class="wk">Week 7</span>
-        <span class="wk-title">Confidence Intervals</span>
-      </div>
-      <div class="wt-videos">
-        <div class="summary-card" data-video-id="5GN_CF3ZA84" data-video-title="Week 7 — Confidence Intervals (Pt 1)">
-          <div class="summary-thumb"></div>
-          <div class="summary-card-ttl">Confidence Intervals (Pt 1)</div>
-        </div>
-        <div class="summary-card" data-video-id="nIAhwqnw9NM" data-video-title="Week 7 — Confidence Intervals (Pt 2)">
-          <div class="summary-thumb"></div>
-          <div class="summary-card-ttl">Confidence Intervals (Pt 2)</div>
-        </div>
-      </div>
-      <div class="wt-files">
-        <a href="/2305/files/Confidence_Intervals.pptx" download>Confidence Intervals <span class="file-ext">.pptx</span></a>
-      </div>
-
-      <!-- WEEK 8 -->
-      <div class="wt-label">
-        <span class="wk">Week 8</span>
-        <span class="wk-title">Correlation &amp; Regression</span>
-      </div>
-      <div class="wt-videos">
-        <div class="summary-card" data-video-id="hgaBelAOGak" data-video-title="Week 8 — Regression">
-          <div class="summary-thumb"></div>
-          <div class="summary-card-ttl">Regression</div>
-        </div>
-        <div class="summary-card" data-video-id="2iZ8SKqarIg" data-video-title="Week 8 — Regression Examples">
-          <div class="summary-thumb"></div>
-          <div class="summary-card-ttl">Regression Examples</div>
-        </div>
-        <div class="summary-card" data-video-id="RjcuE6xOI5Q" data-video-title="Week 8 — Adding Analysis Toolkit">
-          <div class="summary-thumb"></div>
-          <div class="summary-card-ttl">Adding Analysis Toolkit</div>
-        </div>
-      </div>
-      <div class="wt-files">
-        <a href="/2305/files/Regression.pptx" download>Regression <span class="file-ext">.pptx</span></a>
-        <a href="/2305/files/Regression_examples.xlsx" download>Regression Examples <span class="file-ext">.xlsx</span></a>
-      </div>
-
-      
-    </div><!-- /future-weeks --></div><!-- /week-table -->
-
-    <!-- LIST/DETAIL VIEW TABLE -->
-    <table class="lecture-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Week</th>
-          <th>Type</th>
-          <th style="text-align:right;">Status</th>
-        </tr>
-      </thead>
-      <tbody>
-
-        <tr data-video-id="ySBcVB80Q8Q" data-video-title="Week 1 — The Greek Alphabet">
-          <td class="name"><svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1zm2 4l5 3-5 3V6z"/></svg>The Greek Alphabet</td>
-          <td class="wk-cell">Week 1</td>
-          <td class="type">Lecture</td>
-        </tr>
-
-        <tr data-video-id="8z_uGLX4NeA" data-video-title="Week 2 — What is Statistics?">
-          <td class="name"><svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1zm2 4l5 3-5 3V6z"/></svg>What is Statistics?</td>
-          <td class="wk-cell">Week 2</td>
-          <td class="type">Lecture</td>
-        </tr>
-
-        <tr data-video-id="9UGlp0oCqO4" data-video-title="Week 3 — Data Visualization">
-          <td class="name"><svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1zm2 4l5 3-5 3V6z"/></svg>Data Visualization</td>
-          <td class="wk-cell">Week 3</td>
-          <td class="type">Lecture</td>
-        </tr>
-        <tr data-video-id="kqcmqul6FsY" data-video-title="Week 3 — Data Visualization Examples">
-          <td class="name"><svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M3 1h7l3 3v11a1 1 0 01-1 1H3a1 1 0 01-1-1V2a1 1 0 011-1zm6 1v3h3"/></svg>Data Visualization Examples</td>
-          <td class="wk-cell">Week 3</td>
-          <td class="type excel">Excel</td>
-        </tr>
-
-        <tr data-video-id="tXbwX-eK_i4" data-video-title="Week 4 — Averages">
-          <td class="name"><svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1zm2 4l5 3-5 3V6z"/></svg>Averages</td>
-          <td class="wk-cell">Week 4</td>
-          <td class="type">Lecture</td>
-        </tr>
-
-        <tbody style="display:none" class="future-rows">
-        <tr data-video-id="Ufgoh3BgROc" data-video-title="Week 5 — Dispersion">
-          <td class="name"><svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1zm2 4l5 3-5 3V6z"/></svg>Dispersion</td>
-          <td class="wk-cell">Week 5</td>
-          <td class="type">Lecture</td>
-        </tr>
-
-        <tr data-video-id="yTUm4vsDlkw" data-video-title="Week 6 — A Survey of Probability Concepts">
-          <td class="name"><svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1zm2 4l5 3-5 3V6z"/></svg>A Survey of Probability Concepts</td>
-          <td class="wk-cell">Week 6</td>
-          <td class="type">Lecture</td>
-        </tr>
-
-        <tr data-video-id="5GN_CF3ZA84" data-video-title="Week 7 — Confidence Intervals (Pt 1)">
-          <td class="name"><svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1zm2 4l5 3-5 3V6z"/></svg>Confidence Intervals (Pt 1)</td>
-          <td class="wk-cell">Week 7</td>
-          <td class="type">Lecture</td>
-        </tr>
-        <tr data-video-id="nIAhwqnw9NM" data-video-title="Week 7 — Confidence Intervals (Pt 2)">
-          <td class="name"><svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1zm2 4l5 3-5 3V6z"/></svg>Confidence Intervals (Pt 2)</td>
-          <td class="wk-cell">Week 7</td>
-          <td class="type">Lecture</td>
-        </tr>
-
-        <tr data-video-id="hgaBelAOGak" data-video-title="Week 8 — Regression">
-          <td class="name"><svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1zm2 4l5 3-5 3V6z"/></svg>Regression</td>
-          <td class="wk-cell">Week 8</td>
-          <td class="type">Lecture</td>
-        </tr>
-
-        <tr data-video-id="2iZ8SKqarIg" data-video-title="Week 8 — Regression Examples">
-          <td class="name"><svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1zm2 4l5 3-5 3V6z"/></svg>Regression Examples</td>
-          <td class="wk-cell">Week 8</td>
-          <td class="type">Lecture</td>
-        </tr>
-
-        <tr data-video-id="RjcuE6xOI5Q" data-video-title="Week 8 — Adding Analysis Toolkit">
-          <td class="name"><svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1zm2 4l5 3-5 3V6z"/></svg>Adding Analysis Toolkit</td>
-          <td class="wk-cell">Week 8</td>
-          <td class="type">Lecture</td>
-        </tr>
-
-
-
-
-        </tbody>
-      </tbody>
-    </table>
-
+    <div id="lessons-grid-host"></div>
+    <div id="lessons-list-host"></div>
   </div>
 
 </section>

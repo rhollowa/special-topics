@@ -3,7 +3,7 @@
      FILE: 2305/tests.html
      REPO: rhollowa/special-topics (branch: main)
      DEPLOYS TO: acc.indiafoxtrotcharlie.com/2305/tests.html
-     SUBMIT API: https://tourcast-docker.onrender.com/acc/submit
+     SUBMIT API: https://ivorytower.infinitum-financial.com/acc/submit
      ----
      2026-05-14  Pappy  Added per-exam submit modal (ACC ID + drag/drop)
      2026-05-14  Pappy  Fixed crest href: index.html (removed stale #anchor)
@@ -205,7 +205,7 @@
 
 <!-- ============================================================
      SUBMIT MODAL
-     POST to: https://tourcast-docker.onrender.com/acc/submit
+     POST to: https://ivorytower.infinitum-financial.com/acc/submit
      Fields:  student_name, course, exam_label, file
      ============================================================ -->
 <div class="sub-overlay" id="subOverlay" role="dialog" aria-modal="true" aria-labelledby="subTitle">
@@ -329,7 +329,7 @@
     fd.append('file',         file);
 
     try {
-      var res  = await fetch('https://tourcast-docker.onrender.com/acc/submit', { method: 'POST', body: fd });
+      var res  = await fetch('https://ivorytower.infinitum-financial.com/acc/submit', { method: 'POST', body: fd });
       var data = await res.json();
       if (res.ok && !data.error) {
         showMsg('Submitted \u2014 you\'re all set.', 'ok');

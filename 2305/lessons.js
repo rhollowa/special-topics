@@ -63,8 +63,10 @@
       html += '<div class="wt-videos">';
       w.videos.forEach(v => {
         const vid = youtubeIdFromUrl(v.youtube_url);
-        html += `<div class="summary-card" data-video-id="${esc(vid)}" data-video-title="Week ${w.week_number} — ${esc(v.title)}" data-lesson-id="${v.id}">`
-          + `<div class="summary-thumb"></div><div class="summary-card-ttl">${esc(v.title)}</div>`
+        const pending = !vid;
+        const cardClass = pending ? 'summary-card summary-card-pending' : 'summary-card';
+        html += `<div class="${cardClass}" ${pending ? '' : `data-video-id="${esc(vid)}" data-video-title="Week ${w.week_number} — ${esc(v.title)}"`} data-lesson-id="${v.id}">`
+          + `<div class="summary-thumb"></div><div class="summary-card-ttl">${esc(v.title)}${pending ? ' <span class="pending-tag">(processing…)</span>' : ''}</div>`
           + (IS_ADMIN ? `<span class="admin-x" data-remove-lesson="${v.id}" title="Remove">×</span>` : '')
           + '</div>';
       });
@@ -91,8 +93,9 @@
     weeks.forEach(w => {
       w.videos.forEach(v => {
         const vid = youtubeIdFromUrl(v.youtube_url);
-        html += `<tr data-video-id="${esc(vid)}" data-video-title="Week ${w.week_number} — ${esc(v.title)}">`
-          + `<td class="name"><svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1zm2 4l5 3-5 3V6z"/></svg>${esc(v.title)}</td>`
+        const pending = !vid;
+        html += `<tr ${pending ? 'class="row-pending"' : `data-video-id="${esc(vid)}" data-video-title="Week ${w.week_number} — ${esc(v.title)}"`}>`
+          + `<td class="name"><svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1zm2 4l5 3-5 3V6z"/></svg>${esc(v.title)}${pending ? ' <span class="pending-tag">(processing…)</span>' : ''}</td>`
           + `<td class="wk-cell">Week ${w.week_number}</td><td class="type">Lecture</td></tr>`;
       });
       w.files.forEach(f => {

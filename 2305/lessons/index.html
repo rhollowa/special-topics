@@ -156,6 +156,13 @@
     align-items: center;
     justify-content: center;
   }
+  /* ── Video still relaying to YouTube — not clickable yet ── */
+  .summary-card-pending { cursor: default; opacity: 0.55; }
+  .summary-card-pending:hover .summary-thumb { background: linear-gradient(135deg, #2d2d2d 0%, #4a3525 100%) !important; }
+  .summary-card-pending:hover .summary-card-ttl { color: var(--ink) !important; }
+  .row-pending { opacity: 0.55; cursor: default; }
+  .pending-tag { font-style: italic; color: var(--muted); font-size: 11px; }
+
   .overlay .modal-inner {
     max-width: 420px;
     width: 90%;

@@ -176,8 +176,7 @@
     const isNewWeek = weekNumber == null;
     const heading = isNewWeek ? 'Add New Week' : `Add to Week ${esc(weekNumber)}`;
     const weekFields = isNewWeek
-      ? `<input type="text" id="lessonAddWeekNumber" placeholder="Week number or label (e.g. 6)" style="width:100%;padding:.5rem .65rem;border:1px solid #ccc;border-radius:4px;margin-bottom:.75rem;box-sizing:border-box;">
-         <input type="text" id="lessonAddWeekTitle" placeholder="Week title (e.g. Probability)" style="width:100%;padding:.5rem .65rem;border:1px solid #ccc;border-radius:4px;margin-bottom:.75rem;box-sizing:border-box;">`
+      ? `<input type="text" id="lessonAddWeekTitle" placeholder="Label (e.g. Interlude, Midterm Review)" style="width:100%;padding:.5rem .65rem;border:1px solid #ccc;border-radius:4px;margin-bottom:.75rem;box-sizing:border-box;">`
       : '';
     const html = `<div class="overlay open" id="lessonAddModal" onclick="if(event.target.id==='lessonAddModal')this.remove()">
       <div class="modal-inner" style="max-width:420px;background:#fff;border-radius:10px;padding:2rem;">
@@ -204,15 +203,10 @@
     const file = fileInput.files[0];
 
     if (isNewWeek) {
-      const weekNumberInput = document.getElementById('lessonAddWeekNumber');
       const weekTitleInput = document.getElementById('lessonAddWeekTitle');
-      weekNumber = weekNumberInput.value.trim();
       weekTitle = weekTitleInput.value.trim();
-      if (!weekNumber || isNaN(Number(weekNumber))) {
-        msg.textContent = 'Week number must be a number (e.g. 6). Use the title field for a custom label.';
-        msg.style.color = '#c00';
-        return;
-      }
+      const maxWeek = LESSONS.length ? Math.max(...LESSONS.map(l => l.week_number)) : 0;
+      weekNumber = maxWeek + 1;
     }
 
     if (!title || !file) { msg.textContent = 'Title and file are required.'; msg.style.color = '#c00'; return; }

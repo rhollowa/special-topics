@@ -80,6 +80,9 @@
       html += '</div>';
     });
     html += '</div>';
+    if (IS_ADMIN) {
+      html += '<button class="admin-add admin-add-week" data-add-new-week="1">+ Add New Week</button>';
+    }
     return html;
   }
 
@@ -163,13 +166,23 @@
     document.querySelectorAll('[data-add-week]').forEach(btn => {
       btn.addEventListener('click', () => openAddModal(btn.dataset.addWeek, btn.dataset.addWeekTitle));
     });
+    document.querySelectorAll('[data-add-new-week]').forEach(btn => {
+      btn.addEventListener('click', () => openAddModal(null, null));
+    });
   }
 
   function openAddModal(weekNumber, weekTitle) {
     if (document.getElementById('lessonAddModal')) return;
+    const isNewWeek = weekNumber == null;
+    const heading = isNewWeek ? 'Add New Week' : `Add to Week ${esc(weekNumber)}`;
+    const weekFields = isNewWeek
+      ? `<input type="text" id="lessonAddWeekNumber" placeholder="Week number or label (e.g. 6)" style="width:100%;padding:.5rem .65rem;border:1px solid #ccc;border-radius:4px;margin-bottom:.75rem;box-sizing:border-box;">
+         <input type="text" id="lessonAddWeekTitle" placeholder="Week title (e.g. Probability)" style="width:100%;padding:.5rem .65rem;border:1px solid #ccc;border-radius:4px;margin-bottom:.75rem;box-sizing:border-box;">`
+      : '';
     const html = `<div class="overlay open" id="lessonAddModal" onclick="if(event.target.id==='lessonAddModal')this.remove()">
       <div class="modal-inner" style="max-width:420px;background:#fff;border-radius:10px;padding:2rem;">
-        <h3 style="margin:0 0 1rem;">Add to Week ${esc(weekNumber)}</h3>
+        <h3 style="margin:0 0 1rem;">${heading}</h3>
+        ${weekFields}
         <input type="text" id="lessonAddTitle" placeholder="Title" style="width:100%;padding:.5rem .65rem;border:1px solid #ccc;border-radius:4px;margin-bottom:.75rem;box-sizing:border-box;">
         <input type="file" id="lessonAddFile" accept="video/*,.pptx,.xlsx,.pdf" style="width:100%;margin-bottom:.75rem;">
         <div class="msg" id="lessonAddMsg" style="min-height:1.2em;font-size:.85rem;"></div>
@@ -180,15 +193,28 @@
       </div>
     </div>`;
     document.body.insertAdjacentHTML('beforeend', html);
-    document.getElementById('lessonAddSubmit').addEventListener('click', () => submitAdd(weekNumber, weekTitle));
+    document.getElementById('lessonAddSubmit').addEventListener('click', () => submitAdd(weekNumber, weekTitle, isNewWeek));
   }
 
-  async function submitAdd(weekNumber, weekTitle) {
+  async function submitAdd(weekNumber, weekTitle, isNewWeek) {
     const titleInput = document.getElementById('lessonAddTitle');
     const fileInput = document.getElementById('lessonAddFile');
     const msg = document.getElementById('lessonAddMsg');
     const title = titleInput.value.trim();
     const file = fileInput.files[0];
+
+    if (isNewWeek) {
+      const weekNumberInput = document.getElementById('lessonAddWeekNumber');
+      const weekTitleInput = document.getElementById('lessonAddWeekTitle');
+      weekNumber = weekNumberInput.value.trim();
+      weekTitle = weekTitleInput.value.trim();
+      if (!weekNumber || isNaN(Number(weekNumber))) {
+        msg.textContent = 'Week number must be a number (e.g. 6). Use the title field for a custom label.';
+        msg.style.color = '#c00';
+        return;
+      }
+    }
+
     if (!title || !file) { msg.textContent = 'Title and file are required.'; msg.style.color = '#c00'; return; }
 
     const assetType = file.type.startsWith('video/') ? 'video' : 'file';

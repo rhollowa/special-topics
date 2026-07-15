@@ -141,6 +141,31 @@ pre.receipt{background:#f5f5f5;padding:.75rem;border-radius:4px;font-size:.8rem;
     <div class="msg" id="msg"></div>
   </div>
 
+  <!-- Lecture Assets (Phase 1+2 — lateralus/ivory-tower/ifc) -->
+  <div class="upload-section">
+    <h2>Lecture Assets</h2>
+    <label class="drop" id="assetDropZone">
+      <p id="assetDropText">Click or drop a video, PDF, or link file</p>
+      <p class="file" id="assetFileName"></p>
+      <input type="file" id="assetFileInput" accept="video/*,.pdf">
+    </label>
+    <div class="actions">
+      <select id="assetCourseSelect" style="padding:.5rem .65rem;border:1px solid #ccc;border-radius:4px;font-size:.88rem;">
+        <option value="BUSI-2305">BUSI-2305</option>
+        <option value="special-topics">Special Topics</option>
+      </select>
+      <button class="ct-btn primary" id="assetUploadBtn" onclick="doAssetUpload()" disabled>Upload</button>
+    </div>
+    <div class="msg" id="assetMsg"></div>
+
+    <h2 style="margin-top:1.5rem;">Draft Asset Library</h2>
+    <div class="msg" id="assetLibMsg"></div>
+    <div id="assetLibrary" style="display:flex;flex-direction:column;gap:.5rem;margin-top:.5rem;"></div>
+    <div class="actions" style="justify-content:flex-start;margin-top:.75rem;">
+      <button class="ct-btn" onclick="refreshAssetLibrary()">Refresh library</button>
+    </div>
+  </div>
+
   <!-- Process picker -->
   <div class="picker-section">
     <h2>Process an uploaded file</h2>
@@ -261,7 +286,7 @@ function authFetch(url, opts={}){
 }
 
 // ── Boot ──
-function showPanel(){ AUTHED=true; document.getElementById('adminPanel').style.display='block'; refreshFileList(); refreshSubmissions(); }
+function showPanel(){ AUTHED=true; document.getElementById('adminPanel').style.display='block'; refreshFileList(); refreshSubmissions(); refreshAssetLibrary(); }
 
 function openLogin(){
   if(document.getElementById('loginModal')) return;
@@ -306,6 +331,72 @@ function doUpload(){
     else{msg.textContent=d.error||'Upload failed.';msg.className='msg err';btn.disabled=false;}
   }).catch(e=>{msg.textContent='Upload failed: '+e.message;msg.className='msg err';btn.disabled=false;});
 }
+
+// ── Lecture Assets (Phase 1+2) ──
+let selectedAssetFile=null;
+const azone=document.getElementById('assetDropZone'),ainput=document.getElementById('assetFileInput'),
+      adropTx=document.getElementById('assetDropText'),afname=document.getElementById('assetFileName'),
+      abtn=document.getElementById('assetUploadBtn');
+ainput.addEventListener('change',e=>setAssetFile(e.target.files[0]));
+['dragenter','dragover'].forEach(ev=>azone.addEventListener(ev,e=>{e.preventDefault();azone.classList.add('drag');}));
+['dragleave','drop'].forEach(ev=>azone.addEventListener(ev,e=>{e.preventDefault();azone.classList.remove('drag');}));
+azone.addEventListener('drop',e=>{if(e.dataTransfer.files[0])setAssetFile(e.dataTransfer.files[0]);});
+function setAssetFile(f){if(!f)return;selectedAssetFile=f;afname.textContent=f.name;adropTx.textContent='Click or drop to change';abtn.disabled=false;}
+
+function assetTypeFromFile(f){
+  if(f.type.startsWith('video/'))return 'video';
+  if(f.type==='application/pdf')return 'pdf';
+  return 'link';
+}
+
+function doAssetUpload(){
+  if(!selectedAssetFile)return;
+  const f=selectedAssetFile, course=document.getElementById('assetCourseSelect').value;
+  const msg=document.getElementById('assetMsg'); msg.textContent='Requesting upload URL…'; msg.className='msg'; abtn.disabled=true;
+  const assetType=assetTypeFromFile(f);
+  authFetch('/acc/admin/presign-upload?course='+encodeURIComponent(course)+'&filename='+encodeURIComponent(f.name)+'&asset_type='+assetType,{method:'GET'})
+    .then(r=>r.json()).then(pd=>{
+      if(!pd.ok){msg.textContent=pd.error||'Presign failed.';msg.className='msg err';abtn.disabled=false;return;}
+      msg.textContent='Uploading to storage…';
+      return fetch(pd.upload_url,{method:'PUT',headers:{'Content-Type':f.type||'application/octet-stream'},body:f})
+        .then(putRes=>{
+          if(!putRes.ok)throw new Error('Storage upload failed');
+          msg.textContent='Saving asset…';
+          return authFetch('/acc/admin/asset-complete',{method:'POST',body:JSON.stringify({course:course,title:f.name,asset_type:assetType,r2_key:pd.r2_key})});
+        })
+        .then(r=>r.json()).then(d=>{
+          if(d.ok){
+            msg.textContent='Uploaded: '+f.name+(assetType==='video'?' (relaying to YouTube in background…)':'');
+            msg.className='msg ok';
+            selectedAssetFile=null;ainput.value='';afname.textContent='';adropTx.textContent='Click or drop a video, PDF, or link file';
+            refreshAssetLibrary();
+          } else {msg.textContent=d.error||'Save failed.';msg.className='msg err';}
+          abtn.disabled=false;
+        });
+    })
+    .catch(e=>{msg.textContent='Upload failed: '+e.message;msg.className='msg err';abtn.disabled=false;});
+}
+
+function refreshAssetLibrary(){
+  const lib=document.getElementById('assetLibrary'), lmsg=document.getElementById('assetLibMsg');
+  const course=document.getElementById('assetCourseSelect').value;
+  lmsg.textContent='Loading…'; lmsg.className='msg';
+  authFetch('/acc/admin/assets?course='+encodeURIComponent(course)+'&status=draft',{method:'GET'})
+    .then(r=>r.json()).then(d=>{
+      lmsg.textContent=''; lib.innerHTML='';
+      if(!d.ok){lmsg.textContent=d.error||'List failed.';lmsg.className='msg err';return;}
+      if(!(d.assets||[]).length){lib.innerHTML='<p style="color:#999;font-size:.85rem;">No draft assets yet.</p>';return;}
+      d.assets.forEach(a=>{
+        const row=document.createElement('div');
+        row.style='display:flex;align-items:center;justify-content:space-between;padding:.6rem .8rem;border:1px solid #eee;border-radius:6px;';
+        const yt=a.youtube_url?(' — <a href="'+a.youtube_url+'" target="_blank">YouTube ready</a>'):(a.asset_type==='video'?' — relaying…':'');
+        row.innerHTML='<div><strong>'+a.title+'</strong> <span style="color:#999;font-size:.8rem;">('+a.asset_type+')'+yt+'</span></div>';
+        lib.appendChild(row);
+      });
+    })
+    .catch(e=>{lmsg.textContent='Load failed: '+e.message;lmsg.className='msg err';});
+}
+document.getElementById('assetCourseSelect').addEventListener('change',refreshAssetLibrary);
 
 // ── File picker ──
 function refreshFileList(){

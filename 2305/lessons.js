@@ -313,21 +313,21 @@
   let PREVIEW_MODE = false;
 
   function renderAdminBadge() {
-    let badge = document.getElementById('adminModeBadge');
-    if (!SERVER_ADMIN) {
-      if (badge) badge.remove();
+    const crest = document.querySelector('.crest');
+    if (!crest) return;
+    let label = document.getElementById('adminModeLabel');
+    const showingAdmin = SERVER_ADMIN && !PREVIEW_MODE;
+    if (!showingAdmin) {
+      if (label) label.remove();
       return;
     }
-    const showingAdmin = !PREVIEW_MODE;
-    if (!badge) {
-      badge = document.createElement('div');
-      badge.id = 'adminModeBadge';
-      badge.style.cssText = 'position:fixed;top:12px;right:12px;z-index:2000;padding:6px 14px;border-radius:20px;font-family:system-ui,-apple-system,sans-serif;font-size:12px;font-weight:600;cursor:default;box-shadow:0 2px 8px rgba(0,0,0,0.15);';
-      document.body.appendChild(badge);
+    if (!label) {
+      label = document.createElement('div');
+      label.id = 'adminModeLabel';
+      label.style.cssText = 'font-family:var(--mono, monospace);font-size:11px;font-weight:600;color:var(--accent);letter-spacing:0.03em;margin-top:2px;';
+      crest.insertAdjacentElement('afterend', label);
     }
-    badge.textContent = showingAdmin ? 'Admin view — triple-click crest to preview as student' : 'Student preview — triple-click crest to return to admin';
-    badge.style.background = showingAdmin ? '#1a7a4a' : '#333';
-    badge.style.color = '#fff';
+    label.textContent = 'Professor Holloway';
   }
 
   function bindSecretLogin() {

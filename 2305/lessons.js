@@ -271,10 +271,67 @@
     }
   }
 
+  function openLoginModal() {
+    if (document.getElementById('adminLoginModal')) return;
+    const html = `<div class="overlay open" id="adminLoginModal" onclick="if(event.target.id==='adminLoginModal')this.remove()">
+      <div class="modal-inner">
+        <h3 style="margin:0 0 1rem;">Admin Sign In</h3>
+        <input type="password" id="adminLoginPw" placeholder="Password" autofocus style="width:100%;padding:.55rem .7rem;border:1px solid #ccc;border-radius:4px;font-size:.95rem;margin-bottom:.75rem;box-sizing:border-box;">
+        <div class="msg" id="adminLoginMsg" style="min-height:1.2em;font-size:.85rem;color:#c00;"></div>
+        <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:.5rem;">
+          <button onclick="document.getElementById('adminLoginModal').remove()" style="padding:.5rem 1rem;border-radius:4px;border:1px solid #ccc;background:#fff;cursor:pointer;">Cancel</button>
+          <button id="adminLoginSubmit" style="padding:.5rem 1rem;border-radius:4px;border:1px solid #1a7a4a;background:#1a7a4a;color:#fff;cursor:pointer;">Sign In</button>
+        </div>
+      </div>
+    </div>`;
+    document.body.insertAdjacentHTML('beforeend', html);
+    const pwInput = document.getElementById('adminLoginPw');
+    const submit = async () => {
+      const msg = document.getElementById('adminLoginMsg');
+      const res = await authFetch('/ivory/admin/password-auth', { method: 'POST', body: JSON.stringify({ password: pwInput.value }) });
+      const data = await res.json();
+      if (data.ok) {
+        document.getElementById('adminLoginModal').remove();
+        IS_ADMIN = true;
+        await loadAndRender();
+      } else {
+        msg.textContent = 'Incorrect password.';
+      }
+    };
+    document.getElementById('adminLoginSubmit').addEventListener('click', submit);
+    pwInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
+  }
+
+  function bindSecretLogin() {
+    // Triple-click the crest (same 400ms-window convention as admin-crest.js
+    // site-wide) opens an in-page login instead of navigating to /admin/ --
+    // students never see a "sign in" affordance exists on this page.
+    const crest = document.querySelector('.crest');
+    if (!crest) return;
+    let clicks = 0, timer = null;
+    crest.addEventListener('click', (e) => {
+      if (IS_ADMIN) return; // already admin via IP -- let normal nav happen
+      e.preventDefault();
+      clicks++;
+      clearTimeout(timer);
+      if (clicks >= 3) {
+        clicks = 0;
+        openLoginModal();
+      } else {
+        timer = setTimeout(() => {
+          const dest = crest.getAttribute('href');
+          clicks = 0;
+          if (dest) window.location.href = dest;
+        }, 400);
+      }
+    });
+  }
+
   (async function boot() {
     await checkAdmin();
     await loadAndRender();
     bindViewToggle();
+    bindSecretLogin();
   })();
 
 })();

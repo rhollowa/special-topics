@@ -155,6 +155,54 @@
     details.collapse > summary { min-height: 72px; }
   }
 
+  /* ── Modal overlay (Add Test / Admin Sign In) — shared shell ── */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .overlay .modal-inner {
+    max-width: 420px;
+    width: 90%;
+    background: #fff;
+    border-radius: 10px;
+    padding: 2rem;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+
+  /* ── Inline admin controls ── */
+  .admin-x {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-left: 6px;
+    border-radius: 50%;
+    background: rgba(200,0,0,0.12);
+    color: #c00;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .admin-x:hover { background: #c00; color: #fff; }
+  .admin-add {
+    margin-top: 1rem;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-family: var(--serif);
+    border: 1px dashed var(--accent);
+    border-radius: 4px;
+    background: none;
+    color: var(--accent);
+    cursor: pointer;
+  }
+  .admin-add:hover { background: var(--accent); color: #fff; }
 </style>
 </head>
 <body>
@@ -189,17 +237,8 @@
   </div>
 </section>
 
-<section class="page">
-  <div class="section-head">
-    <div class="num">Due Friday 7/17, 11:59pm</div>
-    <h2>Midterm — Exam 1</h2>
-    <p class="sub">Excel modeling exam. Three problems: Bollinger Bands, Sector Allocation, and Pro Forma. Instructions are built into each tab of the workbook below — read them before you start.</p>
-  </div>
-  <p style="margin: 0 0 1.25rem;">
-    <a href="/2305/files/Modeling_problems.xlsx" download>Exam 1 — Modeling Problems <span class="file-ext">.xlsx</span></a>
-  </p>
-  <button class="submit-btn" onclick="openModal('Midterm — Exam 1', 'midterm-exam-1')">Submit Exam 1</button>
-</section>
+<div id="tests-host"></div>
+<div id="tests-add-host"></div>
 
 </main>
 
@@ -352,30 +391,9 @@
   }
 </script>
 
-<!-- admin-crest-hook -->
-<script>
-(function(){
-  var clicks=0,t=null,pending=null;
-  var el=document.querySelector('.crest');
-  if(!el) return;
-  el.addEventListener('click',function(e){
-    e.preventDefault();
-    clicks++;
-    clearTimeout(t);
-    clearTimeout(pending);
-    if(clicks>=3){
-      clicks=0;
-      window.location.href='/admin/';
-    } else {
-      t=setTimeout(function(){
-        var dest=el.getAttribute('href');
-        clicks=0;
-        if(dest) window.location.href=dest;
-      },400);
-    }
-  });
-})();
-</script>
+<!-- admin-crest-hook: handled in-page by tests.js (bindSecretLogin) instead
+     of admin-crest.js, so triple-click toggles admin/preview in place -->
+<script src="/2305/tests.js"></script>
 </body>
 </html>
 

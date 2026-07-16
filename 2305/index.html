@@ -6,6 +6,54 @@
 <title>BUSI 2305 — Business Statistics · Summer 2026</title>
 <meta name="description" content="BUSI 2305 Business Statistics — Austin Community College, Summer 2026. Section 012, CRN 54576. Professor Russell Holloway.">
 <link rel="stylesheet" href="/theme.css">
+<style>
+  /* ── Modal overlay (Add Announcement / Admin Sign In) ── */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .overlay .modal-inner {
+    max-width: 480px;
+    width: 90%;
+    background: #fff;
+    border-radius: 10px;
+    padding: 2rem;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .admin-x {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-left: 6px;
+    border-radius: 50%;
+    background: rgba(200,0,0,0.12);
+    color: #c00;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .admin-x:hover { background: #c00; color: #fff; }
+  .admin-add {
+    margin-top: 1rem;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-family: var(--serif);
+    border: 1px dashed var(--accent);
+    border-radius: 4px;
+    background: none;
+    color: var(--accent);
+    cursor: pointer;
+  }
+  .admin-add:hover { background: var(--accent); color: #fff; }
+</style>
 </head>
 <body>
 
@@ -55,68 +103,8 @@
   <div id="announcements-list" class="announcements-list" aria-live="polite">
     <p class="announcements-loading">Loading announcements…</p>
   </div>
+  <div id="announcements-add-host"></div>
 </section>
-
-<script>
-(function () {
-  var MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  function fmtDate(iso) {
-    var parts = (iso || "").split("-");
-    if (parts.length !== 3) return iso || "";
-    var y = parts[0], m = parseInt(parts[1], 10), d = parseInt(parts[2], 10);
-    if (isNaN(m) || isNaN(d)) return iso;
-    return MONTHS[m - 1] + " " + d + ", " + y;
-  }
-  function escapeHTML(s) {
-    return String(s == null ? "" : s)
-      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  }
-  function renderBody(text) {
-    // preserve paragraph breaks, keep it clean
-    return escapeHTML(text).split(/\n\s*\n/).map(function (p) {
-      return "<p>" + p.replace(/\n/g, "<br>") + "</p>";
-    }).join("");
-  }
-  function sortByDateDesc(items) {
-    return items.slice().sort(function (a, b) {
-      return (b.date || "").localeCompare(a.date || "");
-    });
-  }
-
-  var mount = document.getElementById("announcements-list");
-  if (!mount) return;
-
-  fetch("announcements.json", { cache: "no-store" })
-    .then(function (r) {
-      if (!r.ok) throw new Error("HTTP " + r.status);
-      return r.json();
-    })
-    .then(function (items) {
-      if (!Array.isArray(items) || items.length === 0) {
-        mount.innerHTML = '<p class="announcements-empty">No announcements yet. Check back soon.</p>';
-        return;
-      }
-      items = sortByDateDesc(items);
-      var html = items.map(function (a, i) {
-        var open = i === 0 ? " open" : "";
-        return '' +
-          '<details class="announcement"' + open + '>' +
-            '<summary>' +
-              '<span class="announcement-date">' + escapeHTML(fmtDate(a.date)) + '</span>' +
-              '<span class="announcement-title">' + escapeHTML(a.title || "Announcement") + '</span>' +
-              '<span class="announcement-chevron" aria-hidden="true"></span>' +
-            '</summary>' +
-            '<div class="announcement-body">' + renderBody(a.body || "") + '</div>' +
-          '</details>';
-      }).join("");
-      mount.innerHTML = html;
-    })
-    .catch(function () {
-      mount.innerHTML = '<p class="announcements-empty">Announcements unavailable right now. Please refresh in a moment.</p>';
-    });
-})();
-</script>
 
 <section class="page">
   <div class="section-head">
@@ -209,7 +197,9 @@
   </div>
 </footer>
 
-<!-- admin-crest-hook --><script src="/admin-crest.js" defer></script>
+<!-- admin-crest-hook: handled in-page by home.js (bindSecretLogin) instead
+     of admin-crest.js, so triple-click toggles admin/preview in place -->
+<script src="/2305/home.js"></script>
 </body>
 </html>
 

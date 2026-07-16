@@ -13,7 +13,8 @@
   const COURSE = 'BUSI-2305';
 
   let LESSONS = [];
-  let IS_ADMIN = false;
+  let IS_ADMIN = false;      // effective: SERVER_ADMIN && !PREVIEW_MODE
+  let SERVER_ADMIN = false;  // what the server actually says (IP or session)
 
   function authFetch(url, opts = {}) {
     const isForm = opts.body instanceof FormData;
@@ -265,10 +266,11 @@
     try {
       const res = await authFetch('/ivory/admin/ip-auth', { method: 'POST', body: JSON.stringify({}) });
       const data = await res.json();
-      IS_ADMIN = !!data.ok;
+      SERVER_ADMIN = !!data.ok;
     } catch (e) {
-      IS_ADMIN = false;
+      SERVER_ADMIN = false;
     }
+    IS_ADMIN = SERVER_ADMIN && !PREVIEW_MODE;
   }
 
   function openLoginModal() {
@@ -292,7 +294,10 @@
       const data = await res.json();
       if (data.ok) {
         document.getElementById('adminLoginModal').remove();
+        SERVER_ADMIN = true;
+        PREVIEW_MODE = false;
         IS_ADMIN = true;
+        renderAdminBadge();
         await loadAndRender();
       } else {
         msg.textContent = 'Incorrect password.';
@@ -302,21 +307,66 @@
     pwInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
   }
 
+  // PREVIEW_MODE lets an IP-allowlisted admin toggle to the real student
+  // view without losing allowlist status server-side (that would just
+  // re-grant admin on the very next request). true = force student view.
+  let PREVIEW_MODE = false;
+
+  function renderAdminBadge() {
+    let badge = document.getElementById('adminModeBadge');
+    if (!SERVER_ADMIN) {
+      if (badge) badge.remove();
+      return;
+    }
+    const showingAdmin = !PREVIEW_MODE;
+    if (!badge) {
+      badge = document.createElement('div');
+      badge.id = 'adminModeBadge';
+      badge.style.cssText = 'position:fixed;top:12px;right:12px;z-index:2000;padding:6px 14px;border-radius:20px;font-family:system-ui,-apple-system,sans-serif;font-size:12px;font-weight:600;cursor:default;box-shadow:0 2px 8px rgba(0,0,0,0.15);';
+      document.body.appendChild(badge);
+    }
+    badge.textContent = showingAdmin ? 'Admin view — triple-click crest to preview as student' : 'Student preview — triple-click crest to return to admin';
+    badge.style.background = showingAdmin ? '#1a7a4a' : '#333';
+    badge.style.color = '#fff';
+  }
+
   function bindSecretLogin() {
     // Triple-click the crest (same 400ms-window convention as admin-crest.js
-    // site-wide) opens an in-page login instead of navigating to /admin/ --
-    // students never see a "sign in" affordance exists on this page.
+    // site-wide). Behavior is a two-way toggle:
+    //   - logged out (no session, not IP-allowlisted) -> opens sign-in modal
+    //   - IP-allowlisted admin -> toggles PREVIEW_MODE (can't truly log out
+    //     of an IP-based grant, so this just hides admin UI client-side)
+    //   - session-authed admin (password login) -> calls /ivory/admin/logout
     const crest = document.querySelector('.crest');
     if (!crest) return;
     let clicks = 0, timer = null;
-    crest.addEventListener('click', (e) => {
-      if (IS_ADMIN) return; // already admin via IP -- let normal nav happen
+    crest.addEventListener('click', async (e) => {
       e.preventDefault();
       clicks++;
       clearTimeout(timer);
       if (clicks >= 3) {
         clicks = 0;
-        openLoginModal();
+        if (!SERVER_ADMIN) {
+          openLoginModal();
+        } else if (PREVIEW_MODE) {
+          PREVIEW_MODE = false;
+          IS_ADMIN = true;
+          renderAdminBadge();
+          await loadAndRender();
+        } else {
+          // Try a real logout first (no-op if this admin is IP-allowlisted,
+          // not session-authed -- ip-auth will just re-grant on next check).
+          await authFetch('/ivory/admin/logout', { method: 'POST', body: JSON.stringify({}) });
+          await checkAdmin();
+          if (SERVER_ADMIN) {
+            // Still admin server-side (IP-allowlisted) -- fall back to
+            // client-side preview instead of a real logout.
+            PREVIEW_MODE = true;
+            IS_ADMIN = false;
+          }
+          renderAdminBadge();
+          await loadAndRender();
+        }
       } else {
         timer = setTimeout(() => {
           const dest = crest.getAttribute('href');
@@ -332,6 +382,7 @@
     await loadAndRender();
     bindViewToggle();
     bindSecretLogin();
+    renderAdminBadge();
   })();
 
 })();

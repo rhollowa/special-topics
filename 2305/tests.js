@@ -29,6 +29,13 @@
     return d.innerHTML;
   }
 
+  function escLinkify(s) {
+    if (s == null) return '';
+    return esc(s)
+      .replace(/\n/g, '<br>')
+      .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+  }
+
   function fileHref(r2Key) {
     if (!r2Key) return '#';
     if (r2Key.startsWith('/')) return r2Key;
@@ -42,7 +49,7 @@
   }
 
   function fileLabel(title, ext) {
-    return `${title} — ${ext ? ext.toUpperCase() : 'File'}`;
+    return title;
   }
 
   function formatDue(iso) {
@@ -60,7 +67,7 @@
         <div class="section-head">
           <div class="num">${esc(formatDue(t.due_date))}</div>
           <h2>${esc(t.title)}</h2>
-          ${t.sub ? `<p class="sub">${esc(t.sub)}</p>` : ''}
+          ${t.sub ? `<p class="sub">${escLinkify(t.sub)}</p>` : ''}
         </div>`;
       if (t.r2_key) {
         html += `<p style="margin: 0 0 1.25rem;">
@@ -68,7 +75,10 @@
           ${IS_ADMIN ? `<span class="admin-x" data-remove-test="${t.id}" title="Remove">×</span>` : ''}
         </p>`;
       }
-      html += `<button class="submit-btn" onclick="openModal('${esc(t.title).replace(/'/g, "\\'")}', '${esc(t.exam_key)}')">Submit ${esc(t.title)}</button>`;
+      const pastDue = t.due_date && new Date(t.due_date) < new Date();
+      if (!pastDue) {
+        html += `<button class="submit-btn" onclick="openModal('${esc(t.title).replace(/'/g, "\\'")}', '${esc(t.exam_key)}')">Submit ${esc(t.title)}</button>`;
+      }
       html += '</section>';
     });
     return html;
